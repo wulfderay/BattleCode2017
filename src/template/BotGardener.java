@@ -5,7 +5,7 @@ import battlecode.common.*;
 public class BotGardener extends Globals {
 
 	public static void loop() throws GameActionException {
-        System.out.println("I'm an archon!");
+        System.out.println("I'm a gardener!");
 
         // The code you want your robot to perform every round should be in this loop
         while (true) {
@@ -26,7 +26,7 @@ public class BotGardener extends Globals {
 
             //Test that we completed within bytecode limit
             if (rc.getRoundNum() != roundNum) {
-            	System.out.println("Archon over bytecode limit");
+            	System.out.println("Gardener over bytecode limit");
             }
             
             // Clock.yield() makes the robot wait until the next turn, then it will perform this loop again
