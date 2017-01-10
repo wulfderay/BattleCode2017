@@ -1,4 +1,4 @@
-package template;
+package alturismBot;
 
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
