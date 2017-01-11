@@ -3,7 +3,7 @@ package markbot;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 
-public strictfp class RobotPlayer extends Robot {
+public strictfp class RobotPlayer extends Globals {
 
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.
@@ -18,7 +18,7 @@ public strictfp class RobotPlayer extends Robot {
 
         // Here, we've separated the controls into a different method for each RobotType.
         // You can add the missing ones or rewrite this into your own control structure.
-        switch (myType) {
+        switch (rc.getType()) {
             case ARCHON:
                 BotArchon.loop();
                 break;
@@ -30,12 +30,8 @@ public strictfp class RobotPlayer extends Robot {
                 break;
             case LUMBERJACK:
                 BotLumberjack.loop();
-                break;
-            case TANK:
-                BotLumberjack.loop();
-                break;
             case SCOUT:
-                BotLumberjack.loop();
+                BotScout.loop();
                 break;
         }
 	}

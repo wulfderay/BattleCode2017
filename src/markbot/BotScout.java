@@ -1,9 +1,14 @@
 package markbot;
 
-import battlecode.common.Clock;
-import battlecode.common.GameActionException;
+import battlecode.common.*;
 
-public class BotScout extends Robot {
+import java.util.HashMap;
+import java.util.Map;
+
+public class BotScout extends Globals {
+
+    static TreeInfo nearestUnvisitedTree = null;
+    static Map<Integer,TreeVisit> Trees = new HashMap<>();
 	public static void loop() throws GameActionException {
         System.out.println("I'm a scout!");
 
@@ -20,7 +25,7 @@ public class BotScout extends Robot {
             	turn();
 
             } catch (Exception e) {
-                System.out.println("Archon Exception");
+                System.out.println("Scout Exception");
                 e.printStackTrace();
             }
 
@@ -36,6 +41,49 @@ public class BotScout extends Robot {
 	}
 	
 	public static void turn() throws GameActionException {
+        for (TreeInfo tree: rc.senseNearbyTrees(RobotType.SCOUT.sensorRadius)) {
+            Trees.putIfAbsent(tree.getID(), new TreeVisit(tree, false));
+
+            if (!Trees.get(tree.getID()).haveVisited &&
+                    (nearestUnvisitedTree == null ||
+                            tree.getLocation().distanceTo(here) < nearestUnvisitedTree.getLocation().distanceTo(here)))
+            {
+                nearestUnvisitedTree = tree;
+
+            }
+
+            if (rc.canShake(tree.getID()) )
+            {
+                if ( tree.getContainedBullets() > 0)
+                    rc.shake(tree.getID());
+                Trees.get(tree.getID()).haveVisited = true; // if we've shaken it, our job is done.
+            }
+
+        }
+        if (nearestUnvisitedTree != null)
+        {
+            rc.move(nearestUnvisitedTree.getLocation());
+        }
+        else
+        {
+            Util.tryMove(Util.randomDirection());
+        }
+
+        if ( nearestUnvisitedTree.getLocation().isWithinDistance(here, 0.1f))
+        {
+            nearestUnvisitedTree = null; // already visited. Time to move on.
+        }
 
 	}
+
+	public static class TreeVisit{
+        public TreeInfo tree;
+        public boolean haveVisited;
+
+        public TreeVisit( TreeInfo tree, boolean haveVisited)
+        {
+            this.haveVisited = haveVisited;
+            this.tree = tree;
+        }
+    }
 }

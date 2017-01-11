@@ -5,8 +5,7 @@ import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 
-public class Util extends Robot{
-
+public class Util extends Globals {
     /**
      * Returns a random Direction
      * @return a random Direction

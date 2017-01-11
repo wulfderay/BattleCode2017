@@ -4,9 +4,8 @@ import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
-import scratchrob.*;
 
-public class BotArchon extends Robot {
+public class BotArchon extends Globals {
 
 		public static void loop() throws GameActionException {
 	        System.out.println("I'm an archon!");
@@ -40,21 +39,21 @@ public class BotArchon extends Robot {
 		}
 		
 		public static void turn() throws GameActionException {
-// Generate a random direction
-			Direction dir = Util.randomDirection();
+			// Generate a random direction
+            Direction dir = Util.randomDirection();
 
-			// Randomly attempt to build a gardener in this direction
-			if (rc.canHireGardener(dir) && Math.random() < .01) {
-				rc.hireGardener(dir);
-			}
+            // Randomly attempt to build a gardener in this direction
+            if (rc.canHireGardener(dir) && Math.random() < .01) {
+                rc.hireGardener(dir);
+            }
 
-			// Move randomly
-			Util.tryMove(Util.randomDirection());
+            // Move randomly
+            Util.tryMove(Util.randomDirection());
 
-			// Broadcast archon's location for other robots on the team to know
-			MapLocation myLocation = rc.getLocation();
-			rc.broadcast(0,(int)myLocation.x);
-			rc.broadcast(1,(int)myLocation.y);
+            // Broadcast archon's location for other robots on the team to know
+            MapLocation myLocation = rc.getLocation();
+            rc.broadcast(0,(int)myLocation.x);
+            rc.broadcast(1,(int)myLocation.y);
 		}
 	
 }
