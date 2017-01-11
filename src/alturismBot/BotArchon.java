@@ -36,9 +36,28 @@ public class BotArchon extends Globals{
 		}
 		
 		public static void turn() throws GameActionException {
-			while (rc.getTeamBullets() > 10) {
+			while (rc.getTeamBullets() > 200) {
 				rc.donate(10);
 			}
+			
+			// Generate a random direction
+            Direction dir = Util.randomDirection();
+			
+			if (rc.canHireGardener(dir) && numberOfGardeners() < 3) {
+				rc.hireGardener(dir);
+			}
+			
+		}
+		
+		public static int numberOfGardeners() {
+			int count = 0;
+			RobotInfo friends[] = rc.senseNearbyRobots(-1, us);
+			for (RobotInfo bot : friends) {
+				if (bot.type == RobotType.GARDENER) {
+					++count;
+				}
+			}
+			return count;
 		}
 	
 }

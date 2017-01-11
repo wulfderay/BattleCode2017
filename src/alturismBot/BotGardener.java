@@ -4,9 +4,14 @@ import battlecode.common.*;
 
 public class BotGardener extends Globals {
 
+	public static MapLocation archonLoc = null;
+	public static MapLocation nextTreeLoc = null;
+	
 	public static void loop() throws GameActionException {
         System.out.println("I'm a gardener!");
 
+        initGardener();
+        
         // The code you want your robot to perform every round should be in this loop
         while (true) {
 
@@ -36,7 +41,29 @@ public class BotGardener extends Globals {
 	}
 	
 	public static void turn() throws GameActionException {
-
+		if (here.isWithinDistance(nextTreeLoc, 0.1f)) {
+			buildTree();
+		} else {
+			moveToLocation(nextTreeLoc);
+		}
+		
 	}
+	
+	public static void initGardener() {
+		RobotInfo friends[] = rc.senseNearbyRobots(-1, us);
+		for (RobotInfo bot : friends) {
+			if (bot.type == RobotType.ARCHON) {
+				archonLoc = bot.location;
+				break;
+			}
+		}
+		
+		Direction dir = Util.randomDirection();
+		nextTreeLoc = archonLoc.add(dir, 5);
+		
+		return;
+	}
+	
+	
 	
 }
