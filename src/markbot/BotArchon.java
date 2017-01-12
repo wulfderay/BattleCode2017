@@ -7,6 +7,7 @@ import battlecode.common.MapLocation;
 
 public class BotArchon extends Globals {
 
+		static boolean hasBuiltGardner = false;
 		public static void loop() throws GameActionException {
 	        System.out.println("I'm an archon!");
 
@@ -41,10 +42,12 @@ public class BotArchon extends Globals {
 		public static void turn() throws GameActionException {
 			// Generate a random direction
             Direction dir = Util.randomDirection();
-
+			if (hasBuiltGardner)
+				rc.disintegrate();
             // Randomly attempt to build a gardener in this direction
-            if (rc.canHireGardener(dir) && Math.random() < .01) {
+            if (rc.canHireGardener(dir) && !hasBuiltGardner) {
                 rc.hireGardener(dir);
+				hasBuiltGardner = true;
             }
 
             // Move randomly

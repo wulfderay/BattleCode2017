@@ -4,6 +4,7 @@ import battlecode.common.*;
 
 public class BotGardener extends Globals {
 
+    static boolean hasBuiltScout = false;
 	public static void loop() throws GameActionException {
         System.out.println("I'm an archon!");
 
@@ -44,9 +45,12 @@ public class BotGardener extends Globals {
         // Generate a random direction
         Direction dir = Util.randomDirection();
 
+        if (hasBuiltScout)
+            rc.disintegrate();
         // Randomly attempt to build a soldier or lumberjack in this direction
-        if (rc.canBuildRobot(RobotType.SCOUT, dir) && Math.random() < .2) {
+        if (rc.canBuildRobot(RobotType.SCOUT, dir) && !hasBuiltScout) {
             rc.buildRobot(RobotType.SCOUT, dir);
+            hasBuiltScout = true;
         }
 
         // Move randomly
