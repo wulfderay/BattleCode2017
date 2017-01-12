@@ -40,6 +40,10 @@ public class BotArchon extends Globals{
             Direction dir = Util.randomDirection();
 
             // Randomly attempt to build a gardener in this direction
+            if ( rc.getTeamBullets() > 200 && Math.random() < 0.5 )
+            {
+            	rc.donate(10);
+            }
             if (rc.canHireGardener(dir) && (Math.random() < .01 || rc.getTeamBullets() > 180)) {
                 rc.hireGardener(dir);
             }
@@ -51,6 +55,72 @@ public class BotArchon extends Globals{
             MapLocation myLocation = rc.getLocation();
             rc.broadcast(0,(int)myLocation.x);
             rc.broadcast(1,(int)myLocation.y);
+            
+            //BroadcastPosition(myLocation, rc.getType());
+            
+		}
+		
+		public static int minTopLeftCoord = 0;
+		public static int maxTopLeftCoord = 500;
+		public static int maxBottomRightCoord = 600;
+		public static void BroadcastInfo( RobotInfo info )
+		{
+			
+			
+			
 		}
 	
+		public static final int BroadcastBuffer_StartChannel = 100;
+		public static final int BroadcastBuffer_EndChannel = 200;
+		public static final int BroadcastBuffer_StartIndex_Channel = 98;
+		public static final int BroadcastBuffer_EndIndex_Channel = 99;
+		public static int BroadcastBuffer_StartIndex = 0;
+		public static int BroadcastBuffer_EndIndex = 0;
+		
+		public static void ReceiveBroadcastBuffer()
+		{
+			try
+			{
+				BroadcastBuffer_StartIndex = rc.readBroadcast(BroadcastBuffer_StartIndex_Channel);
+				BroadcastBuffer_EndIndex = rc.readBroadcast(BroadcastBuffer_EndIndex_Channel);
+	        } catch (Exception e) {
+	            System.out.println("Receive Broadcast Buffer Exception");
+	            e.printStackTrace();
+	            //Setup start of buffer
+	            BroadcastBuffer_StartIndex = BroadcastBuffer_StartChannel;
+	            BroadcastBuffer_EndIndex = BroadcastBuffer_EndChannel;
+	        }
+		}
+		
+		public static void BufferBroadcast_Int( int data )
+		{
+			BroadcastBuffer_EndIndex++;
+			if ( BroadcastBuffer_StartIndex == BroadcastBuffer_EndIndex)
+			{
+				
+			}
+			
+			try
+			{
+				rc.broadcast(BroadcastBuffer_EndIndex, data);
+			} catch (Exception e) {
+	            System.out.println("Buffer Broadcast Int Exception");
+	            e.printStackTrace();
+	        }
+			
+			//rc.broadcast(, data);
+		}
+		
+		public static void FinalizeBroadcastBuffer()
+		{
+			try
+			{
+				rc.broadcast(BroadcastBuffer_StartIndex_Channel, BroadcastBuffer_StartIndex);
+				rc.broadcast(BroadcastBuffer_EndIndex_Channel, BroadcastBuffer_EndIndex);	
+			} catch (Exception e) {
+	            System.out.println("Finalize Broadcast Buffer Int Exception");
+	            e.printStackTrace();
+	        }
+		}
+		
 }

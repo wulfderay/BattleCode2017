@@ -68,8 +68,15 @@ public class BotGardener extends Globals {
         	
         }
         
-        // Move randomly
-        Util.tryMove(Util.randomDirection());
+        // If there is a tree, move towards it
+        if(trees.length > 0) {
+            MapLocation treeLocation = trees[0].getLocation();
+            Direction toTree = here.directionTo(treeLocation);
+            Util.tryMove(toTree);
+        } else {
+        	// Move Randomly
+        	Util.tryMove(Util.randomDirection());
+        }
 	}
 	
 }

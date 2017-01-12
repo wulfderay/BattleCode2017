@@ -52,8 +52,16 @@ public class BotSoldier extends Globals {
                 rc.fireSingleShot(rc.getLocation().directionTo(enemies[0].location));
             }
         }
+        
 
-        // Move randomly
-        Util.tryMove(Util.randomDirection());
+        // If there is a tree, move towards it
+        if(enemies.length > 0) {
+            MapLocation location = enemies[0].getLocation();
+            Direction toDir = here.directionTo(location);
+            Util.tryMove(toDir);
+        } else {
+        	// Move Randomly
+        	Util.tryMove(Util.randomDirection());
+        }
 	}
 }

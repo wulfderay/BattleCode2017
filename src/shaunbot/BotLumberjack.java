@@ -53,10 +53,41 @@ public class BotLumberjack extends Globals {
 
                 Util.tryMove(toEnemy);
             } else {
+            	
+            	chopTrees();
+            	
                 // Move Randomly
             	Util.tryMove(Util.randomDirection());
+            	
+            	
             }
         }
 	}
 	
+	public static void chopTrees() throws GameActionException
+	{
+        chopTrees(them);
+        chopTrees(Team.NEUTRAL);
+	}
+	public static void chopTrees(Team team) throws GameActionException
+	{
+		TreeInfo[] trees = rc.senseNearbyTrees(RobotType.LUMBERJACK.bodyRadius+GameConstants.LUMBERJACK_STRIKE_RADIUS, team);
+		if(trees.length > 0 && !rc.hasAttacked()) {
+            // Use strike() to hit all nearby robots!
+			rc.chop(trees[0].ID);
+		} else {
+            // No close robots, so search for robots within sight radius
+			trees = rc.senseNearbyTrees(-1,team);
+
+            // If there is a robot, move towards it
+            if(trees.length > 0) {
+                MapLocation enemyLocation = trees[0].getLocation();
+                Direction toEnemy = here.directionTo(enemyLocation);
+                Util.tryMove(toEnemy);
+            } else {
+            	// Move Randomly
+            	Util.tryMove(Util.randomDirection());
+            }
+        }
+	}
 }
