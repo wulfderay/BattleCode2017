@@ -1,9 +1,6 @@
 package markbot;
 
-import battlecode.common.BulletInfo;
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
+import battlecode.common.*;
 
 public class Util extends Globals {
     /**
@@ -48,7 +45,7 @@ public class Util extends Globals {
 
         while(currentCheck<=checksPerSide) {
             // Try the offset of the left side
-            if(rc.canMove(dir.rotateLeftDegrees(degreeOffset*currentCheck)) && rc.senseNearbyBullets(here.add(dir), myType.bodyRadius).length == 0 ) {
+            if(rc.canMove(dir.rotateLeftDegrees(degreeOffset*currentCheck)) && rc.senseNearbyBullets(here.add(dir), myType.bodyRadius).length == 0  && notNearALumberJack(here.add(dir))) {
                 rc.move(dir.rotateLeftDegrees(degreeOffset*currentCheck));
                 return true;
             }
@@ -63,6 +60,15 @@ public class Util extends Globals {
 
         // A move never happened, so return false.
         return false;
+    }
+
+    private static boolean notNearALumberJack(MapLocation location) {
+        for (RobotInfo enemy : rc.senseNearbyRobots(location, 1, them))
+        {
+            if (enemy.getType() == RobotType.LUMBERJACK)
+                return false;
+        }
+        return true;
     }
 
     /**
@@ -100,5 +106,15 @@ public class Util extends Globals {
         float perpendicularDist = (float)Math.abs(distToRobot * Math.sin(theta)); // soh cah toa :)
 
         return (perpendicularDist <= radius);
+    }
+
+    public static boolean isEarlyGame() {
+        return (rc.getRoundLimit()/3) - rc.getRoundNum()> 0;
+    }
+
+    // circle strafes around a certain location at a particular radius. Direction can be switched by passing -1 or 1 to current direction
+    // returns false if circle strafe failed because we ran into a wall.
+    public static bool CircleStrafe(MapLocation locationToCircle, int clearingRadius, int currentDirection) {
+
     }
 }
