@@ -27,6 +27,7 @@ public class Util extends Globals {
 
     /**
      * Attempts to move in a given direction, while avoiding small obstacles direction in the path.
+     * Don't move directly onto a bullet :D
      *
      * @param dir The intended direction of movement
      * @param degreeOffset Spacing between checked directions (degrees)
@@ -37,7 +38,7 @@ public class Util extends Globals {
     static boolean tryMove(Direction dir, float degreeOffset, int checksPerSide) throws GameActionException {
 
         // First, try intended direction
-        if (rc.canMove(dir)) {
+        if (rc.canMove(dir) && rc.senseNearbyBullets(here.add(dir), myType.bodyRadius).length == 0 ) {
             rc.move(dir);
             return true;
         }
@@ -48,12 +49,12 @@ public class Util extends Globals {
 
         while(currentCheck<=checksPerSide) {
             // Try the offset of the left side
-            if(rc.canMove(dir.rotateLeftDegrees(degreeOffset*currentCheck))) {
+            if(rc.canMove(dir.rotateLeftDegrees(degreeOffset*currentCheck)) && rc.senseNearbyBullets(here.add(dir), myType.bodyRadius).length == 0 ) {
                 rc.move(dir.rotateLeftDegrees(degreeOffset*currentCheck));
                 return true;
             }
             // Try the offset on the right side
-            if(rc.canMove(dir.rotateRightDegrees(degreeOffset*currentCheck))) {
+            if(rc.canMove(dir.rotateRightDegrees(degreeOffset*currentCheck)) && rc.senseNearbyBullets(here.add(dir), myType.bodyRadius).length == 0 ) {
                 rc.move(dir.rotateRightDegrees(degreeOffset*currentCheck));
                 return true;
             }
@@ -73,15 +74,19 @@ public class Util extends Globals {
      * @return True if the line of the bullet's path intersects with this robot's current position.
      */
     static boolean willCollideWithMe(BulletInfo bullet) {
-        MapLocation myLocation = rc.getLocation();
+       return willCollideWithLocation(bullet, here, myType.bodyRadius);
+    }
+
+
+    static boolean willCollideWithLocation(BulletInfo bullet, MapLocation loc, float radius) {
 
         // Get relevant bullet information
         Direction propagationDirection = bullet.dir;
         MapLocation bulletLocation = bullet.location;
 
-        // Calculate bullet relations to this robot
-        Direction directionToRobot = bulletLocation.directionTo(myLocation);
-        float distToRobot = bulletLocation.distanceTo(myLocation);
+        // Calculate bullet relations to this location
+        Direction directionToRobot = bulletLocation.directionTo(loc);
+        float distToRobot = bulletLocation.distanceTo(loc);
         float theta = propagationDirection.radiansBetween(directionToRobot);
 
         // If theta > 90 degrees, then the bullet is traveling away from us and we can break early
@@ -95,6 +100,6 @@ public class Util extends Globals {
         // line that is the path of the bullet.
         float perpendicularDist = (float)Math.abs(distToRobot * Math.sin(theta)); // soh cah toa :)
 
-        return (perpendicularDist <= rc.getType().bodyRadius);
+        return (perpendicularDist <= radius);
     }
 }
