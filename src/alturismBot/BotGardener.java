@@ -42,9 +42,9 @@ public class BotGardener extends Globals {
 	
 	public static void turn() throws GameActionException {
 		if (here.isWithinDistance(nextTreeLoc, 0.1f)) {
-			buildTree();
+			//buildTree();
 		} else {
-			moveToLocation(nextTreeLoc);
+			//moveToLocation(nextTreeLoc);
 		}
 		
 	}

@@ -32,6 +32,12 @@ public strictfp class RobotPlayer extends Globals{
             case LUMBERJACK:
                 BotLumberjack.loop();
                 break;
+            case TANK:
+                BotTank.loop();
+                break;
+            case SCOUT:
+                BotScout.loop();
+                break;
         }
 	}
 
