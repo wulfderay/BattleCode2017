@@ -1,9 +1,10 @@
-package markbot;
+package shaunbot;
 
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
+import shaunbot.RobotPlayer;
 
-public strictfp class RobotPlayer extends Globals {
+public strictfp class RobotPlayer extends Globals{
 
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.
@@ -30,8 +31,6 @@ public strictfp class RobotPlayer extends Globals {
                 break;
             case LUMBERJACK:
                 BotLumberjack.loop();
-            case SCOUT:
-                BotScout.loop();
                 break;
         }
 	}

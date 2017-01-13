@@ -1,12 +1,11 @@
-package markbot;
+package shaunbot;
 
 import battlecode.common.*;
 
 public class BotGardener extends Globals {
 
-    static boolean hasBuiltScout = false;
 	public static void loop() throws GameActionException {
-        System.out.println("I'm an archon!");
+        System.out.println("I'm a gardener!");
 
         // The code you want your robot to perform every round should be in this loop
         while (true) {
@@ -45,16 +44,39 @@ public class BotGardener extends Globals {
         // Generate a random direction
         Direction dir = Util.randomDirection();
 
-        if (hasBuiltScout)
-            rc.disintegrate();
         // Randomly attempt to build a soldier or lumberjack in this direction
-        if (rc.canBuildRobot(RobotType.SCOUT, dir) && !hasBuiltScout) {
-            rc.buildRobot(RobotType.SCOUT, dir);
-            hasBuiltScout = true;
+        if (rc.canBuildRobot(RobotType.SOLDIER, dir) && Math.random() < .01) {
+            rc.buildRobot(RobotType.SOLDIER, dir);
+        } else if (rc.canBuildRobot(RobotType.LUMBERJACK, dir) && Math.random() < .01 && rc.isBuildReady()) {
+            rc.buildRobot(RobotType.LUMBERJACK, dir);
+        } else if (rc.canPlantTree(dir) && Math.random() < .02 && rc.isBuildReady()) {
+            rc.plantTree(dir);
         }
-
-        // Move randomly
-        Util.tryMove(Util.randomDirection());
+        
+        //Trees!
+        TreeInfo[] trees = rc.senseNearbyTrees(here, RobotType.GARDENER.sensorRadius, us);
+        for(TreeInfo tree : trees)
+        {
+        	if ( !rc.canWater() )
+        		break;
+        	if ( rc.canShake(tree.ID))
+        		rc.shake(tree.ID);
+        	if ( tree.team == them)
+        		continue;
+        	if ( rc.canWater(tree.ID))
+        		rc.water(tree.ID);
+        	
+        }
+        
+        // If there is a tree, move towards it
+        if(trees.length > 0) {
+            MapLocation treeLocation = trees[0].getLocation();
+            Direction toTree = here.directionTo(treeLocation);
+            Util.tryMove(toTree);
+        } else {
+        	// Move Randomly
+        	Util.tryMove(Util.randomDirection());
+        }
 	}
 	
 }

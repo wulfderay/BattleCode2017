@@ -1,12 +1,11 @@
-package markbot;
+package shaunbot;
 
 import battlecode.common.*;
 
-public class BotGardener extends Globals {
+public class BotSoldier extends Globals {
 
-    static boolean hasBuiltScout = false;
 	public static void loop() throws GameActionException {
-        System.out.println("I'm an archon!");
+        System.out.println("I'm a soldier!");
 
         // The code you want your robot to perform every round should be in this loop
         while (true) {
@@ -37,24 +36,27 @@ public class BotGardener extends Globals {
 	}
 	
 	public static void turn() throws GameActionException {
-        // Listen for home archon's location
-        int xPos = rc.readBroadcast(0);
-        int yPos = rc.readBroadcast(1);
-        MapLocation archonLoc = new MapLocation(xPos,yPos);
+        // See if there are any nearby enemy robots
+        RobotInfo[] enemies = rc.senseNearbyRobots(-1, them);
 
-        // Generate a random direction
-        Direction dir = Util.randomDirection();
-
-        if (hasBuiltScout)
-            rc.disintegrate();
-        // Randomly attempt to build a soldier or lumberjack in this direction
-        if (rc.canBuildRobot(RobotType.SCOUT, dir) && !hasBuiltScout) {
-            rc.buildRobot(RobotType.SCOUT, dir);
-            hasBuiltScout = true;
+        // If there is an enemy, move towards it
+        if(enemies.length > 0) {
+            MapLocation location = enemies[0].getLocation();
+            Direction toDir = here.directionTo(location);
+            Util.tryMove(toDir);
+        } else {
+        	// Move Randomly
+        	Util.tryMove(Util.randomDirection());
         }
 
-        // Move randomly
-        Util.tryMove(Util.randomDirection());
+        // If there are enemies, shoot them...
+        if (enemies.length > 0) {
+            //Alright, we'll just fire one bullet... i guess...
+            if (rc.canFireSingleShot()) {
+                // ...Then fire a bullet in the direction of the enemy.
+                rc.fireSingleShot(rc.getLocation().directionTo(enemies[0].location));
+            }
+        }
+        
 	}
-	
 }

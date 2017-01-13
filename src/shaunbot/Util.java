@@ -1,4 +1,4 @@
-package markbot;
+package shaunbot;
 
 import battlecode.common.BulletInfo;
 import battlecode.common.Direction;

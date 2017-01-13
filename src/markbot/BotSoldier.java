@@ -2,11 +2,12 @@ package markbot;
 
 import battlecode.common.Clock;
 import battlecode.common.GameActionException;
+import battlecode.common.RobotInfo;
 
-public class BotSoldier extends Robot {
+public class BotSoldier extends Globals {
 
 	public static void loop() throws GameActionException {
-        System.out.println("I'm a soldier! Oorah!");
+        System.out.println("I'm an archon!");
 
         // The code you want your robot to perform every round should be in this loop
         while (true) {
@@ -27,7 +28,7 @@ public class BotSoldier extends Robot {
 
             //Test that we completed within bytecode limit
             if (rc.getRoundNum() != roundNum) {
-            	System.out.println("Soldier over bytecode limit");
+            	System.out.println("Archon over bytecode limit");
             }
             
             // Clock.yield() makes the robot wait until the next turn, then it will perform this loop again
@@ -37,6 +38,19 @@ public class BotSoldier extends Robot {
 	}
 	
 	public static void turn() throws GameActionException {
+        // See if there are any nearby enemy robots
+        RobotInfo[] enemies = rc.senseNearbyRobots(-1, them);
 
+        // If there are some...
+        if (enemies.length > 0) {
+            // And we have enough bullets, and haven't attacked yet this turn...
+            if (rc.canFireSingleShot()) {
+                // ...Then fire a bullet in the direction of the enemy.
+                rc.fireSingleShot(rc.getLocation().directionTo(enemies[0].location));
+            }
+        }
+
+        // Move randomly
+        Util.tryMove(Util.randomDirection());
 	}
 }
