@@ -41,49 +41,29 @@ public class BotScout extends Globals {
 	}
 	
 	public static void turn() throws GameActionException {
-        for (TreeInfo tree: rc.senseNearbyTrees(RobotType.SCOUT.sensorRadius)) {
-            if (Clock.getBytecodesLeft() < RobotType.SCOUT.bytecodeLimit /2) // don't waste too many bytecodes.
-                break;
-            Trees.putIfAbsent(tree.getID(), new TreeVisit(tree, false));
 
-            if (!Trees.get(tree.getID()).haveVisited &&
-                    (nearestUnvisitedTree == null ||
-                            tree.getLocation().distanceTo(here) < nearestUnvisitedTree.getLocation().distanceTo(here))) {
-                nearestUnvisitedTree = tree;
+        PopulateBestNextTree();
 
+        AttackNearbyGardenersAndArchons();
+
+        TreeHop();
+
+        CleanUpTreeList();
+
+        Explore();
+	}
+
+    private static void Explore() {
+	    //  if (!rc.hasMoved())
+    }
+
+    private static void CleanUpTreeList() {
+	    /* // this might be needed later, but...
+        if (Trees.size() >0 ) {
+            for (TreeVisit treeVisit : Trees.values()) {
+                treeVisit.haveVisited = false; // this will make the scout go visit all the trees again.. not necessarily good, dunno yet.
             }
-            if (rc.canShake() &&  rc.canInteractWithTree(tree.getID()) )
-            {
-
-                if ( tree.getContainedBullets() > 0){
-                    System.out.println("Tree "+tree.getID()+ " has "+ tree.getContainedBullets() +" bullets.");
-                    rc.shake(tree.getID());
-                }
-
-                Trees.get(tree.getID()).haveVisited = true; // if we've shaken it, our job is done.
-            }
-
-        }
-        if (nearestUnvisitedTree != null)
-        {
-            if (rc.canMove(nearestUnvisitedTree.getLocation()))
-                rc.move(nearestUnvisitedTree.getLocation());
-            else {
-                Util.tryMove(Util.randomDirection());
-            }
-
-        }
-        else // out of trees.. Time to go visit again.
-        {
-            if (Trees.size() >0 ) {
-                for (TreeVisit treeVisit : Trees.values()) {
-                    treeVisit.haveVisited = false; // this will make the scout go visit all the trees again.. not necessarily good, dunno yet.
-                }
-            }
-            Util.tryMove(Util.randomDirection());
-        }
-
-
+        }*/
 
         if ( nearestUnvisitedTree != null && nearestUnvisitedTree.getLocation().isWithinDistance(here, 0.2f))
         {
@@ -93,8 +73,56 @@ public class BotScout extends Globals {
             }
             nearestUnvisitedTree = null; // already visited. Time to move on.
         }
+    }
 
-	}
+    private static void TreeHop() throws GameActionException  {
+        if (!rc.hasMoved() && nearestUnvisitedTree != null && rc.canMove(nearestUnvisitedTree.getLocation()))
+            rc.move(nearestUnvisitedTree.getLocation());
+    }
+
+    private static void AttackNearbyGardenersAndArchons() {
+
+    }
+
+
+    private static void PopulateBestNextTree() throws GameActionException {
+        for (TreeInfo tree : rc.senseNearbyTrees(RobotType.SCOUT.sensorRadius/2)) {
+            if (Clock.getBytecodesLeft() < RobotType.SCOUT.bytecodeLimit / 2) // don't waste too many bytecodes.
+                break;
+            Trees.putIfAbsent(tree.getID(), new TreeVisit(tree, false));
+
+            if (!Trees.get(tree.getID()).haveVisited) {
+                if (nearestUnvisitedTree == null || TreeIsNearerEnemyTree(tree) || TreeHasMoreBulletsOrIsCloser(tree))
+                    nearestUnvisitedTree = tree;
+            }
+
+
+            if (rc.canShake() && rc.canInteractWithTree(tree.getID())) {
+
+                if (tree.getContainedBullets() > 0) {
+                    rc.shake(tree.getID());
+                    System.out.println("Shaking tree");
+                    rc.setIndicatorDot(tree.getLocation(), (int)(Math.random()* 255), (int)(Math.random()* 255), (int)(Math.random()* 255));
+                }
+
+                Trees.get(tree.getID()).haveVisited = true; // if we've shaken it, our job is done.
+            }
+
+        }
+    }
+
+    private static boolean TreeHasMoreBulletsOrIsCloser(TreeInfo tree) {
+	    return (tree.getTeam() == nearestUnvisitedTree.getTeam() &&
+                (tree.getContainedBullets() > nearestUnvisitedTree.getContainedBullets() ||
+                (tree.getContainedBullets() == nearestUnvisitedTree.getContainedBullets() && tree.getLocation().distanceTo(here) < nearestUnvisitedTree.getLocation().distanceTo(here)))
+        );
+    }
+
+    private static boolean TreeIsNearerEnemyTree(TreeInfo tree) {
+	    return (tree.getTeam() == them &&
+                tree.getLocation().distanceTo(here) < nearestUnvisitedTree.getLocation().distanceTo(here));
+    }
+
 
 	public static class TreeVisit{
         public TreeInfo tree;
