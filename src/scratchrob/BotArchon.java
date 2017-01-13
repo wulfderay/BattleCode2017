@@ -4,6 +4,8 @@ import battlecode.common.*;
 
 public class BotArchon extends Globals{
 
+		public static int gardenersHired = 0;
+	
 		public static void loop() throws GameActionException {
 	        System.out.println("I'm an archon!");
 
@@ -40,8 +42,21 @@ public class BotArchon extends Globals{
             Direction dir = Util.randomDirection();
 
             // Randomly attempt to build a gardener in this direction
-            if (rc.canHireGardener(dir) && Math.random() < .01) {
-                rc.hireGardener(dir);
+            if (rc.canHireGardener(dir)) {
+            	if (rc.getTreeCount() == 0) {
+            		rc.hireGardener(dir);
+            		gardenersHired++;
+            	} else if (rc.getTreeCount() > gardenersHired * 5) {
+            		rc.hireGardener(dir);
+            		gardenersHired++;            		
+            	} else if (rc.getTreeCount() < 50 && rc.getTeamBullets() > 300) {
+            		rc.hireGardener(dir);
+            		gardenersHired++;            		            		
+            	}
+            }
+            
+            if (rc.getTeamBullets() > 500) {
+            	rc.donate(100);
             }
 
             // Move randomly
