@@ -39,22 +39,7 @@ public class BotSoldier extends Globals {
         // See if there are any nearby enemy robots
         RobotInfo[] enemies = rc.senseNearbyRobots(-1, them);
 
-        // If there are some...
-        if (enemies.length > 0) {
-            // And we have enough bullets, and haven't attacked yet this turn...
-            if (rc.canFireTriadShot()) {
-                // ...Then fire a bullet in the direction of the enemy.
-                rc.fireTriadShot(rc.getLocation().directionTo(enemies[0].location));
-            }
-            //Alright, we'll just fire one bullet... i guess...
-            if (rc.canFireSingleShot()) {
-                // ...Then fire a bullet in the direction of the enemy.
-                rc.fireSingleShot(rc.getLocation().directionTo(enemies[0].location));
-            }
-        }
-        
-
-        // If there is a tree, move towards it
+        // If there is an enemy, move towards it
         if(enemies.length > 0) {
             MapLocation location = enemies[0].getLocation();
             Direction toDir = here.directionTo(location);
@@ -63,5 +48,15 @@ public class BotSoldier extends Globals {
         	// Move Randomly
         	Util.tryMove(Util.randomDirection());
         }
+
+        // If there are enemies, shoot them...
+        if (enemies.length > 0) {
+            //Alright, we'll just fire one bullet... i guess...
+            if (rc.canFireSingleShot()) {
+                // ...Then fire a bullet in the direction of the enemy.
+                rc.fireSingleShot(rc.getLocation().directionTo(enemies[0].location));
+            }
+        }
+        
 	}
 }

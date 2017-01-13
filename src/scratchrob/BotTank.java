@@ -1,12 +1,11 @@
-package markbot;
+package scratchrob;
 
 import battlecode.common.*;
 
-public class BotGardener extends Globals {
+public class BotTank extends Globals {
 
-    static int scoutsBuilt = 0;
 	public static void loop() throws GameActionException {
-        System.out.println("I'm an archon!");
+        System.out.println("I'm a tank!");
 
         // The code you want your robot to perform every round should be in this loop
         while (true) {
@@ -27,7 +26,7 @@ public class BotGardener extends Globals {
 
             //Test that we completed within bytecode limit
             if (rc.getRoundNum() != roundNum) {
-            	System.out.println("Archon over bytecode limit");
+            	System.out.println("Tanks over bytecode limit");
             }
             
             // Clock.yield() makes the robot wait until the next turn, then it will perform this loop again
@@ -37,23 +36,7 @@ public class BotGardener extends Globals {
 	}
 	
 	public static void turn() throws GameActionException {
-        // Listen for home archon's location
-        //int xPos = rc.readBroadcast(0);
-        //int yPos = rc.readBroadcast(1);
-        //MapLocation archonLoc = new MapLocation(xPos,yPos);
 
-        // Generate a random direction
-        Direction dir = Util.randomDirection();
-
-
-        // Randomly attempt to build a soldier or lumberjack in this direction
-        if (rc.canBuildRobot(RobotType.SCOUT, dir) && scoutsBuilt < rc.getRoundNum()/19) {
-            rc.buildRobot(RobotType.SCOUT, dir);
-            scoutsBuilt ++;
-        }
-
-        // Move randomly
-        Util.tryMove(Util.randomDirection());
 	}
 	
 }

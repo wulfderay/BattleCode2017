@@ -77,50 +77,48 @@ public class BotArchon extends Globals{
 		public static int BroadcastBuffer_StartIndex = 0;
 		public static int BroadcastBuffer_EndIndex = 0;
 		
-		public static void ReceiveBroadcastBuffer()
+		public static void BroadcastBuffer_Start() throws GameActionException
 		{
-			try
-			{
-				BroadcastBuffer_StartIndex = rc.readBroadcast(BroadcastBuffer_StartIndex_Channel);
-				BroadcastBuffer_EndIndex = rc.readBroadcast(BroadcastBuffer_EndIndex_Channel);
-	        } catch (Exception e) {
-	            System.out.println("Receive Broadcast Buffer Exception");
-	            e.printStackTrace();
-	            //Setup start of buffer
-	            BroadcastBuffer_StartIndex = BroadcastBuffer_StartChannel;
-	            BroadcastBuffer_EndIndex = BroadcastBuffer_EndChannel;
+			BroadcastBuffer_StartIndex = rc.readBroadcast(BroadcastBuffer_StartIndex_Channel);
+			BroadcastBuffer_EndIndex = rc.readBroadcast(BroadcastBuffer_EndIndex_Channel);
+	        if ( BroadcastBuffer_StartIndex == 0 )
+	        {
+	        	//uninitialized
+	        	BroadcastBuffer_StartIndex = BroadcastBuffer_StartChannel;
+	        	BroadcastBuffer_EndIndex = BroadcastBuffer_StartChannel;
 	        }
+	        	
 		}
 		
-		public static void BufferBroadcast_Int( int data )
+		public static void BufferBroadcast_Send( int data ) throws GameActionException
 		{
+			//Loop logic:
+			if ( BroadcastBuffer_EndIndex == BroadcastBuffer_StartIndex )
+				BroadcastBuffer_StartIndex++;
+			rc.broadcast(BroadcastBuffer_EndIndex, data);
 			BroadcastBuffer_EndIndex++;
-			if ( BroadcastBuffer_StartIndex == BroadcastBuffer_EndIndex)
-			{
-				
-			}
-			
-			try
-			{
-				rc.broadcast(BroadcastBuffer_EndIndex, data);
-			} catch (Exception e) {
-	            System.out.println("Buffer Broadcast Int Exception");
-	            e.printStackTrace();
-	        }
-			
-			//rc.broadcast(, data);
+			//Loop logic:
+			if ( BroadcastBuffer_EndIndex == BroadcastBuffer_EndChannel+1)
+				BroadcastBuffer_EndIndex = BroadcastBuffer_StartChannel;
+			if ( BroadcastBuffer_StartIndex == BroadcastBuffer_EndChannel+1)
+				BroadcastBuffer_StartIndex = BroadcastBuffer_StartChannel;
 		}
 		
-		public static void FinalizeBroadcastBuffer()
+		public static int BufferBroadcast_ReadNext() throws GameActionException, Exception
 		{
-			try
-			{
-				rc.broadcast(BroadcastBuffer_StartIndex_Channel, BroadcastBuffer_StartIndex);
-				rc.broadcast(BroadcastBuffer_EndIndex_Channel, BroadcastBuffer_EndIndex);	
-			} catch (Exception e) {
-	            System.out.println("Finalize Broadcast Buffer Int Exception");
-	            e.printStackTrace();
-	        }
+			int data = rc.readBroadcast(BroadcastBuffer_StartIndex);
+			BroadcastBuffer_StartIndex++;
+			if ( BroadcastBuffer_StartIndex == BroadcastBuffer_EndChannel+1)
+				BroadcastBuffer_StartIndex = BroadcastBuffer_StartChannel;
+			if ( BroadcastBuffer_EndIndex == BroadcastBuffer_StartIndex )
+				throw new Exception("Buffer read out of range!");
+			return data;
+		}
+		
+		public static void BroadcastBuffer_Finalize() throws GameActionException
+		{
+			rc.broadcast(BroadcastBuffer_StartIndex_Channel, BroadcastBuffer_StartIndex);
+			rc.broadcast(BroadcastBuffer_EndIndex_Channel, BroadcastBuffer_EndIndex);
 		}
 		
 }

@@ -37,9 +37,9 @@ public class BotGardener extends Globals {
 	
 	public static void turn() throws GameActionException {
         // Listen for home archon's location
-        int xPos = rc.readBroadcast(0);
-        int yPos = rc.readBroadcast(1);
-        MapLocation archonLoc = new MapLocation(xPos,yPos);
+        //int xPos = rc.readBroadcast(0);
+        //int yPos = rc.readBroadcast(1);
+        //MapLocation archonLoc = new MapLocation(xPos,yPos);
 
         // Generate a random direction
         Direction dir = Util.randomDirection();

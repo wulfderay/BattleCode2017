@@ -44,7 +44,6 @@ public class Util extends Globals {
         }
 
         // Now try a bunch of similar angles
-        boolean moved = false;
         int currentCheck = 1;
 
         while(currentCheck<=checksPerSide) {

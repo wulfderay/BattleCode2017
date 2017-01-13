@@ -3,6 +3,8 @@ package shaunbot;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 import shaunbot.RobotPlayer;
+import template.BotScout;
+import template.BotTank;
 
 public strictfp class RobotPlayer extends Globals{
 
@@ -32,6 +34,12 @@ public strictfp class RobotPlayer extends Globals{
             case LUMBERJACK:
                 BotLumberjack.loop();
                 break;
+            case TANK:
+                BotTank.loop();
+                break;
+            case SCOUT:
+                BotScout.loop();
+                break;                
         }
 	}
 
