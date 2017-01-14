@@ -56,6 +56,22 @@ public class BotArchon extends Globals{
             rc.broadcast(0,(int)myLocation.x);
             rc.broadcast(1,(int)myLocation.y);
             
+            Util.BroadcastBuffer_PrepareToUse();
+            
+            System.out.println("------------------------------------------");
+            System.out.println("Archon "+rc.getID()+" Reading from buffer: end index:"+Util.BroadcastBuffer_EndIndex);
+            while ( Util.BroadcastBuffer_ContainsData() )
+            {
+            	System.out.println(Util.BroadcastBuffer_StartIndex + "->" + Util.BroadcastBuffer_ReadNext());
+            }
+            
+            System.out.println("Archon "+rc.getID()+" broadcasting position!");
+            
+            Util.BroadcastBuffer_Send(rc.getID());
+            Util.BroadcastBuffer_Send((int)myLocation.x);
+            Util.BroadcastBuffer_Send((int)myLocation.y);
+            Util.BroadcastBuffer_Finalize();
+            
             //BroadcastPosition(myLocation, rc.getType());
             
 		}
@@ -63,62 +79,9 @@ public class BotArchon extends Globals{
 		public static int minTopLeftCoord = 0;
 		public static int maxTopLeftCoord = 500;
 		public static int maxBottomRightCoord = 600;
-		public static void BroadcastInfo( RobotInfo info )
-		{
-			
-			
-			
-		}
-	
-		public static final int BroadcastBuffer_StartChannel = 100;
-		public static final int BroadcastBuffer_EndChannel = 200;
-		public static final int BroadcastBuffer_StartIndex_Channel = 98;
-		public static final int BroadcastBuffer_EndIndex_Channel = 99;
-		public static int BroadcastBuffer_StartIndex = 0;
-		public static int BroadcastBuffer_EndIndex = 0;
+
 		
-		public static void BroadcastBuffer_Start() throws GameActionException
-		{
-			BroadcastBuffer_StartIndex = rc.readBroadcast(BroadcastBuffer_StartIndex_Channel);
-			BroadcastBuffer_EndIndex = rc.readBroadcast(BroadcastBuffer_EndIndex_Channel);
-	        if ( BroadcastBuffer_StartIndex == 0 )
-	        {
-	        	//uninitialized
-	        	BroadcastBuffer_StartIndex = BroadcastBuffer_StartChannel;
-	        	BroadcastBuffer_EndIndex = BroadcastBuffer_StartChannel;
-	        }
-	        	
-		}
 		
-		public static void BufferBroadcast_Send( int data ) throws GameActionException
-		{
-			//Loop logic:
-			if ( BroadcastBuffer_EndIndex == BroadcastBuffer_StartIndex )
-				BroadcastBuffer_StartIndex++;
-			rc.broadcast(BroadcastBuffer_EndIndex, data);
-			BroadcastBuffer_EndIndex++;
-			//Loop logic:
-			if ( BroadcastBuffer_EndIndex == BroadcastBuffer_EndChannel+1)
-				BroadcastBuffer_EndIndex = BroadcastBuffer_StartChannel;
-			if ( BroadcastBuffer_StartIndex == BroadcastBuffer_EndChannel+1)
-				BroadcastBuffer_StartIndex = BroadcastBuffer_StartChannel;
-		}
 		
-		public static int BufferBroadcast_ReadNext() throws GameActionException, Exception
-		{
-			int data = rc.readBroadcast(BroadcastBuffer_StartIndex);
-			BroadcastBuffer_StartIndex++;
-			if ( BroadcastBuffer_StartIndex == BroadcastBuffer_EndChannel+1)
-				BroadcastBuffer_StartIndex = BroadcastBuffer_StartChannel;
-			if ( BroadcastBuffer_EndIndex == BroadcastBuffer_StartIndex )
-				throw new Exception("Buffer read out of range!");
-			return data;
-		}
-		
-		public static void BroadcastBuffer_Finalize() throws GameActionException
-		{
-			rc.broadcast(BroadcastBuffer_StartIndex_Channel, BroadcastBuffer_StartIndex);
-			rc.broadcast(BroadcastBuffer_EndIndex_Channel, BroadcastBuffer_EndIndex);
-		}
 		
 }
