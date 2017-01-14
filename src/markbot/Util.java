@@ -36,7 +36,8 @@ public class Util extends Globals {
      * @throws GameActionException
      */
     static boolean tryMove(Direction dir, float degreeOffset, int checksPerSide) throws GameActionException {
-
+        if (rc.hasMoved())
+            return false;
         // First, try intended direction
         if (rc.canMove(dir) && rc.senseNearbyBullets(here.add(dir), myType.bodyRadius).length == 0 ) {
             rc.move(dir);
@@ -117,6 +118,7 @@ public class Util extends Globals {
 
     // circle strafes around a certain location at a particular radius. Direction can be switched by passing -1 or 1 to current direction
     // returns false if circle strafe failed because we ran into a wall.
+    // direction should be clockwise or counter-clockwise... hmm
     public static boolean CircleStrafe(MapLocation locationToCircle, int clearingRadius, int currentDirection) throws GameActionException{
         // figure out which direction we are going, then early-out if it's off the map
         if ( here == locationToCircle ) // we're just starting out. get some distance.
@@ -131,24 +133,46 @@ public class Util extends Globals {
 
         // check if our radius is ok. and adjust if not.
         float currentRadius = Math.abs(here.distanceTo(locationToCircle));
-        if ((currentRadius - clearingRadius) > myType.strideRadius/2)
+        if ((currentRadius - clearingRadius) > myType.strideRadius)
         {
-            tryMove(here.directionTo(locationToCircle), 40, 3);
+            System.out.println("Circle Strafe: Radius is too big. Fixing.");
+            tryMove(tangent.rotateLeftDegrees (20 * -currentDirection), 40, 3);
+            //tryMove(here.directionTo(locationToCircle), 40, 3);
             return true;
         }
-        else if ((currentRadius - clearingRadius) < myType.strideRadius/2)
+        else if ((currentRadius - clearingRadius) < myType.strideRadius)
         {
-            tryMove(locationToCircle.directionTo(here), 40, 3);
+            System.out.println("Circle Strafe: Radius is too small. Fixing.");
+            tryMove(tangent.rotateLeftDegrees (20 * currentDirection), 40, 3);
+           // tryMove(locationToCircle.directionTo(here), 40, 3);
             return true;
         }
 
+        System.out.println("Circle Strafe: Radius is good. Strafing");
         // kk.. Actually circle-strafe
         tryMove(tangent, 40, 3);
         return true;
     }
 
+    public static void AvoidBullets() throws GameActionException {
+        BulletInfo [] bullets = rc.senseNearbyBullets();
+        for (BulletInfo bullet : bullets)
+        {
+            if (Util.willCollideWithMe(bullet))
+            {
+                Util.tryMove(bullet.getDir(), -90, 3);
+                break;
+            }
+        }
+    }
+
     public static MapLocation getEnemyLoc()
     {
         return enemyLoc;
+    }
+
+    public static void setEnemyLoc(MapLocation loc)
+    {
+        enemyLoc = loc;
     }
 }

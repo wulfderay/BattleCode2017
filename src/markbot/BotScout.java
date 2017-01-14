@@ -45,7 +45,7 @@ public class BotScout extends Globals {
 
         PopulateBestNextTree();
 
-        AvoidBullets();
+        Util.AvoidBullets();
 
         AttackNearbyGardenersAndArchons();
 
@@ -54,24 +54,28 @@ public class BotScout extends Globals {
         CleanUpTreeList();
 
         Explore();
+
+        AttackOfOpportunity();
 	}
 
-    private static void AvoidBullets() throws GameActionException {
-	    BulletInfo [] bullets = rc.senseNearbyBullets();
-	    for (BulletInfo bullet : bullets)
-        {
-            if (Util.willCollideWithMe(bullet))
-            {
-                Util.tryMove(bullet.getDir(), -90, 3);
-                break;
+    private static void AttackOfOpportunity() throws GameActionException {
+        RobotInfo[] robots = rc.senseNearbyRobots(-1, them);
+
+        // If there are some...
+        if (robots.length > 0) {
+            // And we have enough bullets, and haven't attacked yet this turn...
+            if (rc.canFireSingleShot()) {
+                // ...Then fire a bullet in the direction of the enemy.
+                rc.fireSingleShot(rc.getLocation().directionTo(robots[0].location));
             }
         }
     }
 
+
     private static void Explore() throws GameActionException {
 	     if (rc.hasMoved())
             return;
-	     Util.tryMove(here.directionTo(Util.getEnemyLoc()));
+	     Util.tryMove(here.directionTo(Util.getEnemyLoc())); // maybe change this to circle-strafe?
 	     /*
 	     - move towards enemy broadcasts
  - move towards enemy start location
@@ -116,7 +120,7 @@ public class BotScout extends Globals {
     }
 
     private static void AttackNearbyGardenersAndArchons() throws GameActionException {
-        RobotInfo[] enemies = rc.senseNearbyRobots(RobotType.SCOUT.sensorRadius , them);
+        RobotInfo[] enemies = rc.senseNearbyRobots(-1 , them);
         RobotInfo mostHated = null;
         for (RobotInfo robot : enemies)
         {

@@ -7,7 +7,7 @@ public class BotGardener extends Globals {
     static int scoutsBuilt = 0;
     static int lumberjacksbuilt = 0;
 	public static void loop() throws GameActionException {
-        System.out.println("I'm an archon!");
+        System.out.println("I'm a gardener!");
 
         // The code you want your robot to perform every round should be in this loop
         while (true) {
@@ -22,13 +22,13 @@ public class BotGardener extends Globals {
             	turn();
 
             } catch (Exception e) {
-                System.out.println("Archon Exception");
+                System.out.println("gardener Exception");
                 e.printStackTrace();
             }
 
             //Test that we completed within bytecode limit
             if (rc.getRoundNum() != roundNum) {
-            	System.out.println("Archon over bytecode limit");
+            	System.out.println("gardener over bytecode limit");
             }
             
             // Clock.yield() makes the robot wait until the next turn, then it will perform this loop again
@@ -47,15 +47,15 @@ public class BotGardener extends Globals {
         Direction dir = Util.randomDirection();
 
 
-        if (rc.canBuildRobot(RobotType.LUMBERJACK, dir)) {//&& lumberjacksbuilt < rc.getRoundNum()/25) {
+        if (rc.canBuildRobot(RobotType.LUMBERJACK, dir) && lumberjacksbuilt < rc.getRoundNum()/25) {
             rc.buildRobot(RobotType.LUMBERJACK, dir);
             lumberjacksbuilt ++;
         }
         // Randomly attempt to build a soldier or lumberjack in this direction
-       /* if (rc.canBuildRobot(RobotType.SCOUT, dir) && scoutsBuilt < rc.getRoundNum()/19 ) {
+        if (rc.canBuildRobot(RobotType.SCOUT, dir) && scoutsBuilt < rc.getRoundNum()/19 ) {
             rc.buildRobot(RobotType.SCOUT, dir);
             scoutsBuilt ++;
-        }*/
+        }
 
 
         // Move randomly
