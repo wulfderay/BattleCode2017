@@ -10,7 +10,8 @@ public class BotLumberjack extends Globals {
     public static TreeInfo mostHatedTree = null;
 	public static void loop() throws GameActionException {
         System.out.println("I'm an archon!");
-
+        if (whereIwasBorn == null)
+            whereIwasBorn = here;
         // The code you want your robot to perform every round should be in this loop
         while (true) {
 
@@ -45,10 +46,10 @@ public class BotLumberjack extends Globals {
 
 	    AttackofOpportunity();
 
-	    if (Util.isEarlyGame() )
+	   // if (Util.isEarlyGame() )
             clearForest();
-        else
-            murderArchonsAndGardeners();
+      //  else
+       //     murderArchonsAndGardeners();
 	}
 
     private static void AvoidBullets() {
@@ -60,6 +61,8 @@ public class BotLumberjack extends Globals {
     }
 
     private static void clearForest() throws GameActionException {
+
+
 
         // and remember it so I can kill it next turn.
         // else, circlestrafe from my position at the correct radius in the current direction.
@@ -76,7 +79,16 @@ public class BotLumberjack extends Globals {
             mostHatedTree = null;
         }
 
-        Util.CircleStrafe(whereIwasBorn, clearingRadius, currentDirection);
+        if ( whereIwasBorn == null)
+        {
+            System.out.println("WhereIwasBornIsNull!");
+        }
+        else
+            System.out.println("WhereIwasBorn is not null!!");
+        if (!Util.CircleStrafe(whereIwasBorn, clearingRadius, currentDirection)) {
+            currentDirection *= -1;
+            clearingRadius+=myType.strideRadius;
+        }
 
         if (mostHatedTree == null)
         {
@@ -96,13 +108,20 @@ public class BotLumberjack extends Globals {
 
     private static TreeInfo getMostHatedTree(Team team)
     {
+        TreeInfo hated = null;
+        // Not sure this is working... I think that it's fixating on any old tree, but it should be the nearest one so it doensn't get stuck
         MapLocation where = whereIwasBorn.add(whereIwasBorn.directionTo(here), clearingRadius);
         for (TreeInfo tree: rc.senseNearbyTrees(where, myType.strideRadius, team) )
         {
-            return tree;
+            if (hated == null || here.distanceTo(tree.getLocation()) < here.distanceTo(hated.getLocation()))
+            {
+                hated = tree;
+            }
+
         }
-        return null;
+        return hated;
     }
+
     public void oldBehavior() throws GameActionException {
         // See if there are any enemy robots within striking range (distance 1 from lumberjack's radius)
         RobotInfo[] robots = rc.senseNearbyRobots(RobotType.LUMBERJACK.bodyRadius+GameConstants.LUMBERJACK_STRIKE_RADIUS, them);

@@ -5,6 +5,7 @@ import battlecode.common.*;
 public class BotGardener extends Globals {
 
     static int scoutsBuilt = 0;
+    static int lumberjacksbuilt = 0;
 	public static void loop() throws GameActionException {
         System.out.println("I'm an archon!");
 
@@ -46,11 +47,16 @@ public class BotGardener extends Globals {
         Direction dir = Util.randomDirection();
 
 
+        if (rc.canBuildRobot(RobotType.LUMBERJACK, dir) && lumberjacksbuilt < rc.getRoundNum()/25) {
+            rc.buildRobot(RobotType.LUMBERJACK, dir);
+            lumberjacksbuilt ++;
+        }
         // Randomly attempt to build a soldier or lumberjack in this direction
-        if (rc.canBuildRobot(RobotType.SCOUT, dir) && scoutsBuilt < rc.getRoundNum()/19) {
+        if (rc.canBuildRobot(RobotType.SCOUT, dir) && scoutsBuilt < rc.getRoundNum()/19 ) {
             rc.buildRobot(RobotType.SCOUT, dir);
             scoutsBuilt ++;
         }
+
 
         // Move randomly
         Util.tryMove(Util.randomDirection());

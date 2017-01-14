@@ -114,7 +114,30 @@ public class Util extends Globals {
 
     // circle strafes around a certain location at a particular radius. Direction can be switched by passing -1 or 1 to current direction
     // returns false if circle strafe failed because we ran into a wall.
-    public static bool CircleStrafe(MapLocation locationToCircle, int clearingRadius, int currentDirection) {
+    public static boolean CircleStrafe(MapLocation locationToCircle, int clearingRadius, int currentDirection) throws GameActionException{
+        // figure out which direction we are going, then early-out if it's off the map
+        Direction tangent = here.
+                directionTo(locationToCircle).
+                rotateLeftDegrees(
+                        90 * currentDirection);
+        if (!rc.onTheMap(here.add(tangent, myType.strideRadius)))
+            return false;
 
+        // check if our radius is ok. and adjust if not.
+        float currentRadius = Math.abs(here.distanceTo(locationToCircle));
+        if ((currentRadius - clearingRadius) > myType.strideRadius/2)
+        {
+            tryMove(here.directionTo(locationToCircle), 40, 3);
+            return true;
+        }
+        else if ((currentRadius - clearingRadius) < myType.strideRadius/2)
+        {
+            tryMove(locationToCircle.directionTo(here), 40, 3);
+            return true;
+        }
+
+        // kk.. Actually circle-strafe
+        tryMove(tangent, 40, 3);
+        return true;
     }
 }
