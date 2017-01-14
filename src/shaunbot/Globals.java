@@ -25,5 +25,5 @@ public class Globals {
 		here = rc.getLocation();
 		roundNum = rc.getRoundNum();		
 	}
-	
+
 }

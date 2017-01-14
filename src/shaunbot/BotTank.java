@@ -2,8 +2,8 @@ package shaunbot;
 
 import battlecode.common.*;
 
-public class BotSoldier extends Globals {
-
+public class BotTank extends Globals {
+	
 	public static void loop() throws GameActionException {
         System.out.println("I'm a "+rc.getType().toString());
 
@@ -34,7 +34,7 @@ public class BotSoldier extends Globals {
 
         }			
 	}
-	
+
 	public static void turn() throws GameActionException {
         //Scan
 		//Head towards enemy archon
@@ -74,21 +74,22 @@ public class BotSoldier extends Globals {
         }
         
         // Sense what I'm up against:
-        //here.directionTo(location)
+        //If it's a tree, MOVE TO IT!  WOO BULLDOZE
         MapLocation oneMoveLocation = here.add(dir, rc.getType().bodyRadius + rc.getType().strideRadius);
-        RobotInfo obstacleRobot = rc.senseRobotAtLocation(oneMoveLocation);
         TreeInfo obstacleTree = rc.senseTreeAtLocation(oneMoveLocation);
+        if ( obstacleTree != null )
+        {
+        	rc.move(dir);
+        	return true;
+        }
+        //Otherwise:
+        RobotInfo obstacleRobot = rc.senseRobotAtLocation(oneMoveLocation);
         MapLocation obstacleLocation = oneMoveLocation;
         float obstacleRadius = 1;
         if ( obstacleRobot != null )
         {
         	obstacleLocation = obstacleRobot.getLocation();
         	obstacleRadius = obstacleRobot.getRadius();
-        }
-        if ( obstacleTree != null )
-        {
-        	obstacleLocation = obstacleTree.getLocation();
-        	obstacleRadius = obstacleTree.getRadius();
         }
         Direction obstacleToEdge = obstacleLocation.directionTo(here);
         MapLocation obstacleEdge = obstacleLocation.add(obstacleLocation.directionTo(here), obstacleRadius);

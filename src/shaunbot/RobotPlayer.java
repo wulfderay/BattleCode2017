@@ -4,7 +4,8 @@ import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 import shaunbot.RobotPlayer;
 import template.BotScout;
-import template.BotTank;
+import shaunbot.BotTank;
+import shaunbot.BotSoldier;
 
 public strictfp class RobotPlayer extends Globals{
 
