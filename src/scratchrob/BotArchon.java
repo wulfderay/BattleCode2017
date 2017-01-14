@@ -43,7 +43,7 @@ public class BotArchon extends Globals{
 
             // Randomly attempt to build a gardener in this direction
             if (rc.canHireGardener(dir)) {
-            	if (rc.getTreeCount() == 0) {
+            	if (rc.getTreeCount() == 0 ) {
             		rc.hireGardener(dir);
             		gardenersHired++;
             	} else if (rc.getTreeCount() > gardenersHired * 5) {
@@ -62,7 +62,7 @@ public class BotArchon extends Globals{
             // Move randomly
             Util.tryMove(Util.randomDirection());
 
-            // Broadcast archon's location for other robots on the team to know
+            // Broadcast archon's location for other robots on the team to know  // but why? they already know via initial arcon
             MapLocation myLocation = rc.getLocation();
             rc.broadcast(0,(int)myLocation.x);
             rc.broadcast(1,(int)myLocation.y);

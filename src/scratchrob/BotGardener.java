@@ -5,7 +5,7 @@ import battlecode.common.*;
 public class BotGardener extends Globals {
 
 	public static int treesPlanted = 0;
-	public static RobotType[] buildOrder = new RobotType[] {RobotType.SCOUT, RobotType.SOLDIER, RobotType.SOLDIER, RobotType.LUMBERJACK, RobotType.SOLDIER, RobotType.SOLDIER};
+	public static RobotType[] buildOrder = new RobotType[] {RobotType.SCOUT, RobotType.SOLDIER, RobotType.LUMBERJACK, RobotType.SOLDIER, RobotType.SOLDIER, RobotType.SCOUT};
 	public static int buildIndex = 0;
 	public static Boolean builtGrove = false;
 	public static Direction spawnLocation = null;
