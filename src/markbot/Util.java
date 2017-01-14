@@ -3,6 +3,9 @@ package markbot;
 import battlecode.common.*;
 
 public class Util extends Globals {
+
+    static MapLocation enemyLoc = rc.getInitialArchonLocations(them)[(int)(Math.random() * rc.getInitialArchonLocations(them).length)];
+
     /**
      * Returns a random Direction
      * @return a random Direction
@@ -116,10 +119,13 @@ public class Util extends Globals {
     // returns false if circle strafe failed because we ran into a wall.
     public static boolean CircleStrafe(MapLocation locationToCircle, int clearingRadius, int currentDirection) throws GameActionException{
         // figure out which direction we are going, then early-out if it's off the map
-        Direction tangent = here.
-                directionTo(locationToCircle).
-                rotateLeftDegrees(
-                        90 * currentDirection);
+        if ( here == locationToCircle ) // we're just starting out. get some distance.
+        {
+            Util.tryMove(here.directionTo(Util.getEnemyLoc()));
+            return true;
+        }
+
+        Direction tangent =here.directionTo(locationToCircle).rotateLeftDegrees(90 * currentDirection);
         if (!rc.onTheMap(here.add(tangent, myType.strideRadius)))
             return false;
 
@@ -139,5 +145,10 @@ public class Util extends Globals {
         // kk.. Actually circle-strafe
         tryMove(tangent, 40, 3);
         return true;
+    }
+
+    public static MapLocation getEnemyLoc()
+    {
+        return enemyLoc;
     }
 }

@@ -44,7 +44,7 @@ public class BotArchon extends Globals {
             Direction dir = Util.randomDirection();
 
             // Randomly attempt to build a gardener in this direction
-            if (rc.canHireGardener(dir) && gardnersBuilt < rc.getRoundNum()/17 ) {
+            if (rc.canHireGardener(dir) && gardnersBuilt < rc.getRoundNum()/25 ) {
                 rc.hireGardener(dir);
                 gardnersBuilt ++;
             }

@@ -9,9 +9,7 @@ public class BotLumberjack extends Globals {
     public static int clearingRadius = 5; // totally arbitrary
     public static TreeInfo mostHatedTree = null;
 	public static void loop() throws GameActionException {
-        System.out.println("I'm an archon!");
-        if (whereIwasBorn == null)
-            whereIwasBorn = here;
+        System.out.println("I'm a Lumberjack and I'm ok. I chop all night and strike all day!");
         // The code you want your robot to perform every round should be in this loop
         while (true) {
 
@@ -25,13 +23,13 @@ public class BotLumberjack extends Globals {
             	turn();
 
             } catch (Exception e) {
-                System.out.println("Archon Exception");
+                System.out.println("Lumberjack Exception");
                 e.printStackTrace();
             }
 
             //Test that we completed within bytecode limit
             if (rc.getRoundNum() != roundNum) {
-            	System.out.println("Archon over bytecode limit");
+            	System.out.println("Lumberjack over bytecode limit");
             }
             
             // Clock.yield() makes the robot wait until the next turn, then it will perform this loop again
@@ -61,9 +59,6 @@ public class BotLumberjack extends Globals {
     }
 
     private static void clearForest() throws GameActionException {
-
-
-
         // and remember it so I can kill it next turn.
         // else, circlestrafe from my position at the correct radius in the current direction.
         // if I hit a wall, change direction and increase the radius
@@ -79,12 +74,6 @@ public class BotLumberjack extends Globals {
             mostHatedTree = null;
         }
 
-        if ( whereIwasBorn == null)
-        {
-            System.out.println("WhereIwasBornIsNull!");
-        }
-        else
-            System.out.println("WhereIwasBorn is not null!!");
         if (!Util.CircleStrafe(whereIwasBorn, clearingRadius, currentDirection)) {
             currentDirection *= -1;
             clearingRadius+=myType.strideRadius;

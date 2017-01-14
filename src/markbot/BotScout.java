@@ -7,7 +7,6 @@ import java.util.Map;
 
 public class BotScout extends Globals {
 
-    static MapLocation enemyLoc = rc.getInitialArchonLocations(them)[(int)(Math.random() * rc.getInitialArchonLocations(them).length)];
     static TreeInfo nearestUnvisitedTree = null;
     static Map<Integer,TreeVisit> Trees = new HashMap<>();
     static float Treedensity = 1 ; // used for adjusting the sense distance to use less bytecode.
@@ -72,7 +71,7 @@ public class BotScout extends Globals {
     private static void Explore() throws GameActionException {
 	     if (rc.hasMoved())
             return;
-	     Util.tryMove(here.directionTo(enemyLoc));
+	     Util.tryMove(here.directionTo(Util.getEnemyLoc()));
 	     /*
 	     - move towards enemy broadcasts
  - move towards enemy start location
@@ -159,7 +158,8 @@ public class BotScout extends Globals {
                 rc.fireSingleShot(here.directionTo(mostHated.getLocation()));
             findCoverFrom(mostHated.getLocation());
         }
-        Util.tryMove(here.directionTo(mostHated.getLocation()), 150, 4);
+        if (rc.getMoveCount() < 1)
+            Util.tryMove(here.directionTo(mostHated.getLocation()), 150, 4);
     }
 
     private static void findCoverFrom(MapLocation from) throws GameActionException {
