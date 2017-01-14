@@ -172,6 +172,10 @@ public class BotGardener extends Globals {
 			return true;
 		}
 		
+		if (treesPlanted > 0 && rc.getTeamBullets() < 120) {
+			return true;
+		}
+		
 		if (rc.canPlantTree(dir)) {
 			rc.plantTree(dir);
 			treesPlanted++;

@@ -9,6 +9,7 @@ public class BotScout extends Globals {
 
     static TreeInfo nearestUnvisitedTree = null;
     static Map<Integer,TreeVisit> Trees = new HashMap<>();
+    static float Treedensity = 1 ; // used for adjusting the sense distance to use less bytecode.
 	public static void loop() throws GameActionException {
         System.out.println("I'm a scout!");
 
@@ -44,6 +45,8 @@ public class BotScout extends Globals {
 
         PopulateBestNextTree();
 
+        Util.AvoidBullets();
+
         AttackNearbyGardenersAndArchons();
 
         TreeHop();
@@ -51,10 +54,33 @@ public class BotScout extends Globals {
         CleanUpTreeList();
 
         Explore();
+
+        AttackOfOpportunity();
 	}
 
-    private static void Explore() {
-	    //  if (!rc.hasMoved())
+    private static void AttackOfOpportunity() throws GameActionException {
+        RobotInfo[] robots = rc.senseNearbyRobots(-1, them);
+
+        // If there are some...
+        if (robots.length > 0) {
+            // And we have enough bullets, and haven't attacked yet this turn...
+            if (rc.canFireSingleShot()) {
+                // ...Then fire a bullet in the direction of the enemy.
+                rc.fireSingleShot(rc.getLocation().directionTo(robots[0].location));
+            }
+        }
+    }
+
+
+    private static void Explore() throws GameActionException {
+	     if (rc.hasMoved())
+            return;
+	     Util.tryMove(here.directionTo(Util.getEnemyLoc())); // maybe change this to circle-strafe?
+	     /*
+	     - move towards enemy broadcasts
+ - move towards enemy start location
+ - move randomly
+	      */
     }
 
     private static void CleanUpTreeList() {
@@ -65,9 +91,9 @@ public class BotScout extends Globals {
             }
         }*/
 
-        if ( nearestUnvisitedTree != null && nearestUnvisitedTree.getLocation().isWithinDistance(here, 0.2f))
+        if ( shouldReplaceNextTree() && nearestUnvisitedTree != null)
         {
-            if (!rc.canSenseTree(nearestUnvisitedTree.getID())) // tree has been cut down! oh no!
+            if ( !rc.canSenseTree(nearestUnvisitedTree.getID())) // tree has been cut down! oh no!
             {
                 Trees.remove(nearestUnvisitedTree.getID());
             }
@@ -76,41 +102,108 @@ public class BotScout extends Globals {
     }
 
     private static void TreeHop() throws GameActionException  {
+	    if (nearestUnvisitedTree == null)
+	        return;
+
         if (!rc.hasMoved() && nearestUnvisitedTree != null && rc.canMove(nearestUnvisitedTree.getLocation()))
             rc.move(nearestUnvisitedTree.getLocation());
+        if (rc.canShake() && rc.canInteractWithTree(nearestUnvisitedTree.getID())) {
+
+            if (nearestUnvisitedTree.getContainedBullets() > 0) {
+                rc.shake(nearestUnvisitedTree.getID());
+                System.out.println("Shaking tree");
+                rc.setIndicatorDot(nearestUnvisitedTree.getLocation(), (int)(Math.random()* 255), (int)(Math.random()* 255), (int)(Math.random()* 255));
+            }
+
+            Trees.get(nearestUnvisitedTree.getID()).haveVisited = true;
+        }
     }
 
-    private static void AttackNearbyGardenersAndArchons() {
+    private static void AttackNearbyGardenersAndArchons() throws GameActionException {
+        RobotInfo[] enemies = rc.senseNearbyRobots(-1 , them);
+        RobotInfo mostHated = null;
+        for (RobotInfo robot : enemies)
+        {
+
+            if (robot.getType() == RobotType.GARDENER)
+            {
+                if (mostHated == null || mostHated.getType() != RobotType.GARDENER || robot.getHealth() < mostHated.getHealth())
+                    mostHated = robot;
+            }
+            if (robot.getType() == RobotType.ARCHON)
+            {
+                if (mostHated == null || (mostHated.getType() != RobotType.GARDENER && robot.getHealth() < mostHated.getHealth()))
+                    mostHated = robot;
+            }
+        }
+        if (mostHated == null) return;
+
+
+        BobandWeave(mostHated);
+
+        if (rc.getAttackCount() < 1 && rc.getTeamBullets() >1)
+            rc.fireSingleShot(here.directionTo(mostHated.getLocation()));
+    }
+
+    private static void BobandWeave(RobotInfo mostHated) throws GameActionException {
+	    // if in a tree, come out of it and shoot.
+        // if out of a tree, shoot, then try to find cover or move
+        if (rc.isLocationOccupiedByTree(here))
+        {
+            if (rc.getMoveCount() < 1)
+                Util.tryMove(here.directionTo(mostHated.getLocation()),0, 4);
+            if ( rc.getAttackCount() < 1 && rc.getTeamBullets() >1 && rc.isLocationOccupiedByTree(here))
+                rc.fireSingleShot(here.directionTo(mostHated.getLocation()));
+        }
+        else
+        {
+
+            if ( rc.getAttackCount() < 1 && rc.getTeamBullets() >1 && rc.isLocationOccupiedByTree(here))
+                rc.fireSingleShot(here.directionTo(mostHated.getLocation()));
+            findCoverFrom(mostHated.getLocation());
+        }
+        if (rc.getMoveCount() < 1)
+            Util.tryMove(here.directionTo(mostHated.getLocation()), 150, 4);
+    }
+
+    private static void findCoverFrom(MapLocation from) throws GameActionException {
+        if (rc.getMoveCount() > 0) return;
+	    TreeInfo[] covertrees = rc.senseNearbyTrees(RobotType.SCOUT.strideRadius);
+	    if (covertrees.length > 0)
+	        rc.move(covertrees[0].getLocation());
+	    else
+            Util.tryMove(here.directionTo(from),0, 4);
 
     }
 
 
     private static void PopulateBestNextTree() throws GameActionException {
-        for (TreeInfo tree : rc.senseNearbyTrees(RobotType.SCOUT.sensorRadius/2)) {
+	    // if we haven't visited the nearest tree picked in an earlier round, don't replace it
+
+        for (TreeInfo tree : rc.senseNearbyTrees(RobotType.SCOUT.sensorRadius/Treedensity)) {
             if (Clock.getBytecodesLeft() < RobotType.SCOUT.bytecodeLimit / 2) // don't waste too many bytecodes.
+            {
+                Treedensity+=0.5;
                 break;
+            }
             Trees.putIfAbsent(tree.getID(), new TreeVisit(tree, false));
 
-            if (!Trees.get(tree.getID()).haveVisited) {
+            if (shouldReplaceNextTree() && !Trees.get(tree.getID()).haveVisited) {
                 if (nearestUnvisitedTree == null || TreeIsNearerEnemyTree(tree) || TreeHasMoreBulletsOrIsCloser(tree))
                     nearestUnvisitedTree = tree;
             }
 
-
-            if (rc.canShake() && rc.canInteractWithTree(tree.getID())) {
-
-                if (tree.getContainedBullets() > 0) {
-                    rc.shake(tree.getID());
-                    System.out.println("Shaking tree");
-                    rc.setIndicatorDot(tree.getLocation(), (int)(Math.random()* 255), (int)(Math.random()* 255), (int)(Math.random()* 255));
-                }
-
-                Trees.get(tree.getID()).haveVisited = true; // if we've shaken it, our job is done.
-            }
-
+        }
+        if (Clock.getBytecodesLeft() >= RobotType.SCOUT.bytecodeLimit / 2)
+        {
+            Treedensity = Math.max(Treedensity/=2,1);
         }
     }
 
+    private static boolean shouldReplaceNextTree()
+    {
+        return (nearestUnvisitedTree == null || Trees.get(nearestUnvisitedTree.getID()).haveVisited);
+    }
     private static boolean TreeHasMoreBulletsOrIsCloser(TreeInfo tree) {
 	    return (tree.getTeam() == nearestUnvisitedTree.getTeam() &&
                 (tree.getContainedBullets() > nearestUnvisitedTree.getContainedBullets() ||
