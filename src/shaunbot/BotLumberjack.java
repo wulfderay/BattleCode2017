@@ -5,7 +5,7 @@ import battlecode.common.*;
 public class BotLumberjack extends Globals {
 
 	public static void loop() throws GameActionException {
-        System.out.println("I'm a lumberjack and I'm OK!");
+        System.out.println("I'm a "+rc.getType().toString());
 
         // The code you want your robot to perform every round should be in this loop
         while (true) {
@@ -20,13 +20,13 @@ public class BotLumberjack extends Globals {
             	turn();
 
             } catch (Exception e) {
-                System.out.println("Archon Exception");
+                System.out.println(rc.getType().toString()+" Exception");
                 e.printStackTrace();
             }
 
             //Test that we completed within bytecode limit
             if (rc.getRoundNum() != roundNum) {
-            	System.out.println("Archon over bytecode limit");
+            	System.out.println(rc.getType().toString()+" over bytecode limit");
             }
             
             // Clock.yield() makes the robot wait until the next turn, then it will perform this loop again

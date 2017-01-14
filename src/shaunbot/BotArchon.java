@@ -56,21 +56,22 @@ public class BotArchon extends Globals{
             rc.broadcast(0,(int)myLocation.x);
             rc.broadcast(1,(int)myLocation.y);
             
-            Util.BroadcastBuffer_PrepareToUse();
+            Broadcast.BroadcastBuffer_PrepareToUse();
             
             System.out.println("------------------------------------------");
-            System.out.println("Archon "+rc.getID()+" Reading from buffer: end index:"+Util.BroadcastBuffer_EndIndex);
-            while ( Util.BroadcastBuffer_ContainsData() )
+            System.out.println("Archon "+rc.getID()+" Reading from buffer: end index:"+Broadcast.BroadcastBuffer_EndIndex);
+            System.out.println("Max broadcast channel:"+GameConstants.BROADCAST_MAX_CHANNELS);
+            while ( Broadcast.BroadcastBuffer_ContainsData() )
             {
-            	System.out.println(Util.BroadcastBuffer_StartIndex + "->" + Util.BroadcastBuffer_ReadNext());
+            	System.out.println(Broadcast.BroadcastBuffer_StartIndex + "->" + Broadcast.BroadcastBuffer_ReadNext());
             }
             
             System.out.println("Archon "+rc.getID()+" broadcasting position!");
             
-            Util.BroadcastBuffer_Send(rc.getID());
-            Util.BroadcastBuffer_Send((int)myLocation.x);
-            Util.BroadcastBuffer_Send((int)myLocation.y);
-            Util.BroadcastBuffer_Finalize();
+            Broadcast.BroadcastBuffer_Send(rc.getID());
+            Broadcast.BroadcastBuffer_Send((int)myLocation.x);
+            Broadcast.BroadcastBuffer_Send((int)myLocation.y);
+            Broadcast.BroadcastBuffer_Finalize();
             
             //BroadcastPosition(myLocation, rc.getType());
             
