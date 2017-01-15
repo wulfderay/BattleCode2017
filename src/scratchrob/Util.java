@@ -40,7 +40,7 @@ public class Util extends Globals {
             return false;
         // First, try intended direction
         if (rc.canMove(dir) && rc.senseNearbyBullets(here.add(dir), myType.bodyRadius).length == 0 ) {
-            rc.move(dir);
+            doMove(dir);
             here = rc.getLocation();
             return true;
         }
@@ -51,14 +51,14 @@ public class Util extends Globals {
         while(currentCheck<=checksPerSide) {
             // Try the offset of the left side
             if(rc.canMove(dir.rotateLeftDegrees(degreeOffset*currentCheck)) && rc.senseNearbyBullets(here.add(dir), myType.bodyRadius).length == 0  && notNearALumberJack(here.add(dir))) {
-                rc.move(dir.rotateLeftDegrees(degreeOffset*currentCheck));
+                doMove(dir.rotateLeftDegrees(degreeOffset*currentCheck));
                 here = rc.getLocation(); //here.add(dir.rotateLeftDegrees(degreeOffset*currentCheck),rc.getType().strideRadius);
                 hasMoved = true;
                 return true;
             }
             // Try the offset on the right side
             if(rc.canMove(dir.rotateRightDegrees(degreeOffset*currentCheck)) && rc.senseNearbyBullets(here.add(dir), myType.bodyRadius).length == 0 ) {
-                rc.move(dir.rotateRightDegrees(degreeOffset*currentCheck));
+                doMove(dir.rotateRightDegrees(degreeOffset*currentCheck));
                 here = rc.getLocation(); //here.add(dir.rotateRightDegrees(degreeOffset*currentCheck),rc.getType().strideRadius);
                 hasMoved = true;
                 return true;
@@ -179,6 +179,60 @@ public class Util extends Globals {
                 break;
             }
         }
+    }
+
+    public static Boolean doMove(Direction dir) {
+        try {
+            rc.move(dir);
+            rc.setIndicatorLine(here, here.add(dir, rc.getType().strideRadius), 0, 255, 0);
+            here = rc.getLocation();
+        } catch (GameActionException e) {
+            System.out.println("Failed to move"+dir);
+            return false;
+        }
+        return true;
+    }
+
+    public static Boolean doMove(Direction dir, float length) {
+        try {
+            rc.move(dir, length);
+            MapLocation temp = here;
+            here = rc.getLocation();
+            rc.setIndicatorLine(here, temp, 0, 255, 0);
+        } catch (GameActionException e) {
+            System.out.println("Failed to move"+dir);
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean doMove(MapLocation target, boolean strict) {
+        try {
+            if (strict && here.distanceTo(target) > rc.getType().strideRadius) {
+                return false;
+            }
+            rc.move(target);
+            MapLocation temp = here;
+            here = rc.getLocation();
+            rc.setIndicatorLine(here, temp, 0, 255, 0);
+        } catch (GameActionException e) {
+            System.out.println("Failed to move to "+target);
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean doMove(MapLocation target) {
+        try {
+            rc.move(target);
+            MapLocation temp = here;
+            here = rc.getLocation();
+            rc.setIndicatorLine(here, temp, 0, 255, 0);
+        } catch (GameActionException e) {
+            System.out.println("Failed to move to "+target);
+            return false;
+        }
+        return true;
     }
 
     public static MapLocation getEnemyLoc()

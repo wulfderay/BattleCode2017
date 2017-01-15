@@ -104,8 +104,9 @@ public class BotScout extends Globals {
 
         if (!rc.hasMoved() && nearestUnvisitedTree != null && rc.canMove(nearestUnvisitedTree.getLocation()))
         {
-            rc.move(nearestUnvisitedTree.getLocation());
-            here = rc.getLocation();
+            if (!Util.doMove(nearestUnvisitedTree.getLocation(), true)) {
+                Util.tryMove(here.directionTo(nearestUnvisitedTree.getLocation()));
+            }
         }
         if (rc.canShake() && rc.canInteractWithTree(nearestUnvisitedTree.getID())) {
 
