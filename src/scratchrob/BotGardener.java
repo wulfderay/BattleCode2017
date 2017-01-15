@@ -10,6 +10,8 @@ public class BotGardener extends Globals {
 	public static Boolean builtGrove = false;
 	public static Direction spawnLocation = null;
 	
+	public static Boolean seenScout = false;
+	
 	public static RobotInfo[] nearbyBots;
 	public static TreeInfo[] nearbyTrees;
 	
@@ -37,7 +39,7 @@ public class BotGardener extends Globals {
 
             //Test that we completed within bytecode limit
             if (rc.getRoundNum() != roundNum) {
-            	System.out.println("Archon over bytecode limit");
+            	System.out.println("Gardener over bytecode limit");
             }
             
             // Clock.yield() makes the robot wait until the next turn, then it will perform this loop again
@@ -51,6 +53,17 @@ public class BotGardener extends Globals {
 		nearbyTrees = rc.senseNearbyTrees();
         
 		waterTrees();
+		
+		if (!seenScout) {
+			if (seeFriendlyScout()) {
+				System.out.println("Spotted a scout");
+				seenScout = true;
+			} else if (treesPlanted == 1) {
+				//try and build a scout
+				spawnBot(RobotType.SCOUT);
+				return;
+			}
+		}
 		
 		if (builtGrove) {
 			spawnBots();
@@ -83,18 +96,34 @@ public class BotGardener extends Globals {
 			return false;
 		}
 		
-		if (spawnLocation == null)
-		{
-			spawnLocation = towardsEnemySpawn().opposite();
-		}
+
 		
 		RobotType nextBot = buildOrder[buildIndex];
-		if (!rc.hasRobotBuildRequirements(nextBot) || rc.getBuildCooldownTurns() > 0) {
+		
+		if (spawnBot(nextBot)) {
+			buildIndex++;
+			if (buildIndex >= buildOrder.length) {
+				buildIndex = 0;
+			}
+			return true;
+		}
+		
+		return false;
+		
+	}
+	
+	public static Boolean spawnBot(RobotType bot) throws GameActionException {
+
+		if (!rc.hasRobotBuildRequirements(bot) || rc.getBuildCooldownTurns() > 0) {
 			return false;
 		}
 		
+		if (spawnLocation == null)
+		{
+			spawnLocation = towardsEnemySpawn().opposite();
+		}		
 		Boolean canSpawn = true;
-		if (!rc.canBuildRobot(nextBot, spawnLocation)) {
+		if (!rc.canBuildRobot(bot, spawnLocation)) {
 			System.out.println("SpawnLocation blocked - trying to find new location");
 			if (rc.senseNearbyRobots(here.add(spawnLocation),1,null).length > 0) {
 				System.out.println("Robot in the way. Waiting for it to move"+rc.senseNearbyRobots(here.add(spawnLocation),1,null)[0].ID);
@@ -103,7 +132,7 @@ public class BotGardener extends Globals {
 			//spawnLocation blocked. Find nearest spawnable location.
 			for (int i = 100; --i != 0;) { //bytecode efficient loop
 				spawnLocation = spawnLocation.rotateRightDegrees(7);
-				if (rc.canBuildRobot(nextBot, spawnLocation))
+				if (rc.canBuildRobot(bot, spawnLocation))
 				{
 					canSpawn = true;
 					System.out.println("Found new location after"+i+"iterations");
@@ -113,12 +142,8 @@ public class BotGardener extends Globals {
 		}
 		
 		if (canSpawn) {
-			rc.buildRobot(nextBot, spawnLocation);
-			System.out.println("Spawned a new "+nextBot);
-			buildIndex++;
-			if (buildIndex >= buildOrder.length) {
-				buildIndex = 0;
-			}
+			rc.buildRobot(bot, spawnLocation);
+			System.out.println("Spawned a new "+bot);
 			return true;
 		}
 		
@@ -172,7 +197,7 @@ public class BotGardener extends Globals {
 			return true;
 		}
 		
-		if (treesPlanted > 0 && rc.getTeamBullets() < 120) {
+		if (treesPlanted * 10 + 50 > rc.getTeamBullets()) {
 			return true;
 		}
 		
@@ -214,6 +239,15 @@ public class BotGardener extends Globals {
 			}
 		}
 		return closest;
+	}
+	
+	public static Boolean seeFriendlyScout() {
+		for (RobotInfo bot : nearbyBots) {
+			if (bot.type == RobotType.SCOUT && bot.team == us) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public static TreeInfo findNearestTree() {

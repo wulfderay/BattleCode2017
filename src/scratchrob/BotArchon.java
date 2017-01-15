@@ -2,7 +2,7 @@ package scratchrob;
 
 import battlecode.common.*;
 
-public class BotArchon extends Globals{
+public class BotArchon extends Globals {
 
 		public static int gardenersHired = 0;
 	
@@ -46,12 +46,12 @@ public class BotArchon extends Globals{
             	if (rc.getTreeCount() == 0 ) {
             		rc.hireGardener(dir);
             		gardenersHired++;
-            	} else if (rc.getTreeCount() > gardenersHired * 5) {
+            	} else if (100 + (rc.getTreeCount() * 5) > rc.getTeamBullets()) {
             		rc.hireGardener(dir);
             		gardenersHired++;            		
             	} else if (rc.getTreeCount() < 50 && rc.getTeamBullets() > 300) {
             		rc.hireGardener(dir);
-            		gardenersHired++;            		            		
+            		gardenersHired++;
             	}
             }
             

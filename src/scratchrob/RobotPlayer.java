@@ -2,9 +2,8 @@ package scratchrob;
 
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
-import scratchrob.RobotPlayer;
 
-public strictfp class RobotPlayer extends Globals{
+public strictfp class RobotPlayer extends Globals {
 
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.

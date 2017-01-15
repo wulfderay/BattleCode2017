@@ -46,14 +46,14 @@ public class BotScout extends Globals {
         PopulateBestNextTree();
 
         Util.AvoidBullets();
-
-        AttackNearbyGardenersAndArchons();
-
+        
         TreeHop();
 
         CleanUpTreeList();
 
         Explore();
+
+        AttackNearbyGardenersAndArchons();
 
         AttackOfOpportunity();
 	}
@@ -64,10 +64,7 @@ public class BotScout extends Globals {
         // If there are some...
         if (robots.length > 0) {
             // And we have enough bullets, and haven't attacked yet this turn...
-            if (rc.canFireSingleShot()) {
-                // ...Then fire a bullet in the direction of the enemy.
-                rc.fireSingleShot(rc.getLocation().directionTo(robots[0].location));
-            }
+            Util.tryShootTarget(robots[0].location);
         }
     }
 
@@ -106,7 +103,10 @@ public class BotScout extends Globals {
 	        return;
 
         if (!rc.hasMoved() && nearestUnvisitedTree != null && rc.canMove(nearestUnvisitedTree.getLocation()))
+        {
             rc.move(nearestUnvisitedTree.getLocation());
+            here = rc.getLocation();
+        }
         if (rc.canShake() && rc.canInteractWithTree(nearestUnvisitedTree.getID())) {
 
             if (nearestUnvisitedTree.getContainedBullets() > 0) {
@@ -142,7 +142,7 @@ public class BotScout extends Globals {
         BobandWeave(mostHated);
 
         if (rc.getAttackCount() < 1 && rc.getTeamBullets() >1)
-            rc.fireSingleShot(here.directionTo(mostHated.getLocation()));
+            Util.tryShootTarget(mostHated.getLocation());
     }
 
     private static void BobandWeave(RobotInfo mostHated) throws GameActionException {
@@ -153,13 +153,13 @@ public class BotScout extends Globals {
             if (rc.getMoveCount() < 1)
                 Util.tryMove(here.directionTo(mostHated.getLocation()),0, 4);
             if ( rc.getAttackCount() < 1 && rc.getTeamBullets() >1 && rc.isLocationOccupiedByTree(here))
-                rc.fireSingleShot(here.directionTo(mostHated.getLocation()));
+            	Util.tryShootTarget(mostHated.getLocation());
         }
         else
         {
 
             if ( rc.getAttackCount() < 1 && rc.getTeamBullets() >1 && rc.isLocationOccupiedByTree(here))
-                rc.fireSingleShot(here.directionTo(mostHated.getLocation()));
+            	Util.tryShootTarget(mostHated.getLocation());
             findCoverFrom(mostHated.getLocation());
         }
         if (rc.getMoveCount() < 1)
@@ -169,11 +169,12 @@ public class BotScout extends Globals {
     private static void findCoverFrom(MapLocation from) throws GameActionException {
         if (rc.getMoveCount() > 0) return;
 	    TreeInfo[] covertrees = rc.senseNearbyTrees(RobotType.SCOUT.strideRadius);
-	    if (covertrees.length > 0)
+	    if (covertrees.length > 0) {
 	        rc.move(covertrees[0].getLocation());
-	    else
+	        here = rc.getLocation();
+	    } else {
             Util.tryMove(here.directionTo(from),0, 4);
-
+	    }
     }
 
 

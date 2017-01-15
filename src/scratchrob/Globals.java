@@ -11,6 +11,7 @@ public class Globals {
 	public static int myID;
 	public static RobotType myType;
 	public static int roundNum;
+	public static Boolean hasMoved;
 	
 	public static void init(RobotController _RC) {
 		rc = _RC;
@@ -23,6 +24,7 @@ public class Globals {
 	
 	public static void turnUpdate() {
 		here = rc.getLocation();
+		hasMoved = false;
 		roundNum = rc.getRoundNum();		
 	}
 	

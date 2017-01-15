@@ -41,6 +41,7 @@ public class Util extends Globals {
         // First, try intended direction
         if (rc.canMove(dir) && rc.senseNearbyBullets(here.add(dir), myType.bodyRadius).length == 0 ) {
             rc.move(dir);
+            here = rc.getLocation();
             return true;
         }
 
@@ -51,11 +52,15 @@ public class Util extends Globals {
             // Try the offset of the left side
             if(rc.canMove(dir.rotateLeftDegrees(degreeOffset*currentCheck)) && rc.senseNearbyBullets(here.add(dir), myType.bodyRadius).length == 0  && notNearALumberJack(here.add(dir))) {
                 rc.move(dir.rotateLeftDegrees(degreeOffset*currentCheck));
+                here = rc.getLocation(); //here.add(dir.rotateLeftDegrees(degreeOffset*currentCheck),rc.getType().strideRadius);
+                hasMoved = true;
                 return true;
             }
             // Try the offset on the right side
             if(rc.canMove(dir.rotateRightDegrees(degreeOffset*currentCheck)) && rc.senseNearbyBullets(here.add(dir), myType.bodyRadius).length == 0 ) {
                 rc.move(dir.rotateRightDegrees(degreeOffset*currentCheck));
+                here = rc.getLocation(); //here.add(dir.rotateRightDegrees(degreeOffset*currentCheck),rc.getType().strideRadius);
+                hasMoved = true;
                 return true;
             }
             // No move performed, try slightly further
@@ -152,6 +157,16 @@ public class Util extends Globals {
         // kk.. Actually circle-strafe
         tryMove(tangent, 40, 3);
         return true;
+    }
+    
+    public static Boolean tryShootTarget(MapLocation target) throws GameActionException
+    {
+    	if (rc.canFireSingleShot()) {
+    		rc.fireSingleShot(here.directionTo(target));
+    		rc.setIndicatorLine(here, target, 255, 0, 0);
+    		return true;
+    	}
+    	return false;
     }
 
     public static void AvoidBullets() throws GameActionException {
