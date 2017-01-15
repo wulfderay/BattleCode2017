@@ -1,5 +1,7 @@
 package astarrynight;
 
+import Common.Globals;
+import Common.Util;
 import battlecode.common.*;
 
 public class BotLumberjack extends Globals {

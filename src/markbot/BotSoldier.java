@@ -3,7 +3,7 @@ package markbot;
 import battlecode.common.Clock;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotInfo;
-
+import Common.*;
 public class BotSoldier extends Globals {
 
 	public static void loop() throws GameActionException {

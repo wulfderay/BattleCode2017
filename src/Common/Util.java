@@ -1,4 +1,4 @@
-package astarrynight;
+package Common;
 
 import battlecode.common.*;
 
@@ -10,7 +10,7 @@ public class Util extends Globals {
      * Returns a random Direction
      * @return a random Direction
      */
-    static Direction randomDirection() {
+    public static Direction randomDirection() {
         return new Direction((float)Math.random() * 2 * (float)Math.PI);
     }
 
@@ -21,7 +21,7 @@ public class Util extends Globals {
      * @return true if a move was performed
      * @throws GameActionException
      */
-    static boolean tryMove(Direction dir) throws GameActionException {
+    public static boolean tryMove(Direction dir) throws GameActionException {
         return tryMove(dir,20,3);
     }
 
@@ -35,7 +35,7 @@ public class Util extends Globals {
      * @return true if a move was performed
      * @throws GameActionException
      */
-    static boolean tryMove(Direction dir, float degreeOffset, int checksPerSide) throws GameActionException {
+    public static boolean tryMove(Direction dir, float degreeOffset, int checksPerSide) throws GameActionException {
         if (rc.hasMoved())
             return false;
         // First, try intended direction
@@ -66,7 +66,7 @@ public class Util extends Globals {
         return false;
     }
 
-    private static boolean notNearALumberJack(MapLocation location) {
+    public static boolean notNearALumberJack(MapLocation location) {
         for (RobotInfo enemy : rc.senseNearbyRobots(location, 1, them))
         {
             if (enemy.getType() == RobotType.LUMBERJACK)
@@ -82,7 +82,7 @@ public class Util extends Globals {
      * @param bullet The bullet in question
      * @return True if the line of the bullet's path intersects with this robot's current position.
      */
-    static boolean willCollideWithMe(BulletInfo bullet) {
+    public static boolean willCollideWithMe(BulletInfo bullet) {
        return willCollideWithLocation(bullet, here, myType.bodyRadius);
     }
 

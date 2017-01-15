@@ -1,5 +1,6 @@
 package astarrynight;
 
+import Common.Globals;
 import battlecode.common.Clock;
 import battlecode.common.GameActionException;
 

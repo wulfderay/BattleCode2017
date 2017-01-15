@@ -1,4 +1,4 @@
-package astarrynight;
+package Common;
 
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;

@@ -4,7 +4,7 @@ import battlecode.common.*;
 
 import java.util.HashMap;
 import java.util.Map;
-
+import Common.*;
 public class BotScout extends Globals {
 
     static TreeInfo nearestUnvisitedTree = null;
