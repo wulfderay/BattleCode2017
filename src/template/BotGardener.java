@@ -1,7 +1,7 @@
 package template;
 
 import battlecode.common.*;
-
+import Common.*;
 public class BotGardener extends Globals {
 
 	public static void loop() throws GameActionException {
