@@ -60,10 +60,6 @@ public class BotArchon extends Globals {
             	}
             }
 
-            if (rc.getTeamBullets() > 500) {
-            	rc.donate(100);
-            }
-
             // Move randomly
             Util.tryMove(Util.randomDirection());
 

@@ -158,15 +158,15 @@ public class Util extends Globals {
         tryMove(tangent, 40, 3);
         return true;
     }
-    
+
     public static Boolean tryShootTarget(MapLocation target) throws GameActionException
     {
-    	if (rc.canFireSingleShot()) {
-    		rc.fireSingleShot(here.directionTo(target));
-    		rc.setIndicatorLine(here, target, 255, 0, 0);
-    		return true;
-    	}
-    	return false;
+        if (rc.canFireSingleShot()) {
+            rc.fireSingleShot(here.directionTo(target));
+            rc.setIndicatorLine(here, target, 255, 0, 0);
+            return true;
+        }
+        return false;
     }
 
     public static void AvoidBullets() throws GameActionException {

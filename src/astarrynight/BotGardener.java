@@ -56,7 +56,12 @@ public class BotGardener extends Globals {
 	}
 	
 	public static void turn() throws GameActionException {
-        nearbyBots = rc.senseNearbyRobots();
+        if ( rc.getTeamBullets() > 10000 - rc.getTeamVictoryPoints()*10)
+		{
+			rc.donate(rc.getTeamBullets());
+		}
+
+		nearbyBots = rc.senseNearbyRobots();
 		nearbyTrees = rc.senseNearbyTrees();
         
 		waterTrees();

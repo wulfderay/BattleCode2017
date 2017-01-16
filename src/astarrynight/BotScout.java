@@ -104,11 +104,15 @@ public class BotScout extends Globals {
     }
 
     private static void TreeHop() throws GameActionException  {
-	    if (nearestUnvisitedTree == null)
-	        return;
+        if (nearestUnvisitedTree == null)
+            return;
 
-        if (!rc.hasMoved() && nearestUnvisitedTree != null && rc.canMove(nearestUnvisitedTree.getLocation()))
-            rc.move(nearestUnvisitedTree.getLocation());
+        if (!rc.hasMoved() && nearestUnvisitedTree != null)
+        {
+            if (!Util.doMove(nearestUnvisitedTree.getLocation(), true)) {
+                Util.tryMove(here.directionTo(nearestUnvisitedTree.getLocation()));
+            }
+        }
         if (rc.canShake() && rc.canInteractWithTree(nearestUnvisitedTree.getID())) {
 
             if (nearestUnvisitedTree.getContainedBullets() > 0) {
