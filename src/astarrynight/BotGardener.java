@@ -6,6 +6,9 @@ import battlecode.common.*;
 
 public class BotGardener extends Globals {
 
+	public static final int GROVE_GRID_SIZE = 3;
+	public static final float MAX_GRID_DELTA = 0.001f;
+
 	public static int treesPlanted = 0;
 	public static RobotType[] buildOrderEarly = new RobotType[] {RobotType.SCOUT, RobotType.LUMBERJACK, RobotType.SOLDIER,RobotType.SCOUT};
 	public static RobotType[] buildOrderMid = new RobotType[] { RobotType.SOLDIER,RobotType.SCOUT,RobotType.SOLDIER};
@@ -69,9 +72,12 @@ public class BotGardener extends Globals {
         
 		waterTrees();
 		spawnBots();
-		buildGrove();
+		//buildGrove();
+		plantTreeOnGrid();
 
-		
+		// move to better spot
+		if (!rc.hasMoved())
+			rc.move(Util.randomDirection(), 0.1f);
 	}
 
 	private static void SpawnLumberJack() throws GameActionException {
@@ -87,7 +93,7 @@ public class BotGardener extends Globals {
 		}
 
 		RobotType nextBot = RobotType.LUMBERJACK;
-		if (!rc.hasRobotBuildRequirements(nextBot) || rc.getBuildCooldownTurns() > 0) {
+		if (!rc.hasRobotBuildRequirements(nextBot)) {
 			return false;
 		}
 
@@ -146,7 +152,7 @@ public class BotGardener extends Globals {
 		}
 		RobotType[] buildOrder = Util.isEarlyGame()? buildOrderEarly: buildOrderMid;
 		RobotType nextBot = buildOrder[buildIndex % buildOrder.length];
-		if (!rc.hasRobotBuildRequirements(nextBot) || rc.getBuildCooldownTurns() > 0) {
+		if (!rc.hasRobotBuildRequirements(nextBot)) {
 			return false;
 		}
 		
@@ -206,7 +212,44 @@ public class BotGardener extends Globals {
         	}
         }
 	}
-	
+
+	public static boolean plantTreeOnGrid() throws  GameActionException {
+		// look for a location starting from top left
+		// location should be on a grid of mapLocation.x,y % GROVE_GRID_SIZE == 0
+		MapLocation loc_offset = fitToGroveGrid(here);
+
+		for (int i = -GROVE_GRID_SIZE;i < GROVE_GRID_SIZE; i+=GROVE_GRID_SIZE)
+		{
+			for (int j = -GROVE_GRID_SIZE;j < GROVE_GRID_SIZE; j+=GROVE_GRID_SIZE) {
+				MapLocation whereIwantToPlant = loc_offset.translate(i,j);
+				if (rc.isCircleOccupiedExceptByThisRobot(whereIwantToPlant,1) || !rc.canPlantTree(here.directionTo(whereIwantToPlant)))
+				{
+					continue;
+				}
+				rc.setIndicatorDot(whereIwantToPlant, 100, 255, 30);
+				float distance = here.distanceTo(whereIwantToPlant) + 0.5f;
+				if (Math.abs(distance - myType.bodyRadius) < MAX_GRID_DELTA ) {
+					rc.plantTree(here.directionTo(whereIwantToPlant));
+					treesPlanted++;
+					return true;
+				}
+				else if (!rc.hasMoved())
+				{
+					rc.move(here.directionTo(whereIwantToPlant).opposite(), distance);
+					rc.plantTree(here.directionTo(whereIwantToPlant));
+					treesPlanted++;
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	private static MapLocation fitToGroveGrid(MapLocation loc) {
+		return loc.translate(GROVE_GRID_SIZE - (loc.x % GROVE_GRID_SIZE), GROVE_GRID_SIZE -(loc.y % GROVE_GRID_SIZE));
+	}
+
 	public static Boolean plantTree() throws GameActionException {
 		System.out.println("Trying to build a new tree. Trees so far:"+treesPlanted);
 		switch (treesPlanted) {
@@ -226,7 +269,7 @@ public class BotGardener extends Globals {
 	}
 	
 	public static Boolean tryPlantTree(Direction dir, float offset) throws GameActionException {
-		if (!rc.hasTreeBuildRequirements() || rc.getBuildCooldownTurns() > 0) {
+		if (!rc.hasTreeBuildRequirements()) {
 			return true;
 		}
 		
