@@ -137,8 +137,13 @@ public class BotScout extends Globals {
             }
         }
         if (mostHated == null) return;
-
-
+        
+        //BROADCAST CODE:
+        Broadcast.BroadcastBuffer_PrepareToUse();
+        
+        Broadcast.BroadcastBuffer_Finalize();
+        //:BROADCAST CODE
+        
         BobandWeave(mostHated);
 
         if (rc.getAttackCount() < 1 && rc.getTeamBullets() >1)

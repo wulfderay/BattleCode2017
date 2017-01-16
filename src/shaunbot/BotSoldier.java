@@ -47,7 +47,7 @@ public class BotSoldier extends Globals {
         if(enemies.length > 0) {	        	
 	        if (rc.canFireSingleShot()) {
 	            // ...Then fire a bullet in the direction of the enemy.
-	            rc.fireSingleShot(rc.getLocation().directionTo(getClosestRobot(enemies).location));
+	            rc.fireSingleShot(rc.getLocation().directionTo(enemies[0].location));
 	        }
         }
         //Kill trees:
@@ -104,38 +104,19 @@ public class BotSoldier extends Globals {
     	
         return false;
 	}
-
+	
 	public static RobotInfo getPriorityTarget()
 	{
 		// See if there are any nearby enemy robots
         RobotInfo[] enemies = rc.senseNearbyRobots(-1, them);
         if(enemies.length > 0) {
         	//Find closest enemy:
-        	return getClosestRobot(enemies);
+        	return enemies[0];
         }
 		// Otherwise, head towards enemy archon location:
         MapLocation[] initialArchons = rc.getInitialArchonLocations(them);
         return new RobotInfo(-1, them, myType, initialArchons[0], 1, 1, 1);
-		
 	}
 	
-	public static RobotInfo getClosestRobot(RobotInfo[] robots)
-	{
-		if ( robots.length == 0 )
-			return null;
-		RobotInfo closestRobot = null;
-		float closestRobotDistance = 1200; //Maps are max 100, so that should be safe maybe?
-		float robotDistance;
-		for(RobotInfo robot : robots)
-    	{
-			robotDistance = robot.location.distanceTo(here);
-    		if ( robotDistance < closestRobotDistance )
-    		{
-    			closestRobot = robot;
-    			closestRobotDistance = robotDistance;
-    		}
-    	}
-		return closestRobot;
-	}
 	
 }

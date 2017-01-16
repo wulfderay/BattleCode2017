@@ -54,6 +54,11 @@ public class BotGardener extends Globals {
         nearbyBots = rc.senseNearbyRobots();
 		nearbyTrees = rc.senseNearbyTrees();
         
+		if ( rc.getTeamBullets() / 10 >= 1000 - rc.getTeamVictoryPoints())
+        {
+        	rc.donate(rc.getTeamBullets());
+        }
+		
 		waterTrees();
 		
 		if (builtGrove) {

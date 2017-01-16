@@ -5,37 +5,41 @@ import battlecode.common.*;
 public class Broadcast extends Globals {
 
 	
-	public static final int ENEMY_ARCHON_1_CHANNEL = 100;
 	
-	//Trying some encoding and stuff to make it easier:
-	public class BroadcastRoboInfo
-	{
-		public int channel;
-		public static final int CHANNEL_OFFSET_ID = 0;
-		public static final int CHANNEL_OFFSET_LOCX = 1;
-		public static final int CHANNEL_OFFSET_LOCY = 2;
-		
-		BroadcastRoboInfo(int channel)
-		{
-			this.channel = channel;
-		}
-		
-		public void SetInfo(RobotInfo info)
-		{
-			
-		}
-		
-	}
 	
+	
+	public static final int ENEMY_TARGET_CHANNEL = 100;
 	
 	
 	//Helpful Broadcast tools:
     public class BroadcastFlag
     {
     	public static final int ENEMY_ARCHON_LOCATION = -1024;
-    	
+    	public static final int ENEMY_BOT_SPOTTED = -1025;
     }
     
+    
+    public static void BroadcastBuffer_BroadcastEnemySpotted(RobotInfo robot) throws GameActionException
+    {
+    	BroadcastBuffer_Send(BroadcastFlag.ENEMY_BOT_SPOTTED);
+    	BroadcastBuffer_Send(robot.ID);
+    	BroadcastBuffer_Send(robot.getType().ordinal());
+    	BroadcastBuffer_Send((int) robot.location.x);
+    	BroadcastBuffer_Send((int) robot.location.y);
+    }
+    
+    public static RobotInfo BroadcastBuffer_ReadEnemySpotted() throws GameActionException
+    {
+    	if ( BroadcastBuffer_ChannelsRemaining() < 4 )
+    	{
+    		return null;
+    	}
+    	int id = BroadcastBuffer_ReadNext();
+    	int typeOrdinal = BroadcastBuffer_ReadNext();
+    	int x = BroadcastBuffer_ReadNext();
+    	int y = BroadcastBuffer_ReadNext();
+    	return new RobotInfo(id, them, RobotType.values()[typeOrdinal], new MapLocation(x,y), 1, 1, 1);
+    }
     
     
     
@@ -131,6 +135,8 @@ public class Broadcast extends Globals {
 		return true;
 	}
 	
+
+	
 	public static void BroadcastBuffer_Send( int data ) throws GameActionException
 	{
 		rc.broadcast(BroadcastBuffer_EndIndex, data);
@@ -158,6 +164,25 @@ public class Broadcast extends Globals {
 			BroadcastBuffer_StartIndex = BroadcastBuffer_StartChannel;
 		return data;
 	}
+    public static int BroadcastBuffer_Peek() throws GameActionException
+    {
+    	if ( BroadcastBuffer_EndIndex == BroadcastBuffer_StartIndex )
+			throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "BroadcastBuffer_ReadNext - read out of range!");
+		int data = rc.readBroadcast(BroadcastBuffer_StartIndex);
+		return data;
+    }
+    public static void BroadcastBuffer_ClearAllData()
+    {
+    	BroadcastBuffer_StartIndex = BroadcastBuffer_EndIndex;
+    }
+    public static int BroadcastBuffer_ChannelsRemaining()
+    {
+    	if ( BroadcastBuffer_StartIndex < BroadcastBuffer_EndIndex )
+    		return BroadcastBuffer_StartIndex - BroadcastBuffer_EndIndex;
+    	if ( BroadcastBuffer_StartIndex > BroadcastBuffer_EndIndex )
+    		return BroadcastBuffer_EndIndex + (BroadcastBuffer_EndChannel - BroadcastBuffer_StartChannel) - BroadcastBuffer_StartIndex;
+    	return 0;
+    }
 	
 	public static void BroadcastBuffer_Finalize() throws GameActionException
 	{

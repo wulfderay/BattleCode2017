@@ -40,7 +40,11 @@ public class BotArchon extends Globals{
             Direction dir = Util.randomDirection();
 
             // Randomly attempt to build a gardener in this direction
-            if ( rc.getTeamBullets() > 200 && Math.random() < 0.5 )
+            if ( rc.getTeamBullets() / 10 >= 1000 - rc.getTeamVictoryPoints())
+            {
+            	rc.donate(rc.getTeamBullets());
+            }
+            if ( rc.getTeamBullets() > 200 && Math.random() < 1 )
             {
             	rc.donate(10);
             }

@@ -3,6 +3,7 @@ package shaunbot;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 import shaunbot.RobotPlayer;
+import shaunbot.BotScout;
 import shaunbot.BotTank;
 import shaunbot.BotSoldier;
 
