@@ -5,7 +5,11 @@ import battlecode.common.*;
 public class Util extends Globals {
 
     static MapLocation enemyLoc = rc.getInitialArchonLocations(them)[(int)(Math.random() * rc.getInitialArchonLocations(them).length)];
-
+    
+    
+    
+    
+    
     /**
      * Returns a random Direction
      * @return a random Direction
