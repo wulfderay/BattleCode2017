@@ -1,7 +1,5 @@
 package AStarryJan15;
 
-import Common.Globals;
-import Common.Util;
 import battlecode.common.*;
 
 public class BotSoldier extends Globals {
