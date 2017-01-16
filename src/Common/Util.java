@@ -179,7 +179,7 @@ public class Util extends Globals {
             rc.setIndicatorLine(here, here.add(dir, rc.getType().strideRadius), 0, 255, 0);
             here = rc.getLocation();
         } catch (GameActionException e) {
-            System.out.println("Failed to move"+dir);
+            System.out.println("Failed to move direction "+dir);
             return false;
         }
         return true;
@@ -192,7 +192,7 @@ public class Util extends Globals {
             here = rc.getLocation();
             rc.setIndicatorLine(here, temp, 0, 255, 0);
         } catch (GameActionException e) {
-            System.out.println("Failed to move"+dir);
+            System.out.println("Failed to move direction "+dir+"length"+length);
             return false;
         }
         return true;
@@ -208,7 +208,7 @@ public class Util extends Globals {
             here = rc.getLocation();
             rc.setIndicatorLine(here, temp, 0, 255, 0);
         } catch (GameActionException e) {
-            System.out.println("Failed to move to "+target);
+            System.out.println("Failed to move to target at "+target);
             return false;
         }
         return true;
@@ -221,7 +221,7 @@ public class Util extends Globals {
             here = rc.getLocation();
             rc.setIndicatorLine(here, temp, 0, 255, 0);
         } catch (GameActionException e) {
-            System.out.println("Failed to move to "+target);
+            System.out.println("Failed to move to target at "+target);
             return false;
         }
         return true;
@@ -246,4 +246,79 @@ public class Util extends Globals {
     {
         enemyLoc = loc;
     }
+    
+    public static boolean moveToFarTarget(MapLocation target) throws GameActionException
+    {
+    	return simpleBug(target);
+    }
+  
+	static boolean inBugMode = false;
+	static Direction lastDirection = null;
+	static final float BUG_ROTATE_INCREMENT = 5.0f;
+
+	public static boolean simpleBug(MapLocation target) throws GameActionException
+    {
+		System.out.println("Trying to bug move to "+target);
+		Direction dirToTarget = here.directionTo(target);
+    	if (!inBugMode) {
+    		if (!tryMove(dirToTarget)) {
+    			
+    			inBugMode = true;
+    			lastDirection = dirToTarget;
+    		} else {
+    			return true;
+    		}
+    	}
+		
+		if (inBugMode) {
+			Direction bugDirection = bugGetNextDirection(dirToTarget, lastDirection);
+	        try {
+	            rc.move(bugDirection);
+	            MapLocation temp = here;
+	            here = rc.getLocation();
+	            rc.setIndicatorDot(target, 255, 255, 0);
+	            rc.setIndicatorLine(temp, target, 255, 255, 0);
+	            rc.setIndicatorLine(temp, temp.add(lastDirection), 100, 100, 0);
+	            lastDirection = bugDirection;
+	        } catch (GameActionException e) {
+	            System.out.println("Failed to bug move direction "+bugDirection);
+	            return false;
+	        }
+	        return true;
+		}
+		return false;
+    }
+	
+	public static Direction bugGetNextDirection(Direction targetDirection, Direction lastDirection) {
+		Direction moveDir = lastDirection;
+		float rotated = 0f;
+		if (rc.canMove(moveDir)) {
+			Direction testDir = moveDir.rotateLeftDegrees(BUG_ROTATE_INCREMENT);
+			while (rc.canMove(testDir)) {
+				if (targetDirection.degreesBetween(testDir) <= BUG_ROTATE_INCREMENT && 
+						rc.canMove(targetDirection)) {
+					inBugMode = false;
+					return targetDirection;
+				}
+				testDir = testDir.rotateLeftDegrees(BUG_ROTATE_INCREMENT);
+				rotated += BUG_ROTATE_INCREMENT;
+				if (rotated > 360) {
+					inBugMode = false;
+					return targetDirection;
+				}
+			}
+			return testDir.rotateRightDegrees(BUG_ROTATE_INCREMENT);
+		} else {
+			while (!rc.canMove(moveDir)) {
+				moveDir = moveDir.rotateRightDegrees(BUG_ROTATE_INCREMENT);
+				if (rotated > 360) {
+					inBugMode = false;
+					return targetDirection;
+				}
+			}
+			return moveDir;
+		}
+	}
+    
+    
 }

@@ -47,17 +47,11 @@ public class BotScout extends Globals {
 	public static void turn() throws GameActionException {
 		
 		RobotInfo[] nearbyEnemies = rc.senseNearbyRobots(-1, them);
-		if ( rc.canSenseLocation(globalTarget) )
-		{
-			if ( rc.senseNearbyRobots(globalTarget, 3, them).length == 0 )
-			{
-				Broadcast.ClearEnemyLocation();
-			}
-		}
 		for(RobotInfo enemy : nearbyEnemies)
 		{
 			if ( enemy.getType() == RobotType.ARCHON )
 			{
+				System.out.println("Scout found an archon!  Broadcasting global target..."+enemy.location);
 				Broadcast.WriteEnemyLocation(enemy.location);
 				break;
 			}

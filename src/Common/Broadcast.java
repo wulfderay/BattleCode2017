@@ -31,7 +31,7 @@ public class Broadcast extends Globals {
 	public static void WriteEnemyLocation(MapLocation location) throws GameActionException
 	{
 		rc.broadcast(ENEMY_TARGET_X_CHANNEL, (int) location.x);
-		rc.broadcast(ENEMY_TARGET_X_CHANNEL, (int) location.y);
+		rc.broadcast(ENEMY_TARGET_Y_CHANNEL, (int) location.y);
 	}
 	public static void ClearEnemyLocation() throws GameActionException
 	{

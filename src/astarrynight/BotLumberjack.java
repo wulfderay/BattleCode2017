@@ -114,13 +114,16 @@ public class BotLumberjack extends Globals {
         if (mostHated != null )
         {
             // move towards them
-            Util.tryMove(here.directionTo(mostHated.getLocation()));
+            if (!Util.moveToFarTarget(mostHated.getLocation())) {
+            	//couldn't move that way...
+            	
+            }
         }
 
         if (ThereIsATreeINeedToMurder() && mostHated == null) // come back next turn and finish killing it
             return;
 
-        Util.tryMove(here.directionTo(Util.getEnemyLoc()));
+        Util.moveToFarTarget(globalTarget);
     }
 
     /**

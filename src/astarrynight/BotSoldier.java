@@ -47,21 +47,16 @@ public class BotSoldier extends Globals {
         //Alright, we'll just fire one bullet... i guess...
         RobotInfo[] enemies = rc.senseNearbyRobots(-1, them);
         if(enemies.length > 0) {
-            if (rc.canFireSingleShot()) {
-                // ...Then fire a bullet in the direction of the enemy.
-                rc.fireSingleShot(rc.getLocation().directionTo(getClosestRobot(enemies).location));
-            }
+        	Util.tryShootTarget(enemies[0].location);
         }
+        
         //Kill trees:
         Direction dir = here.directionTo(target);
         MapLocation oneMoveLocation = here.add(dir, rc.getType().bodyRadius + rc.getType().strideRadius);
         TreeInfo obstacleTree = rc.senseTreeAtLocation(oneMoveLocation);
         if ( obstacleTree != null )
         {
-            if (rc.canFireSingleShot()) {
-                // ...Then fire a bullet in the direction of the enemy.
-                rc.fireSingleShot(rc.getLocation().directionTo(obstacleTree.location));
-            }
+        	Util.tryShootTarget(obstacleTree.location);
         }
     }
 
@@ -112,30 +107,10 @@ public class BotSoldier extends Globals {
         RobotInfo[] enemies = rc.senseNearbyRobots(-1, them);
         if(enemies.length > 0) {
             //Find closest enemy:
-            return getClosestRobot(enemies).getLocation();
+            return enemies[0].getLocation();
         }
         // Otherwise, head towards enemy archon location:
-
-        return Util.getEnemyLoc();
-    }
-
-    public static RobotInfo getClosestRobot(RobotInfo[] robots)
-    {
-        if ( robots.length == 0 )
-            return null;
-        RobotInfo closestRobot = null;
-        float closestRobotDistance = 1200; //Maps are max 100, so that should be safe maybe?
-        float robotDistance;
-        for(RobotInfo robot : robots)
-        {
-            robotDistance = robot.location.distanceTo(here);
-            if ( robotDistance < closestRobotDistance )
-            {
-                closestRobot = robot;
-                closestRobotDistance = robotDistance;
-            }
-        }
-        return closestRobot;
+        return globalTarget;
     }
 
 }
