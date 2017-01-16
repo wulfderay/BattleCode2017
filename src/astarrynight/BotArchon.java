@@ -1,5 +1,6 @@
 package astarrynight;
 
+import Common.Broadcast;
 import Common.Globals;
 import Common.Util;
 import battlecode.common.Clock;
@@ -13,7 +14,10 @@ public class BotArchon extends Globals {
 
 		public static void loop() throws GameActionException {
 	        System.out.println("I'm an archon!");
-
+	        
+	        //Update target location!
+	        Broadcast.WriteEnemyLocation(rc.getInitialArchonLocations(them)[0]);
+	        
 	        // The code you want your robot to perform every round should be in this loop
 	        while (true) {
 

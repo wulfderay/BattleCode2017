@@ -62,6 +62,9 @@ public class BotSoldier extends Globals {
 	            rc.fireSingleShot(rc.getLocation().directionTo(obstacleTree.location));
 	        }
         }
+        
+        //Broadcast enemy locations:
+        
 	}
 	
 	private static boolean moveTowards(RobotInfo target) throws GameActionException {

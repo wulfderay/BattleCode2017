@@ -1,5 +1,6 @@
 package Common;
 
+import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
@@ -14,6 +15,8 @@ public class Globals {
 	public static int myID;
 	public static RobotType myType;
 	public static int roundNum;
+	public static MapLocation globalTarget;
+	public static boolean globalTargetExists = true;
 	
 	public static void init(RobotController _RC) {
 		rc = _RC;
@@ -24,9 +27,17 @@ public class Globals {
 		here = rc.getLocation();
 	}
 	
-	public static void turnUpdate() {
+	public static void turnUpdate() throws GameActionException {
 		here = rc.getLocation();
-		roundNum = rc.getRoundNum();		
+		roundNum = rc.getRoundNum();
+		globalTarget = Broadcast.ReadEnemyLocation();
+		if ( globalTarget == null )
+		{
+			globalTargetExists = false;
+			globalTarget = rc.getInitialArchonLocations(them)[0];
+		} else {
+			globalTargetExists = true;
+		}
 	}
 	
 }

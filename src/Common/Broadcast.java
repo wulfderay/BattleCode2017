@@ -4,7 +4,47 @@ import battlecode.common.*;
 
 public class Broadcast extends Globals {
 	
-	public static final int ENEMY_TARGET_CHANNEL = 100;
+	
+	
+	
+	
+	/*
+	Algorithm:
+	
+	Enemy position channel:
+	Initialize channel to enemy archon location
+	Scout code: if see an archon, update enemy position
+	If you can see the location and there's nothing there, zero the location
+	If the location is zero and you see an enemy, update the location
+	 */
+
+	public static final int ENEMY_TARGET_X_CHANNEL = 100;
+	public static final int ENEMY_TARGET_Y_CHANNEL = 101;
+	public static MapLocation ReadEnemyLocation() throws GameActionException
+	{
+		int x = rc.readBroadcast(ENEMY_TARGET_X_CHANNEL);
+		int y = rc.readBroadcast(ENEMY_TARGET_Y_CHANNEL);
+		if ( x == 0 && y == 0 )
+			return null;
+		return new MapLocation( (float)x, (float)y);
+	}
+	public static void WriteEnemyLocation(MapLocation location) throws GameActionException
+	{
+		rc.broadcast(ENEMY_TARGET_X_CHANNEL, (int) location.x);
+		rc.broadcast(ENEMY_TARGET_X_CHANNEL, (int) location.y);
+	}
+	public static void ClearEnemyLocation() throws GameActionException
+	{
+		rc.broadcast(ENEMY_TARGET_X_CHANNEL, 0);
+		rc.broadcast(ENEMY_TARGET_Y_CHANNEL, 0);
+	}
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	//Helpful Broadcast tools:
