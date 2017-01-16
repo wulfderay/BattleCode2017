@@ -64,22 +64,12 @@ public class BotGardener extends Globals {
 		}
 
 		nearbyBots = rc.senseNearbyRobots();
-		nearbyTrees = rc.senseNearbyTrees();
+		nearbyTrees = rc.senseNearbyTrees(-1, us);
         
 		waterTrees();
+		spawnBots();
+		buildGrove();
 
-		switch (state)
-		{
-			case BUILD_INITIAL_LUMBERJACK:
-				SpawnLumberJack();
-				break;
-			case BUILD_GROVE:
-				buildGrove();
-				break;
-			default:
-				spawnBots();
-				break;
-		}
 		
 	}
 
@@ -146,9 +136,6 @@ public class BotGardener extends Globals {
 	}
 	
 	public static Boolean spawnBots() throws GameActionException {
-		if (rc.getTeamBullets() < 200) {
-			return false;
-		}
 		
 		if (spawnLocation == null)
 		{
@@ -193,6 +180,7 @@ public class BotGardener extends Globals {
 	}
 
 	public static void buildGrove() throws GameActionException {
+
         TreeInfo nearestTree = findNearestTree();
         if (nearestTree != null && nearestTree.location.distanceTo(here) < 2) {
         	System.out.println("Near a tree so going to start planting");

@@ -52,13 +52,13 @@ public class BotArchon extends Globals {
 
             // Randomly attempt to build a gardener in this direction
             if (rc.canHireGardener(dir)) {
-            	if (rc.getTreeCount() == 0 && (rc.getRoundNum() < 50 || rc.getRoundNum() > 100 )) {
+            	if (rc.getTreeCount() == 0) {
             		rc.hireGardener(dir);
             		gardenersHired++;
             	} else if (rc.getTreeCount() > gardenersHired * 5) {
             		rc.hireGardener(dir);
             		gardenersHired++;
-            	} else if (rc.getTreeCount() < 50 && rc.getTeamBullets() > 300) {
+            	} else if (rc.getTreeCount() < 50 && rc.getTeamBullets() > 500) {
             		rc.hireGardener(dir);
             		gardenersHired++;
             	}
