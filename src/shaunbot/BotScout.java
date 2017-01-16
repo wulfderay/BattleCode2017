@@ -1,6 +1,7 @@
 package shaunbot;
 
 import battlecode.common.*;
+import Common.*;
 
 import java.util.HashMap;
 import java.util.Map;

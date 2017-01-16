@@ -1,12 +1,8 @@
-package shaunbot;
+package Common;
 
 import battlecode.common.*;
 
 public class Broadcast extends Globals {
-
-	
-	
-	
 	
 	public static final int ENEMY_TARGET_CHANNEL = 100;
 	
