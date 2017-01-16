@@ -42,7 +42,7 @@ public class BotSoldier extends Globals {
         //Head towards enemy archon
         System.out.println("SOLDIER EXECUTING!!!!");
         MapLocation target = getPriorityTarget();
-        moveTowards(target);
+        Util.moveToFarTarget(target);
 
         //Alright, we'll just fire one bullet... i guess...
         RobotInfo[] enemies = rc.senseNearbyRobots(-1, them);
