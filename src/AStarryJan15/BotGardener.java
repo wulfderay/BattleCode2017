@@ -1,15 +1,11 @@
-package astarrynight;
+package AStarryJan15;
 
-import Common.Globals;
-import Common.Util;
 import battlecode.common.*;
 
 public class BotGardener extends Globals {
 
 	public static int treesPlanted = 0;
-	public static RobotType[] buildOrderEarly = new RobotType[] {RobotType.SCOUT, RobotType.LUMBERJACK, RobotType.SOLDIER,RobotType.SCOUT};
-	public static RobotType[] buildOrderMid = new RobotType[] { RobotType.SOLDIER,RobotType.SCOUT,RobotType.SOLDIER};
-	public static RobotType[] buildOrderLate = new RobotType[] { RobotType.SOLDIER,RobotType.TANK,RobotType.SOLDIER};
+	public static RobotType[] buildOrder = new RobotType[] {RobotType.SCOUT, RobotType.LUMBERJACK, RobotType.SOLDIER,RobotType.SCOUT,RobotType.SOLDIER};
 	public static int buildIndex = 0;
 	//public static Boolean builtGrove = false;
 	public static Direction spawnLocation = null;
@@ -154,8 +150,8 @@ public class BotGardener extends Globals {
 		{
 			spawnLocation = towardsEnemySpawn().opposite();
 		}
-		RobotType[] buildOrder = Util.isEarlyGame()? buildOrderEarly: buildOrderMid;
-		RobotType nextBot = buildOrder[buildIndex % buildOrder.length];
+		
+		RobotType nextBot = buildOrder[buildIndex];
 		if (!rc.hasRobotBuildRequirements(nextBot) || rc.getBuildCooldownTurns() > 0) {
 			return false;
 		}

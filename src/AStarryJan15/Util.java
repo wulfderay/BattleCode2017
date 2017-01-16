@@ -1,4 +1,4 @@
-package Common;
+package AStarryJan15;
 
 import battlecode.common.*;
 
@@ -116,7 +116,7 @@ public class Util extends Globals {
     }
 
     public static boolean isEarlyGame() {
-        return rc.getRoundNum() < 400;
+        return (rc.getRoundLimit()/3) - rc.getRoundNum()> 0;
     }
 
     // circle strafes around a certain location at a particular radius. Direction can be switched by passing -1 or 1 to current direction

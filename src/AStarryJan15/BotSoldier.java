@@ -1,4 +1,4 @@
-package astarrynight;
+package AStarryJan15;
 
 import Common.Globals;
 import Common.Util;
@@ -6,7 +6,7 @@ import battlecode.common.*;
 
 public class BotSoldier extends Globals {
 
-    public static void loop() throws GameActionException {
+	public static void loop() throws GameActionException {
         System.out.println("I'm a "+rc.getType().toString());
 
         // The code you want your robot to perform every round should be in this loop
@@ -15,11 +15,11 @@ public class BotSoldier extends Globals {
             // Try/catch blocks stop unhandled exceptions, which cause your robot to explode
             try {
 
-                //Update common data
-                turnUpdate();
+            	//Update common data
+            	turnUpdate();
 
                 //Do some stuff
-                turn();
+            	turn();
 
             } catch (Exception e) {
                 System.out.println(rc.getType().toString()+" Exception");
@@ -28,44 +28,45 @@ public class BotSoldier extends Globals {
 
             //Test that we completed within bytecode limit
             if (rc.getRoundNum() != roundNum) {
-                System.out.println(rc.getType().toString()+" over bytecode limit");
+            	System.out.println(rc.getType().toString()+" over bytecode limit");
             }
 
             // Clock.yield() makes the robot wait until the next turn, then it will perform this loop again
             Clock.yield();
 
         }
-    }
+	}
 
-    public static void turn() throws GameActionException {
+	public static void turn() throws GameActionException {
         //Scan
-        //Head towards enemy archon
-        System.out.println("SOLDIER EXECUTING!!!!");
-        MapLocation target = getPriorityTarget();
+		//Head towards enemy archon
+		System.out.println("SOLDIER EXECUTING!!!!");
+		RobotInfo target = getPriorityTarget();
         moveTowards(target);
 
         //Alright, we'll just fire one bullet... i guess...
         RobotInfo[] enemies = rc.senseNearbyRobots(-1, them);
         if(enemies.length > 0) {
-            if (rc.canFireSingleShot()) {
-                // ...Then fire a bullet in the direction of the enemy.
-                rc.fireSingleShot(rc.getLocation().directionTo(getClosestRobot(enemies).location));
-            }
+	        if (rc.canFireSingleShot()) {
+	            // ...Then fire a bullet in the direction of the enemy.
+	            rc.fireSingleShot(rc.getLocation().directionTo(getClosestRobot(enemies).location));
+	        }
         }
         //Kill trees:
-        Direction dir = here.directionTo(target);
+        Direction dir = here.directionTo(target.location);
         MapLocation oneMoveLocation = here.add(dir, rc.getType().bodyRadius + rc.getType().strideRadius);
         TreeInfo obstacleTree = rc.senseTreeAtLocation(oneMoveLocation);
         if ( obstacleTree != null )
         {
-            if (rc.canFireSingleShot()) {
-                // ...Then fire a bullet in the direction of the enemy.
-                rc.fireSingleShot(rc.getLocation().directionTo(obstacleTree.location));
-            }
+        	if (rc.canFireSingleShot()) {
+	            // ...Then fire a bullet in the direction of the enemy.
+	            rc.fireSingleShot(rc.getLocation().directionTo(obstacleTree.location));
+	        }
         }
-    }
+	}
 
-    private static boolean moveTowards(MapLocation location) throws GameActionException {
+	private static boolean moveTowards(RobotInfo target) throws GameActionException {
+		MapLocation location = target.getLocation();
         Direction dir = here.directionTo(location);
 
         // First, try intended direction
@@ -83,13 +84,13 @@ public class BotSoldier extends Globals {
         float obstacleRadius = 1;
         if ( obstacleRobot != null )
         {
-            obstacleLocation = obstacleRobot.getLocation();
-            obstacleRadius = obstacleRobot.getRadius();
+        	obstacleLocation = obstacleRobot.getLocation();
+        	obstacleRadius = obstacleRobot.getRadius();
         }
         if ( obstacleTree != null )
         {
-            obstacleLocation = obstacleTree.getLocation();
-            obstacleRadius = obstacleTree.getRadius();
+        	obstacleLocation = obstacleTree.getLocation();
+        	obstacleRadius = obstacleTree.getRadius();
         }
         Direction obstacleToEdge = obstacleLocation.directionTo(here);
         MapLocation obstacleEdge = obstacleLocation.add(obstacleLocation.directionTo(here), obstacleRadius);
@@ -100,42 +101,43 @@ public class BotSoldier extends Globals {
             return true;
         }
 
-        // Move Randomly
-        Util.tryMove(Util.randomDirection());
-
+    	// Move Randomly
+    	Util.tryMove(Util.randomDirection());
+    	
         return false;
-    }
+	}
 
-    public static MapLocation getPriorityTarget()
-    {
-        // See if there are any nearby enemy robots
+	public static RobotInfo getPriorityTarget()
+	{
+		// See if there are any nearby enemy robots
         RobotInfo[] enemies = rc.senseNearbyRobots(-1, them);
         if(enemies.length > 0) {
-            //Find closest enemy:
-            return getClosestRobot(enemies).getLocation();
+        	//Find closest enemy:
+        	return getClosestRobot(enemies);
         }
-        // Otherwise, head towards enemy archon location:
+		// Otherwise, head towards enemy archon location:
+        MapLocation[] initialArchons = rc.getInitialArchonLocations(them);
+        return new RobotInfo(-1, them, myType, initialArchons[0], 1, 1, 1);
 
-        return Util.getEnemyLoc();
-    }
-
-    public static RobotInfo getClosestRobot(RobotInfo[] robots)
-    {
-        if ( robots.length == 0 )
-            return null;
-        RobotInfo closestRobot = null;
-        float closestRobotDistance = 1200; //Maps are max 100, so that should be safe maybe?
-        float robotDistance;
-        for(RobotInfo robot : robots)
-        {
-            robotDistance = robot.location.distanceTo(here);
-            if ( robotDistance < closestRobotDistance )
-            {
-                closestRobot = robot;
-                closestRobotDistance = robotDistance;
-            }
-        }
-        return closestRobot;
-    }
-
+	}
+	
+	public static RobotInfo getClosestRobot(RobotInfo[] robots)
+	{
+		if ( robots.length == 0 )
+			return null;
+		RobotInfo closestRobot = null;
+		float closestRobotDistance = 1200; //Maps are max 100, so that should be safe maybe?
+		float robotDistance;
+		for(RobotInfo robot : robots)
+    	{
+			robotDistance = robot.location.distanceTo(here);
+    		if ( robotDistance < closestRobotDistance )
+    		{
+    			closestRobot = robot;
+    			closestRobotDistance = robotDistance;
+    		}
+    	}
+		return closestRobot;
+	}
+	
 }

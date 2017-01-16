@@ -1,18 +1,13 @@
-package astarrynight;
+package AStarryJan15;
 
-import Common.Globals;
-import Common.Util;
+
 import battlecode.common.*;
 
 public class BotLumberjack extends Globals {
 
-    public static final int LAST_TREE_SEEN_TTL_MAX = 20;
-
     public static int currentDirection = 1;
     public static MapLocation whereIwasBorn = here;
     public static int clearingRadius = 5; // totally arbitrary
-    public static int lastTreeSeenTTL = LAST_TREE_SEEN_TTL_MAX;
-
   //  public static TreeInfo mostHatedTree = null;
 	public static void loop() throws GameActionException {
         System.out.println("I'm a Lumberjack and I'm ok. I chop all night and strike all day!");
@@ -51,7 +46,7 @@ public class BotLumberjack extends Globals {
 
 	    AttackofOpportunity();
 
-	    if (Util.isEarlyGame() && lastTreeSeenTTL > 0)
+	    if (Util.isEarlyGame() )
             clearForest();
         else
             murderArchonsAndGardeners();
@@ -76,12 +71,7 @@ public class BotLumberjack extends Globals {
      */
     private static void clearForest() throws GameActionException {
         if (ThereIsATreeINeedToMurder()) // come back next turn and finish killing it
-        {
-            lastTreeSeenTTL = LAST_TREE_SEEN_TTL_MAX;
             return;
-        }
-
-        lastTreeSeenTTL--;
         // else move on.
         if (!Util.CircleStrafe(whereIwasBorn, clearingRadius, currentDirection)) {
             currentDirection *= -1;
