@@ -56,7 +56,8 @@ public class BotGardener extends Globals {
 
         }			
 	}
-	
+
+	//TODO: If there's enemies nearby, spawn some soldiers , and spawn a tree in the way of bullets.
 	public static void turn() throws GameActionException {
         if ( rc.getTeamBullets() > 10000 - rc.getTeamVictoryPoints()*10)
 		{
@@ -134,7 +135,9 @@ public class BotGardener extends Globals {
 			System.out.println("Watered tree "+worstTree.ID);
 		}
 	}
-	
+
+	//TODO: take into account how many bots we already have/attrition level.
+
 	public static Boolean spawnBots() throws GameActionException {
 		
 		if (spawnLocation == null)
