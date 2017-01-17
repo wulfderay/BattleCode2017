@@ -247,11 +247,14 @@ public class Util extends Globals {
         enemyLoc = loc;
     }
     
+
+    
+    
     public static boolean moveToFarTarget(MapLocation target) throws GameActionException
     {
     	return simpleBug(target);
     }
-  
+    
 	static boolean inBugMode = false;
 	static Direction lastDirection = null;
 	static final float BUG_ROTATE_INCREMENT = 5.0f;
