@@ -324,28 +324,31 @@ public class Util extends Globals {
 	}
 
     /**
-     * find a direction to move or spawn in
-     * @param bodyRadius
+     * find a direction to move or spawn in. It will return the first such direction that is clear for at least one radius.
+     * @param radius
      * @return
      */
-    /*
-    public static Direction getClearDirection(Direction dir,  float offset, float radius) throws GameActionException {
+    public static Direction getClearDirection(Direction dir,  float resolution, float radius, boolean strict) throws GameActionException {
+        if (dir == null) rc.setIndicatorDot(here.add(Direction.getNorth(), 1), 255,255,255);
         if (!rc.isCircleOccupied(here.add(dir, radius), radius))
             return dir;
 
-        float cumilativeOffset = offset;
+        float cumilativeOffset = resolution;
 
 
 
         while (cumilativeOffset < 360 && cumilativeOffset > -360) {
-           // if (rc.canPlantTree(dir.rotateRightDegrees(cumilativeOffset))) {
-              //  rc.plantTree(dir.rotateRightDegrees(cumilativeOffset));
-
-
-                return dir;
+            if (strict) {
+                if (!rc.isCircleOccupied(here.add(dir.rotateLeftDegrees(cumilativeOffset), radius+myType.bodyRadius), radius)) {
+                    return dir.rotateLeftDegrees(cumilativeOffset);
+                }
             }
-            cumilativeOffset += offset;
+            else if (!rc.isCircleOccupiedExceptByThisRobot(here.add(dir.rotateLeftDegrees(cumilativeOffset), radius+myType.bodyRadius), radius))
+            {
+                return dir.rotateLeftDegrees(cumilativeOffset);
+            }
+            cumilativeOffset += resolution;
         }
+        return null;
     }
-    */
 }

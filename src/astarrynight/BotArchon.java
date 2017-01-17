@@ -106,13 +106,13 @@ public class BotArchon extends Globals {
 		Direction dir = Util.randomDirection();
 		// Randomly attempt to build a gardener in this direction
 		if (rc.canHireGardener(dir)) {
-			if (rc.getTreeCount() == 0 ) {
+			if (rc.getTreeCount() < 4) {
 				rc.hireGardener(dir);
 				gardenersHired++;
-			} else if (rc.getTreeCount() > gardenersHired * 5) {
+			} else if (rc.getTreeCount() > gardenersHired * rc.getInitialArchonLocations(us).length * 2) {
 				rc.hireGardener(dir);
 				gardenersHired++;
-			} else if (rc.getTreeCount() < 50 && rc.getTeamBullets() > 500) {
+			} else if (rc.getTreeCount() < 30 && rc.getTeamBullets() > 600) {
 				rc.hireGardener(dir);
 				gardenersHired++;
 			}
