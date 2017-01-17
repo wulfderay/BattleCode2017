@@ -157,7 +157,7 @@ public class BotGardener extends Globals {
 			System.out.println("I'm Fucking Stuck! WTF?!");
 			// we can't even move because we are stuck.
 		}
-		RobotType[] buildOrder = Util.isEarlyGame() && rc.getTreeCount() < 5? buildOrderEarly: buildOrderMid;
+		RobotType[] buildOrder = Util.isEarlyGame() && rc.getTreeCount() < 10? buildOrderEarly: buildOrderMid;
 		RobotType nextBot = buildOrder[buildIndex % buildOrder.length];
 		if (!rc.hasRobotBuildRequirements(nextBot)) {
 			return false;
@@ -241,8 +241,10 @@ public class BotGardener extends Globals {
 	}
 
 	public static Boolean plantTree() throws GameActionException {
+		if (rc.getID() % 2 == 0)
+			return plantTreeLegacy();
 		System.out.println("Trying to build a new tree. Trees so far:"+treesPlanted);
-		Direction plantDirection = Util.getClearDirection(towardsEnemySpawn(), 7, 2, false);
+		Direction plantDirection = Util.getClearDirection(towardsEnemySpawn(), 30, 2f, false);
 		if (plantDirection != null)
 		{
 			if (rc.canPlantTree(plantDirection) ) {
@@ -251,6 +253,55 @@ public class BotGardener extends Globals {
 				return true;
 			}
 		}
+		return false;
+	}
+
+
+	public static Boolean plantTreeLegacy() throws GameActionException {
+		System.out.println("Trying to build a new tree. Trees so far:"+treesPlanted);
+		switch (treesPlanted) {
+			case 0:
+				return tryPlantTree(towardsEnemySpawn(), 5);
+			case 1:
+				return tryPlantTree(towardsEnemySpawn().rotateRightDegrees(60), 5);
+			case 2:
+				return tryPlantTree(towardsEnemySpawn().rotateLeftDegrees(60), -5);
+			case 3:
+				return tryPlantTree(towardsEnemySpawn().rotateRightDegrees(60), 5);
+			case 4:
+				return tryPlantTree(towardsEnemySpawn().rotateLeftDegrees(60), -5);
+			default:
+				return tryPlantTree(Direction.getNorth(), 10);
+		}
+	}
+
+	public static Boolean tryPlantTree(Direction dir, float offset) throws GameActionException {
+		if (!rc.hasTreeBuildRequirements() || rc.getBuildCooldownTurns() > 0) {
+			return true;
+		}
+
+		if (rc.canPlantTree(dir)) {
+			rc.plantTree(dir);
+			treesPlanted++;
+			System.out.println("Horray! Planted a tree!"+treesPlanted);
+			return true;
+		}
+
+		float cumilativeOffset = offset;
+
+		System.out.println("Something in the way of Direction"+dir);
+
+		while (cumilativeOffset < 360 && cumilativeOffset > -360) {
+			if (rc.canPlantTree(dir.rotateRightDegrees(cumilativeOffset))) {
+				rc.plantTree(dir.rotateRightDegrees(cumilativeOffset));
+				treesPlanted++;
+				System.out.println("Horay! Was able to plant tree at offset"+cumilativeOffset+" tree #"+treesPlanted);
+				return true;
+			}
+			cumilativeOffset += offset;
+		}
+
+		System.out.println("Couldn't plant a tree... :("+treesPlanted);
 		return false;
 	}
 	

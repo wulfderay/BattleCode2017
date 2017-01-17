@@ -10,6 +10,7 @@ public class BotArchon extends Globals {
 	public static int gardenersHired = 0;
 	public static MapLocation WhereIwasBorn = here;
 	public static int IamArchonNumber = getArchonNumber();
+	public static boolean iAmAlphaArchon = getArchonNumber() == 0;
 
 	private static int getArchonNumber()  {
 		MapLocation [] arconlocs = rc.getInitialArchonLocations(us);
@@ -64,12 +65,16 @@ public class BotArchon extends Globals {
 
 		Util.AvoidBullets();
 
-		HireGardnerMaybe();
+		if (iAmAlphaArchon) { // btw we need to broadcast this so that we can have another take over if I die.
+			HireGardnerMaybe();
 
-		MoveToABetterLocation();
-
+			MoveToABetterLocation();
+		}
+		else
+		{
+			Util.tryMove(here.directionTo(rc.getInitialArchonLocations(us)[0]));
+		}
 		BroadCastIfEmergency();
-
 	}
 
 	/**
@@ -106,13 +111,14 @@ public class BotArchon extends Globals {
 		Direction dir = Util.randomDirection();
 		// Randomly attempt to build a gardener in this direction
 		if (rc.canHireGardener(dir)) {
-			if (rc.getTreeCount() < 4) {
+			if (rc.getTreeCount() == 0) {
 				rc.hireGardener(dir);
 				gardenersHired++;
-			} else if (rc.getTreeCount() > gardenersHired * rc.getInitialArchonLocations(us).length * 2) {
+			} //else if (rc.getTreeCount() > gardenersHired * 2) {
+			else if (rc.getRobotCount() > 2 + rc.getInitialArchonLocations(us).length){
 				rc.hireGardener(dir);
 				gardenersHired++;
-			} else if (rc.getTreeCount() < 30 && rc.getTeamBullets() > 600) {
+			} else if (rc.getTreeCount() < 30 && rc.getTeamBullets() > 400) {
 				rc.hireGardener(dir);
 				gardenersHired++;
 			}
