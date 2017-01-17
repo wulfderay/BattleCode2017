@@ -319,6 +319,30 @@ public class Util extends Globals {
 			return moveDir;
 		}
 	}
-    
-    
+
+    /**
+     * find a direction to move or spawn in
+     * @param bodyRadius
+     * @return
+     */
+    /*
+    public static Direction getClearDirection(Direction dir,  float offset, float radius) throws GameActionException {
+        if (!rc.isCircleOccupied(here.add(dir, radius), radius))
+            return dir;
+
+        float cumilativeOffset = offset;
+
+
+
+        while (cumilativeOffset < 360 && cumilativeOffset > -360) {
+           // if (rc.canPlantTree(dir.rotateRightDegrees(cumilativeOffset))) {
+              //  rc.plantTree(dir.rotateRightDegrees(cumilativeOffset));
+
+
+                return dir;
+            }
+            cumilativeOffset += offset;
+        }
+    }
+    */
 }

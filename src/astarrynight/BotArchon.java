@@ -3,14 +3,28 @@ package astarrynight;
 import Common.Broadcast;
 import Common.Globals;
 import Common.Util;
-import battlecode.common.Clock;
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
+import battlecode.common.*;
 
 public class BotArchon extends Globals {
 
 	public static int gardenersHired = 0;
+	public static MapLocation WhereIwasBorn = here;
+	public static int IamArchonNumber = getArchonNumber();
+
+	private static int getArchonNumber()  {
+		MapLocation [] arconlocs = rc.getInitialArchonLocations(us);
+		for (int i = 0; i < arconlocs.length; i++ )
+		{
+			if (arconlocs[i].equals(WhereIwasBorn))
+				return i;
+		}
+		try {
+			throw new GameActionException(GameActionExceptionType.OUT_OF_RANGE, "i am not in the list wtf");
+		} catch (GameActionException e) {
+			e.printStackTrace();
+		}
+		return 4;
+	}
 
 	public static void loop() throws GameActionException {
 		System.out.println("I'm an archon!");
@@ -65,9 +79,14 @@ public class BotArchon extends Globals {
 	private static void BroadCastIfEmergency() throws GameActionException {
 		// Broadcast archon's location for other robots on the team to know
 		// hmm.. no one cares yet.
-		MapLocation myLocation = rc.getLocation();
-		rc.broadcast(0,(int)myLocation.x);
-		rc.broadcast(1,(int)myLocation.y);
+		if (rc.senseNearbyRobots(myType.sensorRadius, them).length > 0);
+		{
+			MapLocation myLocation = rc.getLocation();
+			rc.broadcast(0+IamArchonNumber*3,(int)myLocation.x);
+			rc.broadcast(1+IamArchonNumber*3,(int)myLocation.y);
+			rc.broadcast(2+IamArchonNumber*3,(int)rc.getHealth());
+		}
+
 	}
 
 	/**
@@ -83,11 +102,11 @@ public class BotArchon extends Globals {
 	//TODO: TAke into account how many archons there are, and how many bots we have.
 	private static void HireGardnerMaybe() throws GameActionException {
 		// Generate a random direction
+		//Direction dir = Util.getClearDirection(RobotType.GARDENER.bodyRadius);
 		Direction dir = Util.randomDirection();
-
 		// Randomly attempt to build a gardener in this direction
 		if (rc.canHireGardener(dir)) {
-			if (rc.getTreeCount() == 0) {
+			if (rc.getTreeCount() == 0 ) {
 				rc.hireGardener(dir);
 				gardenersHired++;
 			} else if (rc.getTreeCount() > gardenersHired * 5) {

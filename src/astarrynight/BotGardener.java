@@ -235,7 +235,9 @@ public class BotGardener extends Globals {
 				}
 				else if (!rc.hasMoved())
 				{
-					rc.move(here.directionTo(whereIwantToPlant).opposite(), distance);
+					if (!rc.canMove(here.directionTo(whereIwantToPlant).opposite(), distance - myType.bodyRadius))
+						continue;
+					rc.move(here.directionTo(whereIwantToPlant).opposite(), distance - myType.bodyRadius);
 					rc.plantTree(here.directionTo(whereIwantToPlant));
 					treesPlanted++;
 					return true;
