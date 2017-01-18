@@ -9,8 +9,12 @@ import battlecode.common.*;
 
 public class BotSoldier extends Globals {
 	
+	public static boolean defensive = false;
+	
     public static void loop() throws GameActionException {
         System.out.println("I'm a "+rc.getType().toString());
+        
+        defensive = Math.random() > 0.5f;
         
         // The code you want your robot to perform every round should be in this loop
         while (true) {
@@ -22,8 +26,10 @@ public class BotSoldier extends Globals {
                 turnUpdate();
                 
                 //Do some stuff
-                //turn();
-                defensiveTurn();
+                if ( defensive) 
+                	defensiveTurn();
+                else
+                	turn();
 
             } catch (Exception e) {
                 System.out.println(rc.getType().toString()+" Exception");
@@ -78,12 +84,11 @@ public class BotSoldier extends Globals {
     public static void turn() throws GameActionException {
         //Enemy list:
     	RobotInfo[] enemies = rc.senseNearbyRobots(-1, them);
-    	MapLocation target = Util.pickPriorityTarget(enemies).location;
     	if(enemies.length == 0) {
     		//Some (simple) pursuit code
     		if ( currentTarget == null  )
     		{
-    			Util.moveToFarTarget(target);
+    			Util.moveToFarTarget(globalTarget);
     		} else { 
     			Util.moveToNearTarget(currentTarget.location);
     			turnsSinceLastSawCurrentTarget++;
@@ -93,6 +98,7 @@ public class BotSoldier extends Globals {
     			}
     		}
         } else {
+        	MapLocation target = Util.pickPriorityTarget(enemies).location;
         	turnsSinceLastSawCurrentTarget = 0;
         	currentTarget = Util.pickPriorityTarget(enemies);
         	Util.moveToNearTarget(currentTarget.location);
