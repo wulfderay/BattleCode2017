@@ -378,47 +378,6 @@ public class Util extends Globals {
 		Util.tryMove(Util.randomDirection());
 	}
 
-	/**
-	 * Try to find a clear spot with no gardeners or enemies or bullets so I can spawn some gardeners in peace.
-	 * @throws GameActionException
-	 */
-	public static void MoveToAClearerLocation(float maxradius) throws GameActionException {
-		// hmm doesn't check for bullets.
-		if ( !rc.isCircleOccupiedExceptByThisRobot(here, maxradius - myType.bodyRadius)) // we're in a good spot already.
-			return;
-		Direction dir = here.directionTo(rc.getInitialArchonLocations(them)[0]).opposite();
-		Direction happyDir = null;
-
-		float radius = maxradius - myType.bodyRadius;
-		while (happyDir == null && radius > 0) {
-			happyDir = Util.getClearDirection(dir, 5, radius, false);
-			radius--;
-		}
-		if (happyDir != null)
-			Util.tryMove(happyDir);
-		// Move randomly
-		Util.tryMove(Util.randomDirection());
-	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	//Combat utility functions (previously in Soldier):
 	public static boolean pursueAndDestroy(RobotInfo target) throws GameActionException {
 		boolean moved = Util.moveToNearBot(target);
