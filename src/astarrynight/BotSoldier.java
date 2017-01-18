@@ -44,6 +44,7 @@ public class BotSoldier extends Globals {
     public static RobotInfo currentTarget = null;
     public static int turnsSinceLastSawCurrentTarget = 0;
     public static final int TURNS_TO_PURSUE_CURRENT_TARGET = 5;
+    public static boolean iAmAGuard = false;
     
     public static void turn() throws GameActionException {
 
@@ -52,6 +53,11 @@ public class BotSoldier extends Globals {
     	//Enemy list:
     	RobotInfo[] enemies = rc.senseNearbyRobots(-1, them);
     	MapLocation target = getPriorityTarget();
+    	if ( target == null) // we are on guard duty
+		{
+			iAmAGuard = true;
+			Util.MoveToAClearerLocation(myType.sensorRadius/2);
+		}
     	if(enemies.length == 0) {
     		//Some (simple) pursuit code
     		if ( currentTarget == null  )
@@ -325,8 +331,7 @@ public class BotSoldier extends Globals {
         return false;
     }
 
-    public static MapLocation getPriorityTarget()
-    {
+    public static MapLocation getPriorityTarget() throws GameActionException {
         // See if there are any nearby enemy robots
         RobotInfo[] enemies = rc.senseNearbyRobots(-1, them);
         if(enemies.length > 0) {
@@ -334,7 +339,12 @@ public class BotSoldier extends Globals {
             return enemies[0].getLocation();
         }
         // Otherwise, head towards enemy archon location:
-        return globalTarget;
+		if (iAmAGuard || Broadcast.GetNumberOfRobots(myType) <2) //guard, don't swarm.
+		{
+			iAmAGuard = true;
+			return Broadcast.GetNearestBotInTrouble();
+		}
+		return globalTarget;
     }
 
 }

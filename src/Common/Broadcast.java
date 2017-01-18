@@ -79,6 +79,7 @@ public class Broadcast extends Globals {
 		}
 		return rc.readBroadcast(tallyChannel);
 	}
+
 	
 	public static final int BOSS_ARCHON_LOCATION_X_CHANNEL = 98;
 	public static final int BOSS_ARCHON_LOCATION_Y_CHANNEL = 99;
@@ -97,8 +98,55 @@ public class Broadcast extends Globals {
 			return null;
 		return new MapLocation( (float)x, (float)y);
 	}
-	
-	
+
+	public static final int ALPHA_ARCHON_LAST_CHECK_IN_CHANNEL = 200;
+	public static final int ALPHA_ARCHON_ID_CHANNEL = 201;
+
+	public static boolean AmIAlphaArchon() throws GameActionException {
+		if (myType != RobotType.ARCHON)
+			return false;
+
+		if (rc.readBroadcast(ALPHA_ARCHON_ID_CHANNEL) == rc.getID())
+		{
+			rc.broadcast(ALPHA_ARCHON_LAST_CHECK_IN_CHANNEL, rc.getRoundNum());
+			return true;
+		}
+		int lastTimeArchonSeen = rc.readBroadcast(ALPHA_ARCHON_LAST_CHECK_IN_CHANNEL);
+		if (lastTimeArchonSeen == 0 || rc.getRoundNum() - lastTimeArchonSeen > 2 )
+		{
+			rc.broadcast(ALPHA_ARCHON_ID_CHANNEL, rc.getID());
+			rc.broadcast(ALPHA_ARCHON_LAST_CHECK_IN_CHANNEL, rc.getRoundNum());
+			return true;
+		}
+		return false;
+	}
+
+	public static int GARDENER_STUCK_ACCUMULATOR_CHANNEL = 202;
+	public static int GARDENER_STUCK_TALLY_CHANNEL = 202;
+
+	public static void IamAStuckGardener() throws GameActionException {
+		rc.broadcast(GARDENER_STUCK_ACCUMULATOR_CHANNEL, rc.readBroadcast(GARDENER_STUCK_ACCUMULATOR_CHANNEL)+1);
+	}
+
+	public static int TallyStuckGardeners() throws GameActionException{
+		int tally = rc.readBroadcast(GARDENER_STUCK_ACCUMULATOR_CHANNEL);
+		rc.broadcast(GARDENER_STUCK_ACCUMULATOR_CHANNEL, 0);
+		rc.broadcast(GARDENER_STUCK_TALLY_CHANNEL, tally);
+		return tally;
+	}
+
+
+	public static MapLocation GetNearestBotInTrouble() throws GameActionException {
+		for (int i = 0; i < rc.getInitialArchonLocations(us).length; i++)
+		{
+			if (rc.readBroadcast(3+(i*4)) == 1)
+			{
+				return new MapLocation(rc.readBroadcast(0+i*4), rc.readBroadcast(1+i*4));
+			}
+		}
+		return null;
+	}
+
 	/*
 	Algorithm:
 	
@@ -128,15 +176,10 @@ public class Broadcast extends Globals {
 		rc.broadcast(ENEMY_TARGET_X_CHANNEL, 0);
 		rc.broadcast(ENEMY_TARGET_Y_CHANNEL, 0);
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
+
+
+
 	//Helpful Broadcast tools:
     public class BroadcastFlag
     {

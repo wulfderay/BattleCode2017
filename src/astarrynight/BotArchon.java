@@ -11,6 +11,7 @@ public class BotArchon extends Globals {
 	public static MapLocation WhereIwasBorn = here;
 	public static int IamArchonNumber = getArchonNumber();
 	public static boolean iAmAlphaArchon = getArchonNumber() == 0;
+	public static int stuckGardeners = 0;
 
 	private static int getArchonNumber()  {
 		MapLocation [] arconlocs = rc.getInitialArchonLocations(us);
@@ -28,7 +29,6 @@ public class BotArchon extends Globals {
 	}
 
 	public static void loop() throws GameActionException {
-		Broadcast.RollCall();
 
 		//Update target location!
 		Broadcast.WriteEnemyLocation(rc.getInitialArchonLocations(them)[0]);
@@ -62,18 +62,22 @@ public class BotArchon extends Globals {
 	}
 
 	public static void turn() throws GameActionException {
+		Broadcast.RollCall();
+
+		iAmAlphaArchon = Broadcast.AmIAlphaArchon();
 
 		Util.AvoidBullets();
 
 		if (iAmAlphaArchon) { // btw we need to broadcast this so that we can have another take over if I die.
-			HireGardnerMaybe();
-
-			MoveToABetterLocation();
 			Broadcast.TallyRollCalls();
+			stuckGardeners = Broadcast.TallyStuckGardeners();
+			Util.MoveToAClearerLocation(myType.sensorRadius/2);
+			HireGardnerMaybe();
 		}
 		else
 		{
-			Util.tryMove(Util.randomDirection()); // I guess... maybe hide somewhere..
+			Util.MoveToAClearerLocation(myType.sensorRadius/2);
+			HireGardnerMaybe();
 		}
 		BroadCastIfEmergency();
 	}
@@ -85,38 +89,35 @@ public class BotArchon extends Globals {
 	private static void BroadCastIfEmergency() throws GameActionException {
 		// Broadcast archon's location for other robots on the team to know
 		// hmm.. no one cares yet.
-		if (rc.senseNearbyRobots(myType.sensorRadius, them).length > 0);
+		if (rc.senseNearbyRobots(myType.sensorRadius, them).length > 0)
 		{
 			MapLocation myLocation = rc.getLocation();
-			rc.broadcast(0+IamArchonNumber*3,(int)myLocation.x);
-			rc.broadcast(1+IamArchonNumber*3,(int)myLocation.y);
-			rc.broadcast(2+IamArchonNumber*3,(int)rc.getHealth());
+			rc.broadcast(0+IamArchonNumber*4,(int)myLocation.x);
+			rc.broadcast(1+IamArchonNumber*4,(int)myLocation.y);
+			rc.broadcast(2+IamArchonNumber*4,(int)rc.getHealth());
+			rc.broadcast(3+IamArchonNumber*4,1);  // it's an emergency
+		}
+		else
+		{
+			rc.broadcast(3+IamArchonNumber*4,0);  // it's  not an emergency
 		}
 
 	}
 
-	/**
-	 * Try to find a clear spot with no gardeners or enemies or bullets so I can spawn some gardeners in peace.
-	 * @throws GameActionException
-	 */
-	private static void MoveToABetterLocation() throws GameActionException {
-
-		// Move randomly
-		Util.tryMove(Util.randomDirection());
-	}
-
-	//TODO: TAke into account how many archons there are, and how many bots we have.
 	private static void HireGardnerMaybe() throws GameActionException {
 		// Generate a random direction
 		//Direction dir = Util.getClearDirection(RobotType.GARDENER.bodyRadius);
 		Direction dir = Util.randomDirection();
 		// Randomly attempt to build a gardener in this direction
+
+		int numGardeners = Broadcast.GetNumberOfRobots(RobotType.GARDENER);
+
 		if (rc.canHireGardener(dir)) {
-			if (rc.getTreeCount() == 0) {
+			if (rc.getTreeCount() == 0 || stuckGardeners >= numGardeners) {
 				rc.hireGardener(dir);
 				gardenersHired++;
 			} //else if (rc.getTreeCount() > gardenersHired * 2) {
-			else if (rc.getRobotCount() > 2 + rc.getInitialArchonLocations(us).length){
+			else if (rc.getRobotCount() > 1 + rc.getInitialArchonLocations(us).length + numGardeners ){
 				rc.hireGardener(dir);
 				gardenersHired++;
 			} else if (rc.getTreeCount() < 30 && rc.getTeamBullets() > 400) {

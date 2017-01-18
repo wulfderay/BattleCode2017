@@ -76,6 +76,9 @@ public class BotGardener extends Globals {
 		nearbyTrees = rc.senseNearbyTrees(-1, us);
         
 		waterTrees();
+
+		//if (treesPlanted == 0)
+		//	Util.MoveToAClearerLocation(2);
 		if ( EnsureEarlyGameBotsAreSpawned())
 			spawnBots();
 
@@ -85,7 +88,9 @@ public class BotGardener extends Globals {
 
 	public static boolean EnsureEarlyGameBotsAreSpawned() throws GameActionException{
 
-		if (Broadcast.GetNumberOfRobots(RobotType.SCOUT) < 1)
+		int numGardeners = Broadcast.GetNumberOfRobots(RobotType.GARDENER);
+		int numScouts = Broadcast.GetNumberOfRobots(RobotType.SCOUT);
+		if (numScouts < 1 )
 		{
 			spawnBot(RobotType.SCOUT);
 			return false;
@@ -109,6 +114,7 @@ public class BotGardener extends Globals {
 		if (spawnLocation == null)
 		{
 			rc.setIndicatorDot(here.add(spawnLocation, 1), 250,50,50);
+			Broadcast.IamAStuckGardener();
 			System.out.println("I'm Fucking Stuck! WTF?!");
 			// we can't even move because we are stuck.
 		}
