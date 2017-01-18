@@ -167,7 +167,7 @@ public class Util extends Globals {
         {
             if (Util.willCollideWithMe(bullet))
             {
-                Util.tryMove(bullet.getDir(), -90, 3);
+                Util.tryMove(bullet.getDir().rotateLeftDegrees(90), 5, 3);
                 break;
             }
         }
