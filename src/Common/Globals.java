@@ -52,10 +52,11 @@ public class Globals {
 		} else {
 			globalTargetExists = true;
 			System.out.println("Global target exists!  Woo" + globalTarget);
-			if ( rc.canSenseLocation(globalTarget) )
+			//if ( rc.canSenseLocation(globalTarget) )
+			if ( rc.canSenseAllOfCircle(globalTarget, rc.getType().sensorRadius*0.7f)) //Leave a buffer so we're not hunting down a tree
 			{
 				System.out.println("Sensing global target...");
-				if ( rc.senseNearbyRobots(globalTarget, 3, them).length == 0 )
+				if ( rc.senseNearbyRobots(-1, them).length == 0 )
 				{
 					System.out.println("Nothing there!");
 					Broadcast.ClearEnemyLocation();
