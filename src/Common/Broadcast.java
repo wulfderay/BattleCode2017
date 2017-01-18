@@ -18,6 +18,11 @@ public class Broadcast extends Globals {
 	public static final int ROBOT_ACCUM_SCOUTS = 614;
 	public static final int ROBOT_ACCUM_TANKS = 615;
 
+	public static final int ENEMY_TARGET_X_CHANNEL = 100;
+	public static final int ENEMY_TARGET_Y_CHANNEL = 101;
+
+	public static final int ALPHA_ARCHON_ALERT_CHANNEL = 11;
+
 	public static void RollCall() throws GameActionException
 	{
 		int accumulatorChannel = 599;
@@ -108,8 +113,6 @@ public class Broadcast extends Globals {
 	If you can see the location and there's nothing there, zero the location
 	If the location is zero and you see an enemy, update the location
 	 */
-	public static final int ENEMY_TARGET_X_CHANNEL = 100;
-	public static final int ENEMY_TARGET_Y_CHANNEL = 101;
 	public static MapLocation ReadEnemyLocation() throws GameActionException
 	{
 		int x = rc.readBroadcast(ENEMY_TARGET_X_CHANNEL);
@@ -129,8 +132,25 @@ public class Broadcast extends Globals {
 		rc.broadcast(ENEMY_TARGET_Y_CHANNEL, 0);
 	}
 	
-	
-	
+	public static void setAlphaArchonAlert()
+	{
+		try {
+			rc.broadcast(ALPHA_ARCHON_ALERT_CHANNEL, 1);
+		} catch (GameActionException e) {
+			System.out.println("Exception in setAlphaArchonAlert"+e);
+		}
+	}
+
+	public static boolean getAlphaArchonAlert()
+	{
+		try {
+			return rc.readBroadcast(ALPHA_ARCHON_ALERT_CHANNEL) > 0;
+		} catch (GameActionException e) {
+			System.out.println("Exception in setAlphaArchonAlert"+e);
+		}
+		return false;
+	}
+
 	
 	
 	

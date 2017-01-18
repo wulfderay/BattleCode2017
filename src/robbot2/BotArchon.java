@@ -12,6 +12,13 @@ public class BotArchon extends Globals {
 	public static int IamArchonNumber = getArchonNumber();
 	public static boolean iAmAlphaArchon = getArchonNumber() == 0;
 
+	public static RobotInfo[] nearbyBots;
+	public static int friendlyAttackUnitsNearby;
+	public static int friendlyGardenersNearby;
+	public static int enemyAttackUnitsNearby;
+
+	public static int turnsWithoutBeingAbleToSpawn = 0;
+
 	private static int getArchonNumber()  {
 		MapLocation [] arconlocs = rc.getInitialArchonLocations(us);
 		for (int i = 0; i < arconlocs.length; i++ )
@@ -63,18 +70,48 @@ public class BotArchon extends Globals {
 
 	public static void turn() throws GameActionException {
 
+		senseSurroundings();
+
 		Util.AvoidBullets();
 
-		if (iAmAlphaArchon) { // btw we need to broadcast this so that we can have another take over if I die.
+		if (iAmAlphaArchon || Broadcast.getAlphaArchonAlert()) { // btw we need to broadcast this so that we can have another take over if I die.
+			System.out.println("I'm alpha so lets do something!");
+
 			HireGardnerMaybe();
 
 			MoveToABetterLocation();
+
+			BroadCastIfEmergency();
+
 		}
 		else
 		{
-			Util.tryMove(here.directionTo(rc.getInitialArchonLocations(us)[0]));
+			Util.tryMove(Util.randomDirection()); // I guess... maybe hide somewhere..
 		}
-		BroadCastIfEmergency();
+
+	}
+
+	public static void senseSurroundings() throws GameActionException {
+		nearbyBots = rc.senseNearbyRobots();
+
+		friendlyAttackUnitsNearby = 0;
+		friendlyGardenersNearby = 0;
+		enemyAttackUnitsNearby = 0;
+
+		for (RobotInfo bot : nearbyBots) {
+			if (bot.team == us) {
+				if (bot.type.canAttack()) {
+					friendlyAttackUnitsNearby++;
+				}
+				if (bot.type == RobotType.GARDENER) {
+					friendlyGardenersNearby++;
+				}
+			} else {
+				if (bot.type.canAttack()) {
+					enemyAttackUnitsNearby++;
+				}
+			}
+		}
 	}
 
 	/**
@@ -82,16 +119,10 @@ public class BotArchon extends Globals {
 	 * @throws GameActionException
 	 */
 	private static void BroadCastIfEmergency() throws GameActionException {
-		// Broadcast archon's location for other robots on the team to know
-		// hmm.. no one cares yet.
-		if (rc.senseNearbyRobots(myType.sensorRadius, them).length > 0);
-		{
-			MapLocation myLocation = rc.getLocation();
-			rc.broadcast(0+IamArchonNumber*3,(int)myLocation.x);
-			rc.broadcast(1+IamArchonNumber*3,(int)myLocation.y);
-			rc.broadcast(2+IamArchonNumber*3,(int)rc.getHealth());
+		if (enemyAttackUnitsNearby > friendlyAttackUnitsNearby + 3 //being overrun
+				|| rc.getHealth() < myType.maxHealth / 2) { // dying
+			Broadcast.setAlphaArchonAlert();
 		}
-
 	}
 
 	/**
@@ -106,22 +137,53 @@ public class BotArchon extends Globals {
 
 	//TODO: TAke into account how many archons there are, and how many bots we have.
 	private static void HireGardnerMaybe() throws GameActionException {
-		// Generate a random direction
-		//Direction dir = Util.getClearDirection(RobotType.GARDENER.bodyRadius);
-		Direction dir = Util.randomDirection();
-		// Randomly attempt to build a gardener in this direction
-		if (rc.canHireGardener(dir)) {
-			if (rc.getTreeCount() == 0) {
-				rc.hireGardener(dir);
-				gardenersHired++;
-			} //else if (rc.getTreeCount() > gardenersHired * 2) {
-			else if (rc.getRobotCount() > 2 + rc.getInitialArchonLocations(us).length){
-				rc.hireGardener(dir);
-				gardenersHired++;
-			} else if (rc.getTreeCount() < 30 && rc.getTeamBullets() > 400) {
-				rc.hireGardener(dir);
-				gardenersHired++;
+		Direction dir = Util.getClearDirection(Direction.NORTH, 7, 1, false);
+		if (dir == null) {
+			System.out.println("Spawning blocked");
+			turnsWithoutBeingAbleToSpawn++;
+			if (turnsWithoutBeingAbleToSpawn > 10) {
+				System.out.println("Giving up trying to spawn. Call down the other archons!");
+				Broadcast.setAlphaArchonAlert();
 			}
+			return;
+		}
+
+		turnsWithoutBeingAbleToSpawn = 0;
+
+		if (rc.canHireGardener(dir)) {
+			if (friendlyGardenersNearby == 0 && enemyAttackUnitsNearby == 0) {
+				System.out.println("No gardeners around so lets get some.");
+				for (RobotInfo bot : nearbyBots) {
+					System.out.print("Nearby bot"+bot.type+" "+bot.getID());
+				}
+				rc.hireGardener(dir);
+				return;
+			}
+
+			if (friendlyGardenersNearby == 0 && rc.getTeamBullets() > 150) { //enough to spawn gardener and soldier
+				System.out.println("Under attack but going to try and build a gardener+soldier combo");
+				rc.hireGardener(dir);
+				return;
+			}
+
+			System.out.println("Bullets"+rc.getTeamBullets()+"Gardeners"+friendlyGardenersNearby);
+
+			if (    (friendlyGardenersNearby == 1 && rc.getTeamBullets() > 150) ||
+					(friendlyGardenersNearby == 2 && rc.getTeamBullets() > 200) ||
+					(friendlyGardenersNearby == 3 && rc.getTeamBullets() > 250) ||
+					(friendlyGardenersNearby == 4 && rc.getTeamBullets() > 300) ||
+					(friendlyGardenersNearby == 5 && rc.getTeamBullets() > 350)) {
+				System.out.println("Got enough bullets for more gardeners"+friendlyGardenersNearby+" "+rc.getTeamBullets());
+				rc.hireGardener(dir);
+				return;
+			}
+
+			if (rc.getTreeCount() < 30 && rc.getTeamBullets() > 400) {
+				System.out.println("Got bullets to spare");
+				rc.hireGardener(dir);
+				return;
+			}
+
 		}
 	}
 

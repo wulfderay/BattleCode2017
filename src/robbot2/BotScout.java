@@ -76,7 +76,7 @@ public class BotScout extends Globals {
         if (enemyAttackUnitsNearby == 0) // nothing evil around
         {
             AttackNearbyGardenersAndArchons();
-        } else if (enemyAttackUnitsNearby < friendlyAttackUnitsNearby) { // harass
+        } else if (enemyAttackUnitsNearby < friendlyAttackUnitsNearby + 2) { // harass
             Util.AvoidBullets();
             AttackNearbyGardeners();
             //TODO: Better harass code
@@ -156,7 +156,11 @@ public class BotScout extends Globals {
     }
 
     private static void AttackOfOpportunity() throws GameActionException {
-        RobotInfo[] robots = rc.senseNearbyRobots(-1, them);
+        if (rc.getTeamBullets() < 200) {
+            return;
+        }
+
+	    RobotInfo[] robots = rc.senseNearbyRobots(-1, them);
 
         // If there are some...
         if (robots.length > 0) {
@@ -175,8 +179,9 @@ public class BotScout extends Globals {
 	     if (globalTargetExists) {
 	         Util.moveToFarTarget(globalTarget);
          } else {
+	         System.out.println("No global target so going to explore in a random direction"+exploreDirection);
              if (!Util.tryMove(exploreDirection)) {
-                 exploreDirection.rotateLeftDegrees(90);
+                 exploreDirection = exploreDirection.rotateLeftDegrees(90);
                  Util.tryMove(exploreDirection);
              }
          }

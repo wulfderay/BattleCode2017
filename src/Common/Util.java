@@ -337,8 +337,6 @@ public class Util extends Globals {
 
         float cumilativeOffset = resolution;
 
-
-
         while (cumilativeOffset < 360 && cumilativeOffset > -360) {
             if (strict) {
                 if (!rc.isCircleOccupied(here.add(dir.rotateLeftDegrees(cumilativeOffset), radius+myType.bodyRadius), radius) && rc.onTheMap(here.add(dir, radius), radius)) {
@@ -353,24 +351,27 @@ public class Util extends Globals {
         }
         return null;
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    //Combat utility functions (previously in Soldier):
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	//Combat utility functions (previously in Soldier):
 	public static boolean pursueAndDestroy(RobotInfo target) throws GameActionException {
     	boolean moved = Util.moveToNearBot(target);
     	boolean shot = Util.maximumFirepowerAtSafeTarget(target);
