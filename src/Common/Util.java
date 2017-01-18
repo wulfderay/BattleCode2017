@@ -371,6 +371,18 @@ public class Util extends Globals {
     
     
     //Combat utility functions (previously in Soldier):
+	public static boolean pursueAndDestroy(RobotInfo target) throws GameActionException {
+    	boolean moved = Util.moveToNearBot(target);
+    	boolean shot = Util.maximumFirepowerAtSafeTarget(target);
+    	return moved || shot;
+	}
+
+	public static boolean maximumFirepowerAtSafeTarget(RobotInfo currentTarget) throws GameActionException {
+		if ( safeToFireAtTarget(currentTarget) )
+			return maximumFirepowerAt(currentTarget.location);
+		System.out.println("Target not safe to shoot at!"+currentTarget.location);
+		return false;
+	}
 
     public static boolean maximumFirepowerAtSafeTarget(RobotInfo currentTarget, RobotInfo[] enemies) throws GameActionException {
 		if ( safeToFireAtTarget(currentTarget) )
@@ -452,7 +464,26 @@ public class Util extends Globals {
     	}
     	return currentTarget;
     }
-    
+
+	public static boolean moveToNearBot(RobotInfo target) throws GameActionException
+	{
+		float minDist = myType.bodyRadius + target.type.bodyRadius;
+		float targetDist = here.distanceTo(target.location);
+		if (targetDist < myType.strideRadius + minDist) {
+			if (targetDist - minDist < 0.002f) {
+				System.out.println("Already adjacent to target");
+				return true;
+			}
+			System.out.println("Moving adjacent to target");
+			if (doMove(here.directionTo(target.location), targetDist - minDist - 0.001f)) {
+				return true;
+			}
+			System.out.println("Failed to move adjacent...."+here.distanceTo(target.location)+" "+myType.bodyRadius+" "+target.type.bodyRadius);
+		}
+		Util.tryMove(here.directionTo(target.location),10,10);
+		//moveFurthestDistancePossibleTowards(target);//simpleSlide(target);
+		return true;
+	}
 
     public static boolean moveToNearTarget(MapLocation target) throws GameActionException
     {

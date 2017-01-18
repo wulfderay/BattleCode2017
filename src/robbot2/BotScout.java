@@ -10,14 +10,22 @@ import java.util.Map;
 
 public class BotScout extends Globals {
 
-    static final RobotInfo[] emptyRobotInfoList = new RobotInfo[];
-    static TreeInfo[] nearbyTrees;
-    static RobotInfo[] nearbyBots;
-    static RobotInfo[] enemyGardeners;
-    static RobotInfo[] enemySoldiers;
-    static RobotInfo[] enemyJacks;
-    static RobotInfo[] enemyTanks;
-    static RobotInfo[] enemyArchons;
+    static public final RobotInfo[] emptyRobotInfoList = {};
+    static public TreeInfo[] nearbyTrees;
+    static public RobotInfo[] nearbyEnemyBots;
+    static public RobotInfo nearestEnemyGardener;
+    static public RobotInfo nearestEnemySoldier;
+    static public RobotInfo nearestEnemyJack;
+    static public RobotInfo nearestEnemyTank;
+    static public RobotInfo nearestEnemyArchon;
+    static public RobotInfo nearestEnemyScout;
+    static public int friendlyGardenersNearby = 0;
+    static public int friendlyAttackUnitsNearby = 0;
+    static public int enemyAttackUnitsNearby = 0;
+
+    static public boolean shouldMove = true;
+
+    static public Direction exploreDirection = new Direction((float)Math.random() * 2 * (float)Math.PI);
 
     static TreeInfo nearestUnvisitedTree = null;
     static Map<Integer,TreeVisit> Trees = new HashMap<>();
@@ -55,35 +63,97 @@ public class BotScout extends Globals {
 	
 	public static void turn() throws GameActionException {
 
+        shouldMove = true;
+
 	    senseNearbyBots();
 	    senseNearbyTrees();
 
-
-		RobotInfo[] nearbyEnemies = rc.senseNearbyRobots(-1, them);
-		for(RobotInfo enemy : nearbyEnemies)
-		{
-			if ( enemy.getType() == RobotType.ARCHON )
-			{
-				System.out.println("Scout found an archon!  Broadcasting global target..."+enemy.location);
-				Broadcast.WriteEnemyLocation(enemy.location);
-				break;
-			}
+		if ( nearestEnemyArchon != null ) {
+            System.out.println("Scout found an archon!  Broadcasting global target..."+nearestEnemyArchon.location);
+            Broadcast.WriteEnemyLocation(nearestEnemyArchon.location);
 		}
 		
-        PopulateBestNextTree();
-
-        Util.AvoidBullets();
-
-        AttackNearbyGardenersAndArchons();
+        if (enemyAttackUnitsNearby == 0) // nothing evil around
+        {
+            AttackNearbyGardenersAndArchons();
+        } else if (enemyAttackUnitsNearby < friendlyAttackUnitsNearby) { // harass
+            Util.AvoidBullets();
+            AttackNearbyGardeners();
+            //TODO: Better harass code
+        } else { // Run away
+            Util.AvoidBullets();
+            //TODO: Implement runaway code
+        }
 
         TreeHop();
-
-        CleanUpTreeList();
 
         Explore();
 
         AttackOfOpportunity();
 	}
+
+	public static void senseNearbyBots() {
+	    nearbyEnemyBots = rc.senseNearbyRobots();
+        nearestEnemyGardener = null;
+	    nearestEnemyScout = null;
+	    nearestEnemyArchon = null;
+	    nearestEnemyJack = null;
+	    nearestEnemySoldier = null;
+	    nearestEnemyTank = null;
+        enemyAttackUnitsNearby = 0;
+        friendlyAttackUnitsNearby = 0;
+        friendlyGardenersNearby = 0;
+
+	    for (RobotInfo bot : nearbyEnemyBots) {
+	        if (bot.team == us) {
+	            if (bot.type == RobotType.GARDENER) {
+	                friendlyGardenersNearby++;
+                } else if (bot.type.canAttack()) {
+	                friendlyAttackUnitsNearby++;
+                }
+            } else {
+	            if (bot.type.canAttack()) {
+	                enemyAttackUnitsNearby++;
+                }
+                switch (bot.type) {
+                    case ARCHON:
+                        if (nearestEnemyArchon == null) {
+                            nearestEnemyArchon = bot;
+                        }
+                        break;
+                    case GARDENER:
+                        if (nearestEnemyGardener == null) {
+                            nearestEnemyGardener = bot;
+                        }
+                        break;
+                    case LUMBERJACK:
+                        if (nearestEnemyJack == null) {
+                            nearestEnemyJack = bot;
+                        }
+                        break;
+                    case SOLDIER:
+                        if (nearestEnemySoldier == null) {
+                            nearestEnemySoldier = bot;
+                        }
+                        break;
+                    case TANK:
+                        if (nearestEnemyTank == null) {
+                            nearestEnemyTank = bot;
+                        }
+                        break;
+                    case SCOUT:
+                        if (nearestEnemyScout == null) {
+                            nearestEnemyScout = bot;
+                        }
+                        break;
+                }
+            }
+        }
+    }
+
+    public static void senseNearbyTrees() {
+	    nearbyTrees = rc.senseNearbyTrees();
+    }
 
     private static void AttackOfOpportunity() throws GameActionException {
         RobotInfo[] robots = rc.senseNearbyRobots(-1, them);
@@ -100,80 +170,55 @@ public class BotScout extends Globals {
 
 
     private static void Explore() throws GameActionException {
-	     if (rc.hasMoved())
+	     if (rc.hasMoved() || !shouldMove)
             return;
-	     Util.tryMove(here.directionTo(Util.getEnemyLoc())); // maybe change this to circle-strafe?
-	     /*
-	     - move towards enemy broadcasts
- - move towards enemy start location
- - move randomly
-	      */
-    }
-
-    private static void CleanUpTreeList() {
-	    /* // this might be needed later, but...
-        if (Trees.size() >0 ) {
-            for (TreeVisit treeVisit : Trees.values()) {
-                treeVisit.haveVisited = false; // this will make the scout go visit all the trees again.. not necessarily good, dunno yet.
-            }
-        }*/
-
-        if ( shouldReplaceNextTree() && nearestUnvisitedTree != null)
-        {
-            if ( !rc.canSenseTree(nearestUnvisitedTree.getID())) // tree has been cut down! oh no!
-            {
-                Trees.remove(nearestUnvisitedTree.getID());
-            }
-            nearestUnvisitedTree = null; // already visited. Time to move on.
-        }
+	     if (globalTargetExists) {
+	         Util.moveToFarTarget(globalTarget);
+         } else {
+             if (!Util.tryMove(exploreDirection)) {
+                 exploreDirection.rotateLeftDegrees(90);
+                 Util.tryMove(exploreDirection);
+             }
+         }
     }
 
     private static void TreeHop() throws GameActionException  {
-        if (nearestUnvisitedTree == null)
-            return;
-
-        if (!rc.hasMoved() && nearestUnvisitedTree != null)
-        {
-            if (!Util.doMove(nearestUnvisitedTree.getLocation(), true)) {
-                Util.tryMove(here.directionTo(nearestUnvisitedTree.getLocation()));
-            }
+	    if (rc.hasMoved() || !shouldMove) {
+	        return;
         }
-        if (rc.canShake() && rc.canInteractWithTree(nearestUnvisitedTree.getID())) {
-
-            if (nearestUnvisitedTree.getContainedBullets() > 0) {
-                rc.shake(nearestUnvisitedTree.getID());
-                System.out.println("Shaking tree");
-                rc.setIndicatorDot(nearestUnvisitedTree.getLocation(), (int)(Math.random()* 255), (int)(Math.random()* 255), (int)(Math.random()* 255));
+        for (TreeInfo tree : nearbyTrees) {
+            if (tree.containedBullets > 0) {
+                if (rc.canShake() && rc.canInteractWithTree(tree.getID())) {
+                    rc.shake(tree.getID());
+                    rc.setIndicatorDot(tree.location, 0, 255, 100);
+                    System.out.println("Shaking tree");
+                } else {
+                    Util.moveToFarTarget(tree.location);
+                }
+                return;
             }
-
-            Trees.get(nearestUnvisitedTree.getID()).haveVisited = true;
         }
     }
 
     private static void AttackNearbyGardenersAndArchons() throws GameActionException {
-        RobotInfo[] enemies = rc.senseNearbyRobots(-1 , them);
-        RobotInfo mostHated = null;
-        for (RobotInfo robot : enemies)
-        {
-
-            if (robot.getType() == RobotType.GARDENER)
-            {
-                if (mostHated == null || mostHated.getType() != RobotType.GARDENER || robot.getHealth() < mostHated.getHealth())
-                    mostHated = robot;
+        if (nearestEnemyGardener != null) {
+            Util.pursueAndDestroy(nearestEnemyGardener);
+            shouldMove = false;
+        } else if (nearestEnemyArchon != null) {
+            if (rc.getTeamBullets() > 500) {
+                Util.pursueAndDestroy(nearestEnemyArchon);
+            } else {
+                Util.moveToNearTarget(nearestEnemyArchon.location);
             }
-            if (robot.getType() == RobotType.ARCHON)
-            {
-                if (mostHated == null || (mostHated.getType() != RobotType.GARDENER && robot.getHealth() < mostHated.getHealth()))
-                    mostHated = robot;
-            }
+            shouldMove = false;
         }
-        if (mostHated == null) return;
+    }
 
-
-        BobandWeave(mostHated);
-
-        if (rc.getAttackCount() < 1 && rc.getTeamBullets() >1)
-            rc.fireSingleShot(here.directionTo(mostHated.getLocation()));
+    private static void AttackNearbyGardeners() throws GameActionException {
+        if (nearestEnemyGardener != null) {
+            Util.pursueAndDestroy(nearestEnemyGardener);
+            shouldMove = false;
+        }
     }
 
     private static void BobandWeave(RobotInfo mostHated) throws GameActionException {
