@@ -6,6 +6,33 @@ public class Broadcast extends Globals {
 	
 	
 	
+	public static final int BOSS_ARCHON_LOCATION_X_CHANNEL = 98;
+	public static final int BOSS_ARCHON_LOCATION_Y_CHANNEL = 99;
+	
+	public static void BroadcastBossArchonLocation(MapLocation location) throws GameActionException
+	{
+		rc.broadcast(BOSS_ARCHON_LOCATION_X_CHANNEL, (int) location.x);
+		rc.broadcast(BOSS_ARCHON_LOCATION_Y_CHANNEL, (int) location.y);
+	}
+	
+	public static MapLocation RetrieveBossArchonLocation() throws GameActionException
+	{
+		int x = rc.readBroadcast(BOSS_ARCHON_LOCATION_X_CHANNEL);
+		int y = rc.readBroadcast(BOSS_ARCHON_LOCATION_Y_CHANNEL);
+		if ( x == 0 && y == 0 )
+			return null;
+		return new MapLocation( (float)x, (float)y);
+	}
+	
+	public static final int BOSS_ARCHON_ACTIVE_CHANNEL = 97;
+	public static void SetBossArchonActive() throws GameActionException
+	{
+		rc.broadcast(BOSS_ARCHON_ACTIVE_CHANNEL, 1);
+	}
+	public static int GetBossArchonActive() throws GameActionException
+	{
+		return rc.readBroadcast(BOSS_ARCHON_ACTIVE_CHANNEL);
+	}
 	
 	
 	/*
@@ -17,7 +44,6 @@ public class Broadcast extends Globals {
 	If you can see the location and there's nothing there, zero the location
 	If the location is zero and you see an enemy, update the location
 	 */
-
 	public static final int ENEMY_TARGET_X_CHANNEL = 100;
 	public static final int ENEMY_TARGET_Y_CHANNEL = 101;
 	public static MapLocation ReadEnemyLocation() throws GameActionException

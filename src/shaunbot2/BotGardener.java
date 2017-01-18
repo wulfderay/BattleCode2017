@@ -60,13 +60,23 @@ public class BotGardener extends Globals {
         }			
 	}
 
+	public static boolean firstTurnSpawnScout = false;
 	//TODO: If there's enemies nearby, spawn some soldiers , and spawn a tree in the way of bullets.
 	public static void turn() throws GameActionException {
         if ( rc.getTeamBullets() > 10000 - rc.getTeamVictoryPoints()*10)
 		{
 			rc.donate(rc.getTeamBullets());
 		}
-
+        
+        if ( !firstTurnSpawnScout )
+        {
+        	spawnLocation = Util.getClearDirection(towardsEnemySpawn(), 2, 1, false);
+        	if ( spawnLocation != null && rc.canBuildRobot(RobotType.SCOUT, spawnLocation)){
+        		rc.buildRobot(RobotType.SCOUT, spawnLocation);
+        		firstTurnSpawnScout = true;
+        	}
+        }
+        
 		nearbyBots = rc.senseNearbyRobots();
 		nearbyTrees = rc.senseNearbyTrees(-1, us);
         
@@ -149,7 +159,7 @@ public class BotGardener extends Globals {
 
 	public static Boolean spawnBots() throws GameActionException {
 
-		spawnLocation = Util.getClearDirection(towardsEnemySpawn().opposite(), 7, 1, false);
+		spawnLocation = Util.getClearDirection(towardsEnemySpawn(), 2, 1, false);
 		if (spawnLocation != null) rc.setIndicatorDot(here.add(spawnLocation, 1), 50,50,50);
 		if (spawnLocation == null)
 		{

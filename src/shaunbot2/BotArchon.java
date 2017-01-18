@@ -65,14 +65,17 @@ public class BotArchon extends Globals {
 
 		Util.AvoidBullets();
 
-		if (iAmAlphaArchon) { // btw we need to broadcast this so that we can have another take over if I die.
-			HireGardnerMaybe();
-
+		//if (iAmAlphaArchon) { // btw we need to broadcast this so that we can have another take over if I die.
+			HireGardener();
 			MoveToABetterLocation();
-		}
-		else
+		//}
+		//else
+		//{
+		//	Util.tryMove(here.directionTo(rc.getInitialArchonLocations(us)[0]));
+		//}
+		if ( iAmAlphaArchon )
 		{
-			Util.tryMove(here.directionTo(rc.getInitialArchonLocations(us)[0]));
+			Broadcast.BroadcastBossArchonLocation(here);
 		}
 		BroadCastIfEmergency();
 	}

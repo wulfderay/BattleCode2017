@@ -69,7 +69,7 @@ public class BotScout extends Globals {
 
         Explore();
 
-        AttackOfOpportunity();
+        //AttackOfOpportunity();
 	}
 
     private static void AttackOfOpportunity() throws GameActionException {
@@ -89,6 +89,7 @@ public class BotScout extends Globals {
     private static void Explore() throws GameActionException {
 	     if (rc.hasMoved())
             return;
+	     Util.setEnemyLoc(globalTarget);
 	     Util.tryMove(here.directionTo(Util.getEnemyLoc())); // maybe change this to circle-strafe?
 	     /*
 	     - move towards enemy broadcasts
@@ -142,25 +143,18 @@ public class BotScout extends Globals {
         RobotInfo mostHated = null;
         for (RobotInfo robot : enemies)
         {
-
             if (robot.getType() == RobotType.GARDENER)
             {
                 if (mostHated == null || mostHated.getType() != RobotType.GARDENER || robot.getHealth() < mostHated.getHealth())
                     mostHated = robot;
             }
-            if (robot.getType() == RobotType.ARCHON)
-            {
-                if (mostHated == null || (mostHated.getType() != RobotType.GARDENER && robot.getHealth() < mostHated.getHealth()))
-                    mostHated = robot;
-            }
         }
         if (mostHated == null) return;
-
-
-        BobandWeave(mostHated);
-
-        if (rc.getAttackCount() < 1 && rc.getTeamBullets() >1)
-            rc.fireSingleShot(here.directionTo(mostHated.getLocation()));
+        
+        //BobandWeave(mostHated);
+        Util.moveToNearTarget(mostHated.location);
+        
+        Util.maximumFirepowerAtSafeTarget(mostHated, enemies);
     }
 
     private static void BobandWeave(RobotInfo mostHated) throws GameActionException {

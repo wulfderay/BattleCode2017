@@ -1,5 +1,7 @@
 package Common;
 
+import java.util.ArrayList;
+
 import battlecode.common.*;
 
 public class Util extends Globals {
@@ -350,5 +352,283 @@ public class Util extends Globals {
             cumilativeOffset += resolution;
         }
         return null;
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    //Combat utility functions (previously in Soldier):
+
+    public static boolean maximumFirepowerAtSafeTarget(RobotInfo currentTarget, RobotInfo[] enemies) throws GameActionException {
+		if ( safeToFireAtTarget(currentTarget) )
+			return maximumFirepowerAt(currentTarget.location);
+		for( RobotInfo target : enemies )
+		{
+			if ( safeToFireAtTarget(target)) {
+				System.out.println("Picking alternate safe target!");
+				return maximumFirepowerAt(target.location);
+			}
+		}
+		System.out.println("Can't find a safe target to shoot at!");
+		return false;
+	}
+    
+    public static boolean safeToFireAtTarget(RobotInfo target)
+    {
+    	Direction direction = here.directionTo(target.location);
+    	//Test the line towards the target:
+    	MapLocation testLocation;
+    	int sensedTeammates;
+    	float distance = rc.getType().bodyRadius + 0.1f;
+    	float DISTANCE_INCREMENT = 0.3f; //Chosen by IEEE certified random dice roll
+    	float senseRadius = 0.01f;
+    	float max_test_distance = rc.getType().sensorRadius;
+    	while ( distance < max_test_distance)
+    	{
+    		testLocation = here.add(direction, distance);
+    		sensedTeammates = rc.senseNearbyRobots(testLocation, senseRadius, us).length;
+    		if ( sensedTeammates > 0 )
+    			return false;
+    		distance += DISTANCE_INCREMENT;
+    	}
+    	return true;
+    }
+
+	public static boolean maximumFirepowerAt(MapLocation target) throws GameActionException
+    {
+    	Direction direction = here.directionTo(target);
+    	float distance = here.add(direction, rc.getType().bodyRadius).distanceTo(target);
+    	if ( distance < 1.75f ) //Determined on the back of an official IEEE napkin 
+    	{
+    		if (rc.canFirePentadShot()) {
+    			System.out.println("FIRING PENTAD SHOT!");
+	            rc.firePentadShot(here.directionTo(target));
+	            rc.setIndicatorLine(here, target, 100, 0, 0);
+	            return true;
+    		}
+    	}
+    	if ( distance < 2.5f )
+    	{
+    		if (rc.canFireTriadShot()) {
+    			System.out.println("FIRING TRIAD SHOT!");
+	            rc.fireTriadShot(here.directionTo(target));
+	            rc.setIndicatorLine(here, target, 170, 0, 0);
+	            return true;
+    		}
+    	}
+    	
+		if (rc.canFireSingleShot()) {
+			System.out.println("Firing single shot!");
+            rc.fireSingleShot(here.directionTo(target));
+            rc.setIndicatorLine(here, target, 255, 0, 0);
+            return true;
+		}
+        return false;
+    }
+    
+    //This is a really bad picker:
+    public static RobotInfo pickPriorityTarget(RobotInfo[] enemies)
+    {
+    	if ( enemies.length == 0 )
+    		return null;
+    	RobotInfo currentTarget = enemies[0];
+    	for ( RobotInfo enemy : enemies )
+    	{
+    		if ( currentTarget.getType() == RobotType.ARCHON && enemy.getType() != RobotType.ARCHON )
+    			currentTarget = enemy;
+    	}
+    	return currentTarget;
+    }
+    
+
+    public static boolean moveToNearTarget(MapLocation target) throws GameActionException
+    {
+    	Util.tryMove(here.directionTo(target),10,10);
+    	//moveFurthestDistancePossibleTowards(target);//simpleSlide(target);
+    	return true;
+    }
+    /////////////////
+
+	public static void makeAmoebaCircle() throws GameActionException {
+		// TODO Auto-generated method stub
+		//Friendly list:
+    	RobotInfo[] friends = rc.senseNearbyRobots(-1, us);
+    	MapLocation bossArchonLocation = Broadcast.RetrieveBossArchonLocation();
+    	
+    	//Determine goal position:
+    	Direction outsideOfCircle = bossArchonLocation.directionTo(here);
+    	
+    	float MAX_DISTANCE_TO_ADJACENT_FRIENDS = 3f + rc.getType().bodyRadius;
+    	float MIN_DISTANCE_TO_ADJACENT_FRIENDS = 2f + rc.getType().bodyRadius;
+    	float DISTANCE_TO_MAINTAIN_AROUND_GARDENER = 3f + rc.getType().bodyRadius;
+    	
+    	//First, find my friends:
+    	RobotInfo friend1 = null;
+    	RobotInfo friend2 = null;
+    	RobotInfo closestGardener = null;
+    	for(RobotInfo friend : friends)
+    	{
+    		if ( friend.type == RobotType.SOLDIER ) //And lumberjack, later...
+    		{
+    			if ( friend1 == null )
+    				friend1 = friend;
+    			else
+    				if ( friend2 == null )
+    					friend2 = friend;
+    		}
+    		if ( friend.type == RobotType.GARDENER )
+    			if ( closestGardener == null )
+    				closestGardener = friend;
+    	}
+    	
+    	if ( closestGardener != null ) {
+    		//Move to the other side of the gardener from the bossArchonLocation
+    		//Util.moveToNearTarget(closestGardener.location.add(outsideOfCircle, DISTANCE_TO_MAINTAIN_AROUND_GARDENER));
+    		//rc.setIndicatorLine(closestGardener.location, closestGardener.location.add(outsideOfCircle, DISTANCE_TO_MAINTAIN_AROUND_GARDENER), 0, 0, 255);
+    		//return;
+    	}
+    	if ((friend1 == null || friend2 == null ) )
+    	{
+    		System.out.println("I got no friends!");
+    		rc.setIndicatorDot(here, 125, 125, 125);
+    		if ( friend1 != null )
+    		{
+    			Direction moveDirFriend1 = maintainDistanceWith(friend1, MAX_DISTANCE_TO_ADJACENT_FRIENDS, MIN_DISTANCE_TO_ADJACENT_FRIENDS, bossArchonLocation);
+    	    	if ( moveDirFriend1 != null )
+    	    	{
+    	    		System.out.println("Too close to my only friend1!");
+    	    		Util.tryMove(moveDirFriend1,10,10, 0.1f);
+    	    		rc.setIndicatorLine(here, friend1.location, 255, 100, 255);
+    	    		return;
+    	    	}
+    			return;
+    		}
+    		return;
+    	}
+    	
+    	float moveSpeed = rc.getType().strideRadius;
+    	
+    	//Maintain distance from friend 1:
+    	Direction moveDirFriend1 = maintainDistanceWith(friend1, MAX_DISTANCE_TO_ADJACENT_FRIENDS, MIN_DISTANCE_TO_ADJACENT_FRIENDS, bossArchonLocation);
+    	Direction moveDirFriend2 = maintainDistanceWith(friend2, MAX_DISTANCE_TO_ADJACENT_FRIENDS, MIN_DISTANCE_TO_ADJACENT_FRIENDS, bossArchonLocation);
+    	if ( moveDirFriend1 != null && moveDirFriend2 != null )
+    	{
+    		System.out.println("Too close to both friends!");
+    		Direction friendlyDirection = halfwayDirection(moveDirFriend1, moveDirFriend2);
+    		Util.tryMove(friendlyDirection,10,10, moveSpeed);
+    		rc.setIndicatorLine(here, friend1.location, 255, 255, 255);
+    		rc.setIndicatorLine(here, friend2.location, 255, 255, 255);
+    		return;
+    	}
+    	if ( moveDirFriend1 != null )
+    	{
+    		System.out.println("Too close to friend1!");
+    		Util.tryMove(moveDirFriend1,10,10, moveSpeed/2);
+    		rc.setIndicatorLine(here, friend1.location, 255, 100, 255);
+    		return;
+    	}
+
+    	if ( moveDirFriend2 != null )
+    	{
+    		System.out.println("Too close to friend2!");
+    		Util.tryMove(moveDirFriend2,10,10, moveSpeed/2);
+    		rc.setIndicatorLine(here, friend2.location, 255, 255, 100);
+    		return;
+    	}
+    	
+    	System.out.println("AMOEBA!");
+    	
+    	//Okay, we've got distance, but have we got degrees?
+    	Direction towardsCenter = here.directionTo(bossArchonLocation);
+    	Direction towardsFriend1 = here.directionTo(friend1.location);
+    	float degreesBetween = towardsFriend1.degreesBetween(towardsCenter);
+    	float DEGREE_FUDGE = 5f;
+    	if ( degreesBetween > 0 )
+    	{
+	    	if ( degreesBetween < 90 + DEGREE_FUDGE && degreesBetween > 90 - DEGREE_FUDGE)
+	    		return;
+	    	Util.tryMove(towardsCenter,10,10, moveSpeed/2);
+    	}
+    	else 
+    	{
+    		degreesBetween *= -1;
+    		if ( degreesBetween < 90 + DEGREE_FUDGE && degreesBetween > 90 - DEGREE_FUDGE)
+    			return;
+	    	Util.tryMove(towardsCenter.opposite(),10,10, moveSpeed/2);
+    	}
+    	
+	}
+	
+	//True if moved:
+	public static Direction maintainDistanceWith(RobotInfo friend, float MAX, float MIN, MapLocation centerOfCircle) throws GameActionException
+	{
+		Direction directionToCenter = here.directionTo(centerOfCircle);
+		Direction directionAwayFromCenter = centerOfCircle.directionTo(here);
+		Direction friendDirection = here.directionTo(friend.location);
+		float friendDistance = here.distanceTo(friend.location);
+    	if ( friendDistance > MAX )
+    	{
+    		return halfwayDirection(friendDirection, directionToCenter);
+    	}
+    	if ( friendDistance < MIN )
+    	{
+    		return halfwayDirection(friendDirection.opposite(), directionAwayFromCenter);
+    	}
+    	return null;
+	}
+
+	private static Direction halfwayDirection(Direction dir1, Direction dir2) {
+		float dx = (dir1.getDeltaX(1) + dir2.getDeltaX(1)) / 2;
+		float dy = (dir1.getDeltaY(1) + dir2.getDeltaY(1)) / 2;
+		return new Direction(dx, dy);
+	}
+	
+
+	
+	public static boolean tryMove(Direction dir, float degreeOffset, int checksPerSide, float distance) throws GameActionException {
+        if (rc.hasMoved())
+            return false;
+        // First, try intended direction
+        if (rc.canMove(dir, distance) && rc.senseNearbyBullets(here.add(dir), myType.bodyRadius).length == 0 ) {
+            doMove(dir, distance);
+            here = rc.getLocation();
+            return true;
+        }
+
+        // Now try a bunch of similar angles
+        int currentCheck = 1;
+
+        while(currentCheck<=checksPerSide) {
+            // Try the offset of the left side
+            if(rc.canMove(dir.rotateLeftDegrees(degreeOffset*currentCheck), distance) && rc.senseNearbyBullets(here.add(dir), myType.bodyRadius).length == 0  && notNearALumberJack(here.add(dir))) {
+                doMove(dir.rotateLeftDegrees(degreeOffset*currentCheck), distance);
+                here = rc.getLocation(); //here.add(dir.rotateLeftDegrees(degreeOffset*currentCheck),rc.getType().strideRadius);
+                return true;
+            }
+            // Try the offset on the right side
+            if(rc.canMove(dir.rotateRightDegrees(degreeOffset*currentCheck), distance) && rc.senseNearbyBullets(here.add(dir), myType.bodyRadius).length == 0 ) {
+                doMove(dir.rotateRightDegrees(degreeOffset*currentCheck), distance);
+                here = rc.getLocation(); //here.add(dir.rotateRightDegrees(degreeOffset*currentCheck),rc.getType().strideRadius);
+                return true;
+            }
+            // No move performed, try slightly further
+            currentCheck++;
+        }
+
+        // A move never happened, so return false.
+        return false;
     }
 }
