@@ -330,7 +330,7 @@ public class Util extends Globals {
      */
     public static Direction getClearDirection(Direction dir,  float resolution, float radius, boolean strict) throws GameActionException {
         if (dir == null) rc.setIndicatorDot(here.add(Direction.getNorth(), 1), 255,255,255);
-        if (!rc.isCircleOccupied(here.add(dir, radius), radius))
+        if (!rc.isCircleOccupied(here.add(dir, radius), radius) && rc.onTheMap(here.add(dir, radius), radius))
             return dir;
 
         float cumilativeOffset = resolution;
@@ -339,11 +339,11 @@ public class Util extends Globals {
 
         while (cumilativeOffset < 360 && cumilativeOffset > -360) {
             if (strict) {
-                if (!rc.isCircleOccupied(here.add(dir.rotateLeftDegrees(cumilativeOffset), radius+myType.bodyRadius), radius)) {
+                if (!rc.isCircleOccupied(here.add(dir.rotateLeftDegrees(cumilativeOffset), radius+myType.bodyRadius), radius) && rc.onTheMap(here.add(dir, radius), radius)) {
                     return dir.rotateLeftDegrees(cumilativeOffset);
                 }
             }
-            else if (!rc.isCircleOccupiedExceptByThisRobot(here.add(dir.rotateLeftDegrees(cumilativeOffset), radius+myType.bodyRadius), radius))
+            else if (!rc.isCircleOccupiedExceptByThisRobot(here.add(dir.rotateLeftDegrees(cumilativeOffset), radius+myType.bodyRadius), radius) && rc.onTheMap(here.add(dir, radius), radius))
             {
                 return dir.rotateLeftDegrees(cumilativeOffset);
             }
