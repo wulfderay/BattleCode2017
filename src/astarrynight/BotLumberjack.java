@@ -1,5 +1,6 @@
 package astarrynight;
 
+import Common.Broadcast;
 import Common.Globals;
 import Common.Util;
 import battlecode.common.*;
@@ -46,6 +47,8 @@ public class BotLumberjack extends Globals {
 	}
 	
 	public static void turn() throws GameActionException {
+
+        Broadcast.RollCall();
 
 	    Util.AvoidBullets();
 

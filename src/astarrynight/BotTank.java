@@ -1,5 +1,6 @@
 package astarrynight;
 
+import Common.Broadcast;
 import Common.Globals;
 import Common.Util;
 import battlecode.common.*;
@@ -38,7 +39,10 @@ public class BotTank extends Globals {
 	}
 
     public static void turn() throws GameActionException {
-        //Scan
+
+        Broadcast.RollCall();
+
+	    //Scan
         //Head towards enemy archon
         System.out.println("SOLDIER EXECUTING!!!!");
         RobotInfo target = getPriorityTarget();

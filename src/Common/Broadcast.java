@@ -4,7 +4,81 @@ import battlecode.common.*;
 
 public class Broadcast extends Globals {
 	
-	
+	public static final int ROBOT_TALLY_ARCHONS = 600;
+	public static final int ROBOT_TALLY_GARDENERS = 601;
+	public static final int ROBOT_TALLY_LUMBERJACKS= 602;
+	public static final int ROBOT_TALLY_SOLDIERS = 603;
+	public static final int ROBOT_TALLY_SCOUTS = 604;
+	public static final int ROBOT_TALLY_TANKS = 605;
+
+	public static final int ROBOT_ACCUM_ARCHONS = 610;
+	public static final int ROBOT_ACCUM_GARDENERS = 611;
+	public static final int ROBOT_ACCUM_LUMBERJACKS= 612;
+	public static final int ROBOT_ACCUM_SOLDIERS = 613;
+	public static final int ROBOT_ACCUM_SCOUTS = 614;
+	public static final int ROBOT_ACCUM_TANKS = 615;
+
+	public static void RollCall() throws GameActionException
+	{
+		int accumulatorChannel = 599;
+		switch (myType)
+		{
+			case ARCHON:
+				accumulatorChannel = ROBOT_ACCUM_ARCHONS;
+				break;
+			case GARDENER:
+				accumulatorChannel = ROBOT_ACCUM_GARDENERS;
+				break;
+			case SCOUT:
+				accumulatorChannel = ROBOT_ACCUM_SCOUTS;
+				break;
+			case SOLDIER:
+				accumulatorChannel = ROBOT_ACCUM_SOLDIERS;
+				break;
+			case LUMBERJACK:
+				accumulatorChannel = ROBOT_ACCUM_LUMBERJACKS;
+				break;
+			case TANK:
+				accumulatorChannel = ROBOT_ACCUM_TANKS;
+				break;
+		}
+		rc.broadcast(accumulatorChannel,rc.readBroadcast(accumulatorChannel) +1);
+	}
+
+	public static void TallyRollCalls() throws GameActionException
+	{
+		for (int i = ROBOT_ACCUM_ARCHONS; i <= ROBOT_ACCUM_TANKS; i++)
+		{
+			rc.broadcast(i-10, rc.readBroadcast(i));
+			rc.broadcast(i, 0);
+		}
+	}
+
+	public static int GetNumberOfRobots(RobotType type) throws GameActionException {
+		int tallyChannel = 599;
+		switch (type)
+		{
+			case ARCHON:
+				tallyChannel = ROBOT_TALLY_ARCHONS;
+				break;
+			case GARDENER:
+				tallyChannel = ROBOT_TALLY_GARDENERS;
+				break;
+			case SCOUT:
+				tallyChannel = ROBOT_TALLY_SCOUTS;
+				break;
+			case SOLDIER:
+				tallyChannel = ROBOT_TALLY_SOLDIERS;
+				break;
+			case LUMBERJACK:
+				tallyChannel = ROBOT_TALLY_LUMBERJACKS;
+				break;
+			case TANK:
+				tallyChannel = ROBOT_TALLY_TANKS;
+				break;
+		}
+		return rc.readBroadcast(tallyChannel);
+	}
 	
 	public static final int BOSS_ARCHON_LOCATION_X_CHANNEL = 98;
 	public static final int BOSS_ARCHON_LOCATION_Y_CHANNEL = 99;

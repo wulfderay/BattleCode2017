@@ -1,8 +1,11 @@
 package astarrynight;
 
+import Common.Broadcast;
 import Common.Globals;
 import Common.Util;
 import battlecode.common.*;
+
+import java.awt.*;
 
 public class BotGardener extends Globals {
 
@@ -67,64 +70,60 @@ public class BotGardener extends Globals {
 			rc.donate(rc.getTeamBullets());
 		}
 
+		Broadcast.RollCall();
+
 		nearbyBots = rc.senseNearbyRobots();
 		nearbyTrees = rc.senseNearbyTrees(-1, us);
         
 		waterTrees();
-		if (rc.getTreeCount() > 1)
+		if ( EnsureEarlyGameBotsAreSpawned())
 			spawnBots();
-		buildGrove();
-		//plantTreeOnGrid();
 
-		// move to better spot
-		/*if (!rc.hasMoved())
-			rc.move(Util.randomDirection(), 0.1f);*/
+
+		buildGrove();
 	}
 
-	private static void SpawnLumberJack() throws GameActionException {
-		spawnBot(RobotType.LUMBERJACK);
-		state = GardenerStates.BUILD_GROVE;
+	public static boolean EnsureEarlyGameBotsAreSpawned() throws GameActionException{
+
+		if (Broadcast.GetNumberOfRobots(RobotType.SCOUT) < 1)
+		{
+			spawnBot(RobotType.SCOUT);
+			return false;
+		}
+		if (Broadcast.GetNumberOfRobots(RobotType.SOLDIER) < 1)
+		{
+			spawnBot(RobotType.SOLDIER);
+			return false;
+		}
+		if (Broadcast.GetNumberOfRobots(RobotType.LUMBERJACK) < 2)
+		{
+			return spawnBot(RobotType.LUMBERJACK);
+		}
+		return true;
 	}
 
 	// to be refactored.
 	public static boolean spawnBot(RobotType robotType) throws GameActionException {
+		spawnLocation = Util.getClearDirection(towardsEnemySpawn().opposite(), 7, 1, false);
+		if (spawnLocation != null) rc.setIndicatorDot(here.add(spawnLocation, 1), 50,50,50);
 		if (spawnLocation == null)
 		{
-			spawnLocation = towardsEnemySpawn().opposite();
+			rc.setIndicatorDot(here.add(spawnLocation, 1), 250,50,50);
+			System.out.println("I'm Fucking Stuck! WTF?!");
+			// we can't even move because we are stuck.
 		}
-
-		RobotType nextBot = RobotType.LUMBERJACK;
-		if (!rc.hasRobotBuildRequirements(nextBot)) {
+		if (!rc.hasRobotBuildRequirements(robotType)) {
 			return false;
 		}
 
-		Boolean canSpawn = true;
-		if (!rc.canBuildRobot(nextBot, spawnLocation)) {
-			System.out.println("SpawnLocation blocked - trying to find new location");
-			if (rc.senseNearbyRobots(here.add(spawnLocation),1,null).length > 0) {
-				System.out.println("Robot in the way. Waiting for it to move"+rc.senseNearbyRobots(here.add(spawnLocation),1,null)[0].ID);
-			}
-			canSpawn = false;
-			//spawnLocation blocked. Find nearest spawnable location.
-			for (int i = 100; --i != 0;) { //bytecode efficient loop
-				spawnLocation = spawnLocation.rotateRightDegrees(7);
-				if (rc.canBuildRobot(nextBot, spawnLocation))
-				{
-					canSpawn = true;
-					System.out.println("Found new location after"+i+"iterations");
-					break;
-				}
-			}
-		}
-
-		if (canSpawn) {
-			rc.buildRobot(nextBot, spawnLocation);
-			System.out.println("Spawned a new "+nextBot);
+		if (rc.canBuildRobot(robotType, spawnLocation)) {
+			rc.buildRobot(robotType, spawnLocation);
+			System.out.println("Spawned a new "+robotType);
 			return true;
 		}
-
 		return false;
 	}
+
 	public static void waterTrees() throws GameActionException {
 		float maxDamage = 0f;
 		TreeInfo worstTree = null;

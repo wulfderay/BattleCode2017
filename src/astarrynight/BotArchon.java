@@ -28,7 +28,7 @@ public class BotArchon extends Globals {
 	}
 
 	public static void loop() throws GameActionException {
-		System.out.println("I'm an archon!");
+		Broadcast.RollCall();
 
 		//Update target location!
 		Broadcast.WriteEnemyLocation(rc.getInitialArchonLocations(them)[0]);
@@ -69,10 +69,11 @@ public class BotArchon extends Globals {
 			HireGardnerMaybe();
 
 			MoveToABetterLocation();
+			Broadcast.TallyRollCalls();
 		}
 		else
 		{
-			Util.tryMove(here.directionTo(rc.getInitialArchonLocations(us)[0]));
+			Util.tryMove(Util.randomDirection()); // I guess... maybe hide somewhere..
 		}
 		BroadCastIfEmergency();
 	}
