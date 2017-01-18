@@ -471,8 +471,11 @@ public class Util extends Globals {
     	RobotInfo currentTarget = enemies[0];
     	for ( RobotInfo enemy : enemies )
     	{
-    		if ( currentTarget.getType() == RobotType.ARCHON && enemy.getType() != RobotType.ARCHON )
-    			currentTarget = enemy;
+    		if (currentTarget.getType() != RobotType.ARCHON) {
+    			return currentTarget;
+			}
+			if ( currentTarget.getType() == RobotType.ARCHON && enemy.getType() != RobotType.ARCHON )
+				currentTarget = enemy;
     	}
     	return currentTarget;
     }
@@ -614,7 +617,31 @@ public class Util extends Globals {
     	}
     	
 	}
-	
+
+	// Tries to stay nearby but move around randomly
+	public static boolean defend(RobotInfo bot) throws GameActionException
+	{
+		float minDistance = 2;
+		float maxDistance = 5;
+		float optimalDistance = 3;
+
+		float currentDistance = here.distanceTo(bot.location);
+
+		if (currentDistance > maxDistance)
+		{
+			return tryMove(here.directionTo(bot.location));
+		}
+
+		if (currentDistance < minDistance)
+		{
+			return tryMove(bot.location.directionTo(here));
+		}
+
+		return tryMove(Util.randomDirection());
+
+	}
+
+
 	//True if moved:
 	public static Direction maintainDistanceWith(RobotInfo friend, float MAX, float MIN, MapLocation centerOfCircle) throws GameActionException
 	{
