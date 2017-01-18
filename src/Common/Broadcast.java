@@ -24,16 +24,6 @@ public class Broadcast extends Globals {
 		return new MapLocation( (float)x, (float)y);
 	}
 	
-	public static final int BOSS_ARCHON_ACTIVE_CHANNEL = 97;
-	public static void SetBossArchonActive() throws GameActionException
-	{
-		rc.broadcast(BOSS_ARCHON_ACTIVE_CHANNEL, 1);
-	}
-	public static int GetBossArchonActive() throws GameActionException
-	{
-		return rc.readBroadcast(BOSS_ARCHON_ACTIVE_CHANNEL);
-	}
-	
 	
 	/*
 	Algorithm:
