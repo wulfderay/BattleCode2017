@@ -337,17 +337,19 @@ public class Util extends Globals {
 
         float cumilativeOffset = resolution;
 
-
+        float distance = radius+myType.bodyRadius;
 
         while (cumilativeOffset < 360 && cumilativeOffset > -360) {
+			Direction testDir = dir.rotateLeftDegrees(cumilativeOffset);
+			MapLocation testLoc = here.add(testDir, distance);
             if (strict) {
-                if (!rc.isCircleOccupied(here.add(dir.rotateLeftDegrees(cumilativeOffset), radius+myType.bodyRadius), radius) && rc.onTheMap(here.add(dir, radius), radius)) {
-                    return dir.rotateLeftDegrees(cumilativeOffset);
+                if (!rc.isCircleOccupied(testLoc, radius) && rc.onTheMap(testLoc, radius)) {
+                    return testDir;
                 }
             }
-            else if (!rc.isCircleOccupiedExceptByThisRobot(here.add(dir.rotateLeftDegrees(cumilativeOffset), radius+myType.bodyRadius), radius) && rc.onTheMap(here.add(dir, radius), radius))
+            else if (!rc.isCircleOccupiedExceptByThisRobot(testLoc, radius) && rc.onTheMap(testLoc, radius))
             {
-                return dir.rotateLeftDegrees(cumilativeOffset);
+                return testDir;
             }
             cumilativeOffset += resolution;
         }
@@ -375,24 +377,27 @@ public class Util extends Globals {
 		// Move randomly
 		Util.tryMove(Util.randomDirection());
 	}
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    //Combat utility functions (previously in Soldier):
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	//Combat utility functions (previously in Soldier):
 	public static boolean pursueAndDestroy(RobotInfo target) throws GameActionException {
     	boolean moved = Util.moveToNearBot(target);
     	boolean shot = Util.maximumFirepowerAtSafeTarget(target);
@@ -433,9 +438,16 @@ public class Util extends Globals {
     	while ( distance < max_test_distance)
     	{
     		testLocation = here.add(direction, distance);
-    		sensedTeammates = rc.senseNearbyRobots(testLocation, senseRadius, us).length;
-    		if ( sensedTeammates > 0 )
-    			return false;
+    		try {
+				if (rc.isLocationOccupiedByRobot(testLocation)) {
+					RobotInfo bot = rc.senseRobotAtLocation(testLocation);
+					if (bot.team == us)
+						return false;
+					return true;
+				}
+			} catch (GameActionException e) {
+    			System.out.println("Exception in safeToFireAtTarget"+e);
+			}
     		distance += DISTANCE_INCREMENT;
     	}
     	return true;
