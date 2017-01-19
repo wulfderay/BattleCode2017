@@ -54,11 +54,61 @@ public class BotLumberjack extends Globals {
 
 	    AttackofOpportunity();
 
-	    if (Util.isEarlyGame() && lastTreeSeenTTL > 0)
+        MapLocation nearestTreeINeedToChop = GetNearestTreeToChop();
+	    if (nearestTreeINeedToChop != null &&!( (int)nearestTreeINeedToChop.x == 0 && (int)nearestTreeINeedToChop.y == 0))
+        {
+            ChopTreeDownForGardner(nearestTreeINeedToChop);
+        }
+        else if (Util.isEarlyGame() && lastTreeSeenTTL > 0)
             clearForest();
         else
             murderArchonsAndGardeners();
 	}
+
+    private static void ChopTreeDownForGardner(MapLocation nearestTreeINeedToChop) throws GameActionException {
+	    rc.setIndicatorDot(nearestTreeINeedToChop, 0,100,0);
+        if (ThereIsATreeINeedToMurder()) // come back next turn and finish killing it
+        {
+            return; // i.e., don't move
+        }
+
+        // else move on.
+
+        if (nearestTreeINeedToChop.add(Direction.EAST,0.1f).distanceTo(here) > myType.sensorRadius *2)
+            Util.moveToFarTarget(nearestTreeINeedToChop);
+        else
+            Util.moveToNearTarget(nearestTreeINeedToChop);
+
+        // If I am here, it means there are no trees I need to kill in my vicinity. If thats where I'm supposed to be, I'm done.
+        if (rc.canSenseLocation(nearestTreeINeedToChop) &&!rc.isLocationOccupiedByTree(nearestTreeINeedToChop))
+        {
+           Broadcast.IChoppedATree(nearestTreeINeedToChop);
+        }
+
+
+    }
+
+    private static MapLocation GetNearestTreeToChop() throws GameActionException {
+
+	    MapLocation [] TreesThatNeedChopping = Broadcast.GetTreesToChop();
+	    if (TreesThatNeedChopping == null || TreesThatNeedChopping.length == 0)
+	        return null;
+
+	    MapLocation closest = null;
+	    for (MapLocation loc : TreesThatNeedChopping)
+        {
+            if (loc == null || (int)loc.x == 0 && (int)loc.y == 0)
+                continue;
+            if (closest == null)
+            {
+                closest = loc;
+                continue;
+            }
+            if (here.distanceTo(closest) > here.distanceTo(loc))
+                closest = loc;
+        }
+        return closest;
+    }
 
     private static void AttackofOpportunity() throws GameActionException {
 	    // if I'm near an enemy but not an ally, strike.

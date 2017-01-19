@@ -47,7 +47,11 @@ public class Globals {
 			{
 				System.out.println("Updating GlobalTarget - but no enemy exists.  Personal target: enemy archon location");
 				globalTargetExists = false;
-				globalTarget = rc.getInitialArchonLocations(them)[0];
+				MapLocation [] archons = rc.getInitialArchonLocations(them);
+				if (archons != null && archons.length > 0)
+					globalTarget = archons[0];
+				else
+					globalTarget = here;
 			}
 		} else {
 			globalTargetExists = true;

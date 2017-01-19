@@ -478,21 +478,24 @@ public class Util extends Globals {
 		return false;
 	}
 
-	//This is a really bad picker:
+	//This is a really bad picker:  Still bad, but whatevs.
 	public static RobotInfo pickPriorityTarget(RobotInfo[] enemies)
 	{
 		if ( enemies.length == 0 )
 			return null;
-		RobotInfo currentTarget = enemies[0];
+		boolean isEarlyGame = Util.isEarlyGame();
+		RobotInfo ArchonAsLastResort = null;
 		for ( RobotInfo enemy : enemies )
 		{
-			if (currentTarget.getType() != RobotType.ARCHON) {
-				return currentTarget;
+			if ( enemy.getType() != RobotType.ARCHON)
+				return enemy;
+			else {
+				if (!isEarlyGame)
+					ArchonAsLastResort = enemy;
 			}
-			if ( currentTarget.getType() == RobotType.ARCHON && enemy.getType() != RobotType.ARCHON )
-				currentTarget = enemy;
+
 		}
-		return currentTarget;
+		return ArchonAsLastResort;
 	}
 
 	public static boolean moveToNearBot(RobotInfo target) throws GameActionException

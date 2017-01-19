@@ -22,6 +22,7 @@ public class BotGardener extends Globals {
 
 	public static RobotInfo[] nearbyBots;
 	public static TreeInfo[] nearbyFriendlyTrees;
+	public static TreeInfo[] nearbyNeutralTrees;
 	public static int enemyAttackUnitsNearby = 0;
 	public static int friendlyAttackUnitsNearby = 0;
 	public static int enemyScoutsNearby = 0;
@@ -84,14 +85,21 @@ public class BotGardener extends Globals {
 			spawnBots();
 			buildGrove();
 		}
+
+		for (TreeInfo tree : nearbyNeutralTrees)
+		{
+			if (Clock.getBytecodesLeft() >100)
+			{
+				Broadcast.INeedATreeChopped(tree.getLocation());
+			}
+		}
 	}
 
 	public static void senseSurroundings() throws GameActionException {
 		nearbyBots = rc.senseNearbyRobots();
 		nearbyFriendlyTrees = rc.senseNearbyTrees(-1, us);
 
-		TreeInfo[] nearbyNeutralTrees = rc.senseNearbyTrees(-1, Team.NEUTRAL);
-		neutralTreeCount = nearbyNeutralTrees.length;
+		nearbyNeutralTrees = rc.senseNearbyTrees(-1, Team.NEUTRAL);
 
 		for (RobotInfo bot : nearbyBots) {
 			if (bot.team == us) {
@@ -122,19 +130,24 @@ public class BotGardener extends Globals {
 			return false;
 		}
 
-		if (!spawnedAtleastOneScout) {
+		if (Broadcast.GetNumberOfRobots(RobotType.SCOUT) < 1) {
 			System.out.println("Spawn: Go go scout");
 			spawnedAtleastOneScout = spawnBot(RobotType.SCOUT);
 			return false;
 		}
 
-		if (friendlySoldiersNearby == 0) { //Need soldiers.
+		if (rc.getTreeCount() < Broadcast.GetNumberOfRobots(RobotType.GARDENER))
+		{
+			plantTree();
+		}
+
+		if (Broadcast.GetNumberOfRobots(RobotType.SOLDIER) == 0) { //Need soldiers.
 			System.out.println("Spawn: Defensive soldier");
 			spawnBot(RobotType.SOLDIER);
 			return false;
 		}
 
-		if (neutralTreeCount > 5 && friendlyLumberJacksNearby < 2) { //Gotta cut down these trees
+		if (Broadcast.GetNumberOfRobots(RobotType.SOLDIER) < 2) { //Gotta cut down these trees
 			spawnBot(RobotType.LUMBERJACK);
 			return false;
 		}

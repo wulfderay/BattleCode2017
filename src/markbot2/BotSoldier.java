@@ -90,9 +90,10 @@ public class BotSoldier extends Globals {
 				}
 			}
 		} else {
-			MapLocation target = Util.pickPriorityTarget(enemies).location;
-			turnsSinceLastSawCurrentTarget = 0;
 			currentTarget = Util.pickPriorityTarget(enemies);
+			MapLocation target = currentTarget.location;
+			turnsSinceLastSawCurrentTarget = 0;
+
 			Util.moveToNearTarget(currentTarget.location);
 
 			currentTarget = Util.pickPriorityTarget(enemies);

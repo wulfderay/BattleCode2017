@@ -140,6 +140,69 @@ public class Broadcast extends Globals {
 		return tally;
 	}
 
+	public static final int TREEBUFFER_SIZE = 20; // gives us 10 trees to play with.
+	public static final int TREES_TO_CHOP_START = 500;
+	public static final int TREES_TO_CHOP_END = TREES_TO_CHOP_START + TREEBUFFER_SIZE;
+	public static final int TOTAL_TREES_TO_CHOP_CHANNEL = TREES_TO_CHOP_END + 1;
+
+	public static MapLocation[] GetTreesToChop() throws GameActionException {
+		int totalTrees = rc.readBroadcast(TOTAL_TREES_TO_CHOP_CHANNEL);
+		if (totalTrees == 0 ) // we're already trying to chop the max trees. Please don't ask again.
+			return new MapLocation[0];
+		MapLocation [] treesToChop = new MapLocation[TREEBUFFER_SIZE /2];
+		int treesfound = 0;
+		for (int i = 0; i < TREEBUFFER_SIZE /2; i++  )
+		{
+			int x = rc.readBroadcast(TREES_TO_CHOP_START + (i*2));
+			int y = rc.readBroadcast(TREES_TO_CHOP_START + (i*2) +1);
+			if (x !=0 || y != 0 ) // yes that means we won't chop trees at 0,0 but it lowers the number of reads we need, and it maked the lumberjack simpler.
+			{
+				treesToChop[treesfound] = new MapLocation(x,y);
+				treesfound++;
+			}
+		}
+		return treesToChop;
+	}
+
+
+	public static boolean INeedATreeChopped(MapLocation where) throws GameActionException {
+		int totalTrees = rc.readBroadcast(TOTAL_TREES_TO_CHOP_CHANNEL);
+		if (totalTrees >= TREEBUFFER_SIZE/2) // we're already trying to chop the max trees. Please don't ask again.
+			return false;
+		for (int i = 0; i < TREEBUFFER_SIZE /2; i++  )
+		{
+			int x = rc.readBroadcast(TREES_TO_CHOP_START + (i*2));
+			int y = rc.readBroadcast(TREES_TO_CHOP_START + (i*2) +1);
+			if ( x ==(int)where.x && y == (int)where.y) // that tree is already to be chopped.
+				return true;
+			if (x ==0 && y == 0 ) // we found a place for our tree
+			{
+				rc.broadcast(TREES_TO_CHOP_START + (i*2), (int)where.x);
+				rc.broadcast(TREES_TO_CHOP_START + (i*2) +1, (int)where.y);
+				rc.broadcast(TOTAL_TREES_TO_CHOP_CHANNEL, totalTrees+1);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static boolean IChoppedATree(MapLocation where) throws GameActionException {// hmm.. linear search.. don't like that.
+		if (where == null)
+			return false;
+		for (int i = 0; i < TREEBUFFER_SIZE /2; i++  )
+		{
+			int x = rc.readBroadcast(TREES_TO_CHOP_START + (i*2));
+			int y = rc.readBroadcast(TREES_TO_CHOP_START + (i*2) +1);
+			if (x ==(int)where.x && y == (int)where.y ) // we found our tree
+			{
+				rc.broadcast(TREES_TO_CHOP_START + (i*2), 0);
+				rc.broadcast(TREES_TO_CHOP_START + (i*2) +1,0);
+				rc.broadcast(TOTAL_TREES_TO_CHOP_CHANNEL, rc.readBroadcast(TOTAL_TREES_TO_CHOP_CHANNEL) -1);
+				return true;
+			}
+		}
+		return false;
+	}
 
 	public static MapLocation GetNearestBotInTrouble() throws GameActionException {
 		for (int i = 0; i < rc.getInitialArchonLocations(us).length; i++)
@@ -364,7 +427,7 @@ public class Broadcast extends Globals {
 	{
 		BroadcastBuffer_StartIndex = BroadcastBuffer_EndIndex;
 	}
-	public static int BroadcastBuffer_ChannelsRemaining()
+	private static int BroadcastBuffer_ChannelsRemaining()
 	{
 		if ( BroadcastBuffer_StartIndex < BroadcastBuffer_EndIndex )
 			return BroadcastBuffer_StartIndex - BroadcastBuffer_EndIndex;

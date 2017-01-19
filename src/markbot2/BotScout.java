@@ -48,14 +48,15 @@ public class BotScout extends Globals {
 
         Broadcast.RollCall();
 
-        RobotInfo[] nearbyEnemies = rc.senseNearbyRobots(-1, them);
-        for(RobotInfo enemy : nearbyEnemies)
+        RobotInfo[] nearbyRobots = rc.senseNearbyRobots(-1);
+        for(RobotInfo robot : nearbyRobots)
         {
-            if ( enemy.getType() == RobotType.ARCHON )
-            {
-                System.out.println("Scout found an archon!  Broadcasting global target..."+enemy.location);
-                Broadcast.WriteEnemyLocation(enemy.location);
-                break;
+            if (robot.getTeam() == them) {
+                if (robot.getType() == RobotType.ARCHON) {
+                    System.out.println("Scout found an archon!  Broadcasting global target..." + robot.location);
+                    Broadcast.WriteEnemyLocation(robot.location);
+                    break;
+                }
             }
         }
 
