@@ -76,6 +76,12 @@ public class BotGardener extends Globals {
 		nearbyTrees = rc.senseNearbyTrees(-1, us);
         
 		waterTrees();
+		if (rc.senseNearbyRobots(myType.sensorRadius, them).length > 0)
+		{
+			// alert for help
+			// spawn a soldier
+			spawnBot(RobotType.SOLDIER);
+		}
 		if ( EnsureEarlyGameBotsAreSpawned())
 			spawnBots();
 
@@ -84,7 +90,6 @@ public class BotGardener extends Globals {
 	}
 
 	public static boolean EnsureEarlyGameBotsAreSpawned() throws GameActionException{
-
 		if (Broadcast.GetNumberOfRobots(RobotType.SCOUT) < 1)
 		{
 			spawnBot(RobotType.SCOUT);

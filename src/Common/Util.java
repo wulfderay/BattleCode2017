@@ -466,6 +466,18 @@ public class Util extends Globals {
 		return false;
 	}
 
+	// sometimes firing sraight at an enemy is bad. if we want to scare em off or if they dodge too well, missing might help.
+	public static boolean fireStormTrooperStyle(MapLocation loc) throws GameActionException {
+		Direction toFire = here.directionTo(loc).rotateLeftDegrees((float)(-5.0f + (Math.random() * 10)));
+		if (rc.canFireSingleShot()) { // don't fire expensive bullets early game
+			System.out.println("Firing single shot!");
+			rc.fireSingleShot(toFire);
+			rc.setIndicatorLine(here, loc, 255, 100, 0); // it should be where we are firing to...
+			return true;
+		}
+		return false;
+	}
+
 	//This is a really bad picker:
 	public static RobotInfo pickPriorityTarget(RobotInfo[] enemies)
 	{

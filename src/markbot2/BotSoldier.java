@@ -53,7 +53,7 @@ public class BotSoldier extends Globals {
 			RobotInfo enemy = Util.pickPriorityTarget(enemies);
 			if (enemy != null) {
 				Util.moveToNearTarget(enemy.location);
-				Util.maximumFirepowerAtSafeTarget(enemy);
+				Util.fireStormTrooperStyle(enemy.location);
 			} else {
 				RobotInfo[] friendlies = rc.senseNearbyRobots(-1,us);
 				RobotInfo nearestArchon = null;
