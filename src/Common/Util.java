@@ -378,25 +378,6 @@ public class Util extends Globals {
 		Util.tryMove(Util.randomDirection());
 	}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	//Combat utility functions (previously in Soldier):
 	public static boolean pursueAndDestroy(RobotInfo target) throws GameActionException {
 		boolean moved = Util.moveToNearBot(target);

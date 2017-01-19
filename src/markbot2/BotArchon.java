@@ -13,6 +13,11 @@ public class BotArchon extends Globals {
 	public static boolean iAmAlphaArchon = getArchonNumber() == 0;
 	public static int stuckGardeners = 0;
 
+	public static RobotInfo[] nearbyBots;
+	public static int friendlyAttackUnitsNearby;
+	public static int friendlyGardenersNearby;
+	public static int enemyAttackUnitsNearby;
+
 	private static int getArchonNumber()  {
 		MapLocation [] arconlocs = rc.getInitialArchonLocations(us);
 		for (int i = 0; i < arconlocs.length; i++ )
@@ -68,6 +73,8 @@ public class BotArchon extends Globals {
 
 		Util.AvoidBullets();
 
+		senseSurroundings();
+
 		if (iAmAlphaArchon) { // btw we need to broadcast this so that we can have another take over if I die.
 			Broadcast.TallyRollCalls();
 			stuckGardeners = Broadcast.TallyStuckGardeners();
@@ -104,7 +111,8 @@ public class BotArchon extends Globals {
 
 	}
 
-	private static void HireGardnerMaybe() throws GameActionException {
+
+	private static void HireGardnerMaybeold() throws GameActionException {
 		// Generate a random direction
 		//Direction dir = Util.getClearDirection(RobotType.GARDENER.bodyRadius);
 		Direction dir = Util.randomDirection();
@@ -126,5 +134,72 @@ public class BotArchon extends Globals {
 			}
 		}
 	}
+
+
+	public static void senseSurroundings() throws GameActionException {
+		nearbyBots = rc.senseNearbyRobots();
+
+		friendlyAttackUnitsNearby = 0;
+		friendlyGardenersNearby = 0;
+		enemyAttackUnitsNearby = 0;
+
+		for (RobotInfo bot : nearbyBots) {
+			if (bot.team == us) {
+				if (bot.type.canAttack()) {
+					friendlyAttackUnitsNearby++;
+				}
+				if (bot.type == RobotType.GARDENER) {
+					friendlyGardenersNearby++;
+				}
+			} else {
+				if (bot.type.canAttack()) {
+					enemyAttackUnitsNearby++;
+				}
+			}
+		}
+	}
+
+	private static void HireGardnerMaybe() throws GameActionException {
+		Direction dir = Util.getClearDirection(Direction.NORTH, 7, 1, false);
+		if (dir == null) {
+			System.out.println("Spawning blocked");
+			return;
+		}
+
+		int totalGardeners = Broadcast.GetNumberOfRobots(RobotType.GARDENER);
+		if (rc.canHireGardener(dir)) {
+			if ((totalGardeners == 0 || stuckGardeners >= totalGardeners )&& enemyAttackUnitsNearby == 0) {
+				System.out.println("No gardeners around who can spawn so lets get some.");
+				rc.hireGardener(dir);
+				return;
+			}
+
+			if (totalGardeners == 0 && rc.getTeamBullets() > 150) { //enough to spawn gardener and soldier
+				System.out.println("Under attack but going to try and build a gardener+soldier combo");
+				rc.hireGardener(dir);
+				return;
+			}
+
+			System.out.println("Bullets"+rc.getTeamBullets()+"Gardeners"+totalGardeners);
+
+			if (    (totalGardeners == 1 && rc.getTeamBullets() > 150) ||
+					(totalGardeners == 2 && rc.getTeamBullets() > 200) ||
+					(totalGardeners == 3 && rc.getTeamBullets() > 250) ||
+					(totalGardeners == 4 && rc.getTeamBullets() > 300) ||
+					(totalGardeners == 5 && rc.getTeamBullets() > 350)) {
+				System.out.println("Got enough bullets for more gardeners"+totalGardeners+" "+rc.getTeamBullets());
+				rc.hireGardener(dir);
+				return;
+			}
+
+			if (rc.getTreeCount() < 30 && rc.getTeamBullets() > 400) {
+				System.out.println("Got bullets to spare");
+				rc.hireGardener(dir);
+				return;
+			}
+
+		}
+	}
+
 
 }
