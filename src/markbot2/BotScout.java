@@ -73,7 +73,8 @@ public class BotScout extends Globals {
 
         Explore();
 
-        //AttackOfOpportunity();
+        if (rc.getRoundNum() > rc.getRoundLimit()/2)
+            AttackOfOpportunity();
     }
 
     private static void AttackOfOpportunity() throws GameActionException {
@@ -84,7 +85,7 @@ public class BotScout extends Globals {
             // And we have enough bullets, and haven't attacked yet this turn...
             if (rc.canFireSingleShot()) {
                 // ...Then fire a bullet in the direction of the enemy.
-                rc.fireSingleShot(rc.getLocation().directionTo(robots[0].location));
+                Util.maximumFirepowerAtSafeTarget(robots[0], robots);
             }
         }
     }
