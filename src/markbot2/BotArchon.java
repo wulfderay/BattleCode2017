@@ -67,6 +67,7 @@ public class BotArchon extends Globals {
 	}
 
 	public static void turn() throws GameActionException {
+		Util.BuyVPIfItWillMakeUsWin();
 		Broadcast.RollCall();
 
 		iAmAlphaArchon = Broadcast.AmIAlphaArchon();
@@ -87,6 +88,16 @@ public class BotArchon extends Globals {
 			HireGardnerMaybe();
 		}
 		BroadCastIfEmergency();
+
+		for (TreeInfo tree : rc.senseNearbyTrees(myType.sensorRadius, Team.NEUTRAL))
+		{
+			if (Clock.getBytecodesLeft() >100)
+			{
+				Broadcast.INeedATreeChopped(tree.getLocation());
+			}
+			else
+				break;
+		}
 	}
 
 	/**

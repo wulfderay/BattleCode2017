@@ -44,7 +44,7 @@ public class BotSoldier extends Globals {
 	public static final int TURNS_TO_PURSUE_CURRENT_TARGET = 5;
 
 	public static void turn() throws GameActionException {
-
+		Util.BuyVPIfItWillMakeUsWin();
 		Broadcast.RollCall();
 		//Enemy list:
 		RobotInfo[] enemies = rc.senseNearbyRobots(-1, them);

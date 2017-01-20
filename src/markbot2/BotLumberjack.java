@@ -47,6 +47,7 @@ public class BotLumberjack extends Globals {
 	}
 	
 	public static void turn() throws GameActionException {
+        Util.BuyVPIfItWillMakeUsWin();
 
         Broadcast.RollCall();
 

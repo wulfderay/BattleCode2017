@@ -72,10 +72,7 @@ public class BotGardener extends Globals {
 
 	//TODO: If there's enemies nearby, spawn some soldiers , and spawn a tree in the way of bullets.
 	public static void turn() throws GameActionException {
-		if ( rc.getTeamBullets() > 10000 - rc.getTeamVictoryPoints()*10)
-		{
-			rc.donate(rc.getTeamBullets());
-		}
+		Util.BuyVPIfItWillMakeUsWin();
 
 		Broadcast.RollCall();
 		senseSurroundings();

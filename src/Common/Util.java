@@ -719,4 +719,11 @@ public class Util extends Globals {
 		// A move never happened, so return false.
 		return false;
 	}
+
+	public static void BuyVPIfItWillMakeUsWin() throws GameActionException {
+		if ( rc.getTeamBullets() > 10000 - rc.getTeamVictoryPoints()*10 || rc.getRoundLimit() -rc.getRoundNum() < 2)
+		{
+			rc.donate(rc.getTeamBullets());
+		}
+	}
 }
