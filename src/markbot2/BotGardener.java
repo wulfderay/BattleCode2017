@@ -11,9 +11,18 @@ public class BotGardener extends Globals {
 	public static final float MAX_GRID_DELTA = 0.001f;
 
 	public static int treesPlanted = 0;
-	public static RobotType[] buildOrderEarly = new RobotType[] {RobotType.SCOUT, RobotType.LUMBERJACK, RobotType.SOLDIER,RobotType.SCOUT};
-	public static RobotType[] buildOrderMid = new RobotType[] { RobotType.SOLDIER,RobotType.LUMBERJACK,RobotType.SCOUT, RobotType.LUMBERJACK, RobotType.SOLDIER};
-	public static RobotType[] buildOrderLate = new RobotType[] { RobotType.SOLDIER,RobotType.TANK,RobotType.SOLDIER};
+	public static BuildListItem[]  buildOrderEarly = new BuildListItem[] {
+			new BuildListItem(RobotType.SCOUT, rc.getInitialArchonLocations(them).length *2),
+			new BuildListItem(RobotType.LUMBERJACK, 5),
+			new BuildListItem(RobotType.SOLDIER,10)};
+	public static BuildListItem[]  buildOrderMid = new BuildListItem[] {
+			new BuildListItem(RobotType.SCOUT, rc.getInitialArchonLocations(them).length *3),
+			new BuildListItem(RobotType.LUMBERJACK, 10),
+			new BuildListItem(RobotType.SOLDIER,20)};
+	public static BuildListItem[]  buildOrderLate = new BuildListItem[] {
+			new BuildListItem(RobotType.TANK, 5),
+			new BuildListItem(RobotType.LUMBERJACK, 5),
+			new BuildListItem(RobotType.SOLDIER,20)};
 	public static int buildIndex = 0;
 	//public static Boolean builtGrove = false;
 	public static Direction spawnLocation = null;
@@ -29,7 +38,6 @@ public class BotGardener extends Globals {
 	public static int friendlySoldiersNearby = 0;
 	public static int friendlyLumberJacksNearby = 0;
 	public static int neutralTreeCount = 0;
-
 	public enum GardenerStates {
 		BUILD_INITIAL_LUMBERJACK,
 		BUILD_GROVE,
@@ -152,9 +160,14 @@ public class BotGardener extends Globals {
 		return true;
 	}
 
+	public static Direction refreshSpawnDirection() throws GameActionException {
+		return Util.getClearDirection(spawnLocation != null? spawnLocation: towardsEnemySpawn().opposite(), 7, 1, false);
+	}
 	// to be refactored.
 	public static boolean spawnBot(RobotType robotType) throws GameActionException {
-		spawnLocation = Util.getClearDirection(towardsEnemySpawn().opposite(), 7, 1, false);
+		// update spawnlocation if needed.
+		spawnLocation = refreshSpawnDirection();
+
 		if (spawnLocation != null) rc.setIndicatorDot(here.add(spawnLocation, 1), 50,50,50);
 		if (spawnLocation == null)
 		{
@@ -216,7 +229,8 @@ public class BotGardener extends Globals {
 
 	public static Boolean spawnBots() throws GameActionException {
 
-		spawnLocation = Util.getClearDirection(towardsEnemySpawn().opposite(), 7, 1, false);
+		spawnLocation = Util.getClearDirection(towardsEnemySpawn().opposite(), 2, 1, false);
+		rc.setIndicatorDot(here.add(spawnLocation, 1), 0, 50, 50);
 		if (spawnLocation != null) rc.setIndicatorDot(here.add(spawnLocation, 1), 50,50,50);
 		if (spawnLocation == null)
 		{
@@ -229,8 +243,11 @@ public class BotGardener extends Globals {
 				return false;
 			}
 		}
-		RobotType[] buildOrder = Util.isEarlyGame() && rc.getTreeCount() < 10? buildOrderEarly: buildOrderMid;
-		RobotType nextBot = buildOrder[buildIndex % buildOrder.length];
+
+		RobotType nextBot = getNextBotToBuild();
+
+		if (nextBot == null) // we don't need to build
+			return null;
 		if (!rc.hasRobotBuildRequirements(nextBot)) {
 			return false;
 		}
@@ -239,16 +256,32 @@ public class BotGardener extends Globals {
 			rc.buildRobot(nextBot, spawnLocation);
 			System.out.println("Spawned a new "+nextBot);
 			buildIndex++;
-			if (buildIndex >= buildOrder.length) {
-				buildIndex = 0;
-			}
 			return true;
 		}
 
 		return false;
 	}
 
+	public static RobotType getNextBotToBuild() throws GameActionException {
+		BuildListItem[] buildOrder = Util.isEarlyGame() && rc.getTreeCount() < 10? buildOrderEarly: buildOrderMid;
+		BuildListItem nextBot = null;
+		int offset = 0;
+		buildIndex = buildIndex % buildOrder.length;
+		while(offset < buildOrder.length)
+		{
+
+			if ( Broadcast.GetNumberOfRobots(nextBot.type) <buildOrder[(buildIndex + offset) % buildOrder.length].max) // we don't need to spawn any more. go on to the next one.
+			{
+
+				return buildOrder[(buildIndex + offset) % buildOrder.length].type;
+			}
+			offset++;
+		}
+		return null;
+	}
+
 	public static void buildGrove() throws GameActionException {
+
 
 		TreeInfo nearestTree = nearbyFriendlyTrees != null && nearbyFriendlyTrees.length > 0? nearbyFriendlyTrees[0] : null;
 		if (nearestTree != null && nearestTree.location.distanceTo(here) < 2) {
@@ -313,10 +346,11 @@ public class BotGardener extends Globals {
 	}
 
 	public static Boolean plantTree() throws GameActionException {
-		if (rc.getID() % 2 == 0)
-			return plantTreeLegacy();
+
+		if (spawnLocation == null)
+			spawnLocation = refreshSpawnDirection();
 		System.out.println("Trying to build a new tree. Trees so far:"+treesPlanted);
-		Direction plantDirection = Util.getClearDirection(towardsEnemySpawn(), 30, 2f, false);
+		Direction plantDirection = Util.getClearDirection(spawnLocation != null? spawnLocation:towardsEnemySpawn().opposite(), 30, 1f, false, true);
 		if (plantDirection != null)
 		{
 			if (rc.canPlantTree(plantDirection) ) {
@@ -396,4 +430,15 @@ public class BotGardener extends Globals {
 
 	}
 
+	// we might put flags in it too, if we want to monitor some other eent than number of units.
+	public static class BuildListItem
+	{
+		public BuildListItem( RobotType type, int max)
+		{
+			this.type = type;
+			this.max = max;
+		}
+		public static RobotType type;
+		public static int max;
+	}
 }

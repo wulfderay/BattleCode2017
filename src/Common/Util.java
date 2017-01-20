@@ -325,14 +325,17 @@ public class Util extends Globals {
 		}
 	}
 
+	public static Direction getClearDirection(Direction dir,  float resolution, float radius, boolean strict) throws GameActionException {
+		return getClearDirection(dir,resolution,radius,strict,false);
+	}
 	/**
 	 * find a direction to move or spawn in. It will return the first such direction that is clear for at least one radius.
 	 * @param radius
 	 * @return
 	 */
-	public static Direction getClearDirection(Direction dir,  float resolution, float radius, boolean strict) throws GameActionException {
+	public static Direction getClearDirection(Direction dir,  float resolution, float radius, boolean strict, boolean avoidStartingDirection) throws GameActionException {
 		if (dir == null) rc.setIndicatorDot(here.add(Direction.getNorth(), 1), 255,255,255);
-		if (!rc.isCircleOccupied(here.add(dir, radius), radius) && rc.onTheMap(here.add(dir, radius), radius))
+		if (!avoidStartingDirection && !rc.isCircleOccupied(here.add(dir, radius), radius) && rc.onTheMap(here.add(dir, radius), radius))
 			return dir;
 
 		float cumilativeOffset = resolution;
