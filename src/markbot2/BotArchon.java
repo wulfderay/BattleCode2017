@@ -88,7 +88,7 @@ public class BotArchon extends Globals {
 			HireGardnerMaybe();
 		}
 		BroadCastIfEmergency();
-
+		Util.MoveToAClearerLocation(myType.sensorRadius/2);
 		for (TreeInfo tree : rc.senseNearbyTrees(myType.sensorRadius, Team.NEUTRAL))
 		{
 			if (Clock.getBytecodesLeft() >100)
@@ -121,31 +121,6 @@ public class BotArchon extends Globals {
 		}
 
 	}
-
-
-	private static void HireGardnerMaybeold() throws GameActionException {
-		// Generate a random direction
-		//Direction dir = Util.getClearDirection(RobotType.GARDENER.bodyRadius);
-		Direction dir = Util.randomDirection();
-		// Randomly attempt to build a gardener in this direction
-
-		int numGardeners = Broadcast.GetNumberOfRobots(RobotType.GARDENER);
-
-		if (rc.canHireGardener(dir)) {
-			if (rc.getTreeCount() == 0 || stuckGardeners >= numGardeners) {
-				rc.hireGardener(dir);
-				gardenersHired++;
-			} //else if (rc.getTreeCount() > gardenersHired * 2) {
-			else if (rc.getRobotCount() > 1 + rc.getInitialArchonLocations(us).length + numGardeners ){
-				rc.hireGardener(dir);
-				gardenersHired++;
-			} else if (rc.getTreeCount() < 30 && rc.getTeamBullets() > 400) {
-				rc.hireGardener(dir);
-				gardenersHired++;
-			}
-		}
-	}
-
 
 	public static void senseSurroundings() throws GameActionException {
 		nearbyBots = rc.senseNearbyRobots();

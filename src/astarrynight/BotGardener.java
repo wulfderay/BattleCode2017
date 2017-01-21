@@ -5,8 +5,6 @@ import Common.Globals;
 import Common.Util;
 import battlecode.common.*;
 
-import java.awt.*;
-
 public class BotGardener extends Globals {
 
 	public static final int GROVE_GRID_SIZE = 3;
@@ -82,16 +80,15 @@ public class BotGardener extends Globals {
 			// spawn a soldier
 			spawnBot(RobotType.SOLDIER);
 		}
-		if ( EnsureEarlyGameBotsAreSpawned())
+		if ( EnsureEarlyGameEntitiesAreSpawned())
 			spawnBots();
 
 
 		buildGrove();
 	}
 
-	public static boolean EnsureEarlyGameBotsAreSpawned() throws GameActionException{
-		if (Broadcast.GetNumberOfRobots(RobotType.SCOUT) < 1)
-		{
+	public static boolean EnsureEarlyGameEntitiesAreSpawned() throws GameActionException{
+		if (Broadcast.GetNumberOfRobots(RobotType.SCOUT) < 1) {
 			spawnBot(RobotType.SCOUT);
 			return false;
 		}
@@ -109,7 +106,7 @@ public class BotGardener extends Globals {
 
 	// to be refactored.
 	public static boolean spawnBot(RobotType robotType) throws GameActionException {
-		spawnLocation = Util.getClearDirection(towardsEnemySpawn().opposite(), 7, 1, false);
+		spawnLocation = Util.getClearDirection(towardsEnemySpawn().opposite(), 7, robotType.bodyRadius, false);
 		if (spawnLocation != null) rc.setIndicatorDot(here.add(spawnLocation, 1), 50,50,50);
 		if (spawnLocation == null)
 		{
@@ -245,10 +242,10 @@ public class BotGardener extends Globals {
 	}
 
 	public static Boolean plantTree() throws GameActionException {
-		if (rc.getID() % 2 == 0)
-			return plantTreeLegacy();
+		//if (rc.getID() % 2 == 0)
+		//	return plantTreeLegacy();
 		System.out.println("Trying to build a new tree. Trees so far:"+treesPlanted);
-		Direction plantDirection = Util.getClearDirection(towardsEnemySpawn(), 30, 2f, false);
+		Direction plantDirection = Util.getClearDirection(towardsEnemySpawn(), 30, 1f, false);
 		if (plantDirection != null)
 		{
 			if (rc.canPlantTree(plantDirection) ) {

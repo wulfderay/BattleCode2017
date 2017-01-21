@@ -335,35 +335,33 @@ public class Util extends Globals {
 	 */
 	public static Direction getClearDirection(Direction dir,  float resolution, float radius, boolean strict, boolean avoidStartingDirection) throws GameActionException {
 		if (dir == null) rc.setIndicatorDot(here.add(Direction.getNorth(), 1), 255,255,255);
-		if (!avoidStartingDirection && !rc.isCircleOccupied(here.add(dir, radius), radius) && rc.onTheMap(here.add(dir, radius), radius))
+		float distanceToCenter = myType.bodyRadius+radius;
+		if (!avoidStartingDirection && !rc.isCircleOccupied(here.add(dir, distanceToCenter), radius) && rc.onTheMap(here.add(dir, distanceToCenter), radius))
 			return dir;
 
-		float cumilativeOffset = resolution;
+		float cumulativeOffset = resolution;
 
-		float distance = radius+myType.bodyRadius;
-
-		while (cumilativeOffset < 360 && cumilativeOffset > -360) {
-			Direction testDir = dir.rotateLeftDegrees(cumilativeOffset);
-			MapLocation testLoc = here.add(testDir, distance);
-			if (strict) {
-				if (!rc.isCircleOccupied(testLoc, radius) && rc.onTheMap(testLoc, radius)) {
-					return testDir;
-				}
-			}
-			else if (!rc.isCircleOccupiedExceptByThisRobot(testLoc, radius) && rc.onTheMap(testLoc, radius))
+		while (cumulativeOffset < 360 && cumulativeOffset > -360) {
+			Direction testDir = dir.rotateLeftDegrees(cumulativeOffset);
+			MapLocation testLoc = here.add(testDir, distanceToCenter);
+			rc.setIndicatorDot(here.add(testDir, distanceToCenter), 255,255,255);
+			if (!rc.isCircleOccupiedExceptByThisRobot(testLoc, radius) && rc.onTheMap(testLoc, radius))
 			{
-				return testDir;
+				if (!avoidStartingDirection || !MapLocation.doCirclesCollide(testLoc, radius,here.add(dir, distanceToCenter), radius ))
+					return testDir;
 			}
-			cumilativeOffset += resolution;
+			cumulativeOffset += resolution;
 		}
 		return null;
 	}
 
 	/**
+	 *
 	 * Try to find a clear spot with no gardeners or enemies or bullets so I can spawn some gardeners in peace.
 	 * @throws GameActionException
 	 */
 	public static void MoveToAClearerLocation(float maxradius) throws GameActionException {
+
 		// hmm doesn't check for bullets.
 		if ( !rc.isCircleOccupiedExceptByThisRobot(here, maxradius - myType.bodyRadius)) // we're in a good spot already.
 			return;
@@ -724,9 +722,16 @@ public class Util extends Globals {
 	}
 
 	public static void BuyVPIfItWillMakeUsWin() throws GameActionException {
-		if ( rc.getTeamBullets() > 10000 - rc.getTeamVictoryPoints()*10 || rc.getRoundLimit() -rc.getRoundNum() < 2)
+		if ( rc.getTeamBullets() > (1000 - rc.getTeamVictoryPoints())* getVpCostThisRound() || rc.getRoundLimit() -rc.getRoundNum() < 5)
 		{
 			rc.donate(rc.getTeamBullets());
 		}
+		if (rc.getTeamBullets() > 1200)
+		rc.donate(rc.getTeamBullets() -1000);
+	}
+
+	public static float getVpCostThisRound()
+	{
+		return (float) (7.5 + (rc.getRoundNum()*12.5 / rc.getRoundLimit()));
 	}
 }
