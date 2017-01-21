@@ -121,7 +121,7 @@ public class BotLumberjack extends Globals {
      */
     public static boolean ThereIsATreeINeedToMurder() throws GameActionException {
         boolean foundATreeToHate = false;
-        for (TreeInfo tree: rc.senseNearbyTrees( myType.strideRadius) ) {
+        for (TreeInfo tree: rc.senseNearbyTrees( -1) ) {
             if (tree != null && rc.canInteractWithTree(tree.getID())) {
                 if (tree.getContainedBullets() > 0 && rc.canShake())
                     rc.shake(tree.getID());

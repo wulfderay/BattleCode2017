@@ -113,7 +113,7 @@ public class BotLumberjack extends Globals {
 
     private static void AttackofOpportunity() throws GameActionException {
 	    // if I'm near an enemy but not an ally, strike.
-        RobotInfo[] robots = rc.senseNearbyRobots(RobotType.LUMBERJACK.bodyRadius+GameConstants.LUMBERJACK_STRIKE_RADIUS, them);
+        RobotInfo[] robots = rc.senseNearbyRobots(GameConstants.LUMBERJACK_STRIKE_RADIUS, them);
 
         if(robots.length > 0 && !rc.hasAttacked()) { // this needs to better gauge the cost/benefit of striking.
             // Use strike() to hit all nearby robots!
@@ -190,7 +190,7 @@ public class BotLumberjack extends Globals {
      */
     public static boolean ThereIsATreeINeedToMurder() throws GameActionException {
         boolean foundATreeToHate = false;
-        for (TreeInfo tree: rc.senseNearbyTrees( myType.strideRadius) ) {
+        for (TreeInfo tree: rc.senseNearbyTrees(-1) ) {
             if (tree != null && rc.canInteractWithTree(tree.getID())) {
                 if (tree.getContainedBullets() > 0 && rc.canShake())
                     rc.shake(tree.getID());
