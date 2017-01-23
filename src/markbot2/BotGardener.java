@@ -14,6 +14,7 @@ public class BotGardener extends Globals {
 	public static BuildListItem[]  buildOrderEarly = new BuildListItem[] {
 			new BuildListItem(RobotType.SCOUT, rc.getInitialArchonLocations(them).length ),
 			new BuildListItem(RobotType.LUMBERJACK, 5),
+			new BuildListItem(RobotType.TANK, 1),
 			new BuildListItem(RobotType.SOLDIER,8)};
 	public static BuildListItem[]  buildOrderMid = new BuildListItem[] {
 			new BuildListItem(RobotType.SCOUT, rc.getInitialArchonLocations(them).length *3),
@@ -136,18 +137,7 @@ public class BotGardener extends Globals {
 			spawnBot(RobotType.SOLDIER);
 			return false;
 		}
-
-		if (numScouts < 1) {
-			System.out.println("Spawn: Go go scout");
-			spawnedAtleastOneScout = spawnBot(RobotType.SCOUT);
-			return false;
-		}
-
-		if (rc.getTreeCount() < numGardeners)
-		{
-			plantTree();
-		}
-		if (numSoldiers == 0) { //Need soldiers.
+		if (numSoldiers == 0 && rc.getRobotCount() <= rc.getInitialArchonLocations(us).length *2) { //Need soldiers.
 			System.out.println("Spawn: Defensive soldier");
 			spawnBot(RobotType.SOLDIER);
 			return false;
@@ -157,11 +147,24 @@ public class BotGardener extends Globals {
 			spawnedAtleastOneScout = spawnBot(RobotType.SCOUT);
 			return false;
 		}
+		if (rc.getTreeCount() < numGardeners || nearbyFriendlyTrees.length < 1)
+		{
+			plantTree();
+		}
+
+
+
+
+
 		if (nearbyNeutralTrees != null && nearbyNeutralTrees.length > 1 && numLumberjacks < 2 ) { //Gotta cut down these trees
 			spawnBot(RobotType.LUMBERJACK);
 			return false;
 		}
-
+		if (numScouts < 1) {
+			System.out.println("Spawn: Go go scout");
+			spawnedAtleastOneScout = spawnBot(RobotType.SCOUT);
+			return false;
+		}
 		rc.setIndicatorDot(here, 000, 200, 00);
 
 

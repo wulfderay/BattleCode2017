@@ -79,16 +79,16 @@ public class BotArchon extends Globals {
 		if (iAmAlphaArchon) { // btw we need to broadcast this so that we can have another take over if I die.
 			Broadcast.TallyRollCalls();
 			stuckGardeners = Broadcast.TallyStuckGardeners();
-			Util.MoveToAClearerLocation(myType.sensorRadius/2);
+			Util.MoveToAClearerLocation(3);
 			HireGardnerMaybe();
 		}
 		else
 		{
-			Util.MoveToAClearerLocation(myType.sensorRadius/2);
+			Util.MoveToAClearerLocation(3);
 			HireGardnerMaybe();
 		}
 		BroadCastIfEmergency();
-		Util.MoveToAClearerLocation(myType.sensorRadius/2);
+		Util.MoveToAClearerLocation(3);
 		for (TreeInfo tree : rc.senseNearbyTrees(myType.sensorRadius, Team.NEUTRAL))
 		{
 			if (Clock.getBytecodesLeft() >100)

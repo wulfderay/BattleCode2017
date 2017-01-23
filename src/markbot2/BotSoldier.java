@@ -7,6 +7,7 @@ import battlecode.common.*;
 
 public class BotSoldier extends Globals {
 
+	public static RobotInfo[] enemiesLastTurn;
 	public static RobotInfo[] enemies;
 	public static RobotInfo unitToDefend;
 
@@ -50,7 +51,10 @@ public class BotSoldier extends Globals {
 		Util.BuyVPIfItWillMakeUsWin();
 		Broadcast.RollCall();
 		//Enemy list:
+		enemiesLastTurn = enemies;
 		enemies = rc.senseNearbyRobots(-1, them);
+
+		Util.AvoidBullets();
 
 		if (Util.isEarlyGame()) {
 			PickAndDefendAnEconUnit();
@@ -79,7 +83,7 @@ public class BotSoldier extends Globals {
 			MapLocation target = currentTarget.location;
 			turnsSinceLastSawCurrentTarget = 0;
 
-			Util.pursueAndDestroy(currentTarget);
+			Util.pursueAndDestroy(currentTarget, projectTrajectory(currentTarget.location, getRobotInfoFromList(enemiesLastTurn, currentTarget.getID()).getLocation()));
 
 					//Kill trees:
 			Direction dir = here.directionTo(target);
@@ -98,11 +102,33 @@ public class BotSoldier extends Globals {
 
 		RobotInfo enemy = Util.pickPriorityTarget(enemies);
 		if (enemy != null) {
-			Util.moveToNearTarget(enemy.location);
-			Util.fireStormTrooperStyle(enemy.location);
+			Util.maintainDistanceWith(enemy, myType.sensorRadius, 2.1f,unitToDefend.getLocation());
+			if (enemies.length <2)
+				Util.fireStormTrooperStyle(projectTrajectory(enemy.location, getRobotInfoFromList(enemiesLastTurn, enemy.getID()).getLocation())); // deter
+			else
+				Util.maximumFirepowerAtSafeTarget(enemy); //ohshiohshitohshit
 		}
 	}
 
+	public static RobotInfo getRobotInfoFromList(RobotInfo [] list, int id)
+	{
+		if (list == null || list.length == 0)
+			return null;
+		for (RobotInfo robot : list)
+		{
+			if (robot.getID() == id)
+				return robot;
+		}
+		return null;
+	}
+
+	public static MapLocation projectTrajectory(MapLocation enemyLocation, MapLocation oldEnemyLocation)
+	{
+		//I think the angle should be (sin(Vbullet(time))/vEnemyTime)
+		if ( oldEnemyLocation == null || enemyLocation.equals(oldEnemyLocation))
+			return enemyLocation;
+		return (enemyLocation.add(oldEnemyLocation.directionTo(enemyLocation),oldEnemyLocation.distanceTo(enemyLocation)*2)); // this needs actual math..
+	}
 	// warning, this can return null.
 	public static RobotInfo getUnitToDefend() throws GameActionException {
 		// make sure the unit is still alive (and in tthe ssame relative are I left it in..)

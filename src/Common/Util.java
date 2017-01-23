@@ -363,12 +363,12 @@ public class Util extends Globals {
 	public static void MoveToAClearerLocation(float maxradius) throws GameActionException {
 
 		// hmm doesn't check for bullets.
-		if ( !rc.isCircleOccupiedExceptByThisRobot(here, maxradius - myType.bodyRadius)) // we're in a good spot already.
+		if ( !rc.isCircleOccupiedExceptByThisRobot(here, maxradius)) // we're in a good spot already.
 			return;
-		Direction dir = here.directionTo(rc.getInitialArchonLocations(them)[0]).opposite();
+		Direction dir = here.directionTo(rc.getInitialArchonLocations(them)[0]);
 		Direction happyDir = null;
 
-		float radius = maxradius - myType.bodyRadius;
+		float radius = maxradius;
 		while (happyDir == null && radius > 0) {
 			happyDir = Util.getClearDirection(dir, 5, radius, false);
 			radius--;
@@ -379,8 +379,7 @@ public class Util extends Globals {
 		Util.tryMove(Util.randomDirection());
 	}
 
-	//Combat utility functions (previously in Soldier):
-	public static boolean pursueAndDestroy(RobotInfo target) throws GameActionException {
+	public static boolean pursueAndDestroy(RobotInfo target, MapLocation projectedLocation) throws GameActionException {
 		boolean moved;
 		if ( target.getType()== RobotType.LUMBERJACK) // don't get too close.
 		{
@@ -389,10 +388,21 @@ public class Util extends Globals {
 		} else {
 			moved = Util.moveToNearBot(target);
 		}
-		boolean shot = Util.maximumFirepowerAtSafeTarget(target);
+		boolean shot = Util.maximumFirepowerAtSafeTarget(projectedLocation);
 		return moved || shot;
 	}
 
+
+	//Combat utility functions (previously in Soldier):
+	public static boolean pursueAndDestroy(RobotInfo target) throws GameActionException {
+		return pursueAndDestroy(target, target.location);
+	}
+
+	public static boolean maximumFirepowerAtSafeTarget(MapLocation loc) throws GameActionException {
+		if ( safeToFire(here.directionTo(loc)))
+			return maximumFirepowerAt(loc);
+		return false;
+	}
 	public static boolean maximumFirepowerAtSafeTarget(RobotInfo currentTarget) throws GameActionException {
 		if ( safeToFireAtTarget(currentTarget) )
 			return maximumFirepowerAt(currentTarget.location);
@@ -458,7 +468,7 @@ public class Util extends Globals {
 				return true;
 			}
 		}
-		if ( distance < 2.5f )
+		if ( distance < 2.75f )
 		{
 			if (rc.canFireTriadShot()) {
 				System.out.println("FIRING TRIAD SHOT!");
