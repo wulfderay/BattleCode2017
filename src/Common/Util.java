@@ -381,7 +381,14 @@ public class Util extends Globals {
 
 	//Combat utility functions (previously in Soldier):
 	public static boolean pursueAndDestroy(RobotInfo target) throws GameActionException {
-		boolean moved = Util.moveToNearBot(target);
+		boolean moved;
+		if ( target.getType()== RobotType.LUMBERJACK) // don't get too close.
+		{
+			Util.maintainDistanceWith(target, myType.sensorRadius, GameConstants.LUMBERJACK_STRIKE_RADIUS+0.1f, target.getLocation());
+			moved = true;
+		} else {
+			moved = Util.moveToNearBot(target);
+		}
 		boolean shot = Util.maximumFirepowerAtSafeTarget(target);
 		return moved || shot;
 	}
@@ -409,13 +416,16 @@ public class Util extends Globals {
 
 	public static boolean safeToFireAtTarget(RobotInfo target)
 	{
-		Direction direction = here.directionTo(target.location);
+		return safeToFire(here.directionTo(target.getLocation()));
+	}
+
+	public static boolean safeToFire(Direction dir)
+	{
+		Direction direction = dir;
 		//Test the line towards the target:
 		MapLocation testLocation;
-		int sensedTeammates;
 		float distance = rc.getType().bodyRadius + 0.1f;
 		float DISTANCE_INCREMENT = 0.3f; //Chosen by IEEE certified random dice roll
-		float senseRadius = 0.01f;
 		float max_test_distance = rc.getType().sensorRadius;
 		while ( distance < max_test_distance)
 		{
@@ -470,7 +480,7 @@ public class Util extends Globals {
 	// sometimes firing sraight at an enemy is bad. if we want to scare em off or if they dodge too well, missing might help.
 	public static boolean fireStormTrooperStyle(MapLocation loc) throws GameActionException {
 		Direction toFire = here.directionTo(loc).rotateLeftDegrees((float)(-5.0f + (Math.random() * 10)));
-		if (rc.canFireSingleShot()) { // don't fire expensive bullets early game
+		if (rc.canFireSingleShot() && safeToFire(toFire) ) { // don't fire expensive bullets early game
 			System.out.println("Firing single shot!");
 			rc.fireSingleShot(toFire);
 			rc.setIndicatorLine(here, loc, 255, 100, 0); // it should be where we are firing to...
@@ -640,6 +650,8 @@ public class Util extends Globals {
 	// Tries to stay nearby but move around randomly
 	public static boolean defend(RobotInfo bot) throws GameActionException
 	{
+		if (bot == null)
+			return false;
 		float minDistance = 2;
 		float maxDistance = 5;
 		float optimalDistance = 3;
@@ -734,4 +746,5 @@ public class Util extends Globals {
 	{
 		return (float) (7.5 + (rc.getRoundNum()*12.5 / rc.getRoundLimit()));
 	}
+
 }

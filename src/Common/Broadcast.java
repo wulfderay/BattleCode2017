@@ -17,6 +17,9 @@ public class Broadcast extends Globals {
 	public static final int ROBOT_ACCUM_SOLDIERS = 613;
 	public static final int ROBOT_ACCUM_SCOUTS = 614;
 	public static final int ROBOT_ACCUM_TANKS = 615;
+	public static final int ROBOT_ATTRITION_MILITARY = 616; // actually not sure how to do this... do we want total killed over time? how dow we deal wioth things killed before they execute code?
+	public static final int ROBOT_ATTRITION_ECON = 617;
+	public static final int ROBOT_ATTRITION_ALL = 618;
 
 	public static final int ENEMY_TARGET_X_CHANNEL = 100;
 	public static final int ENEMY_TARGET_Y_CHANNEL = 101;

@@ -12,7 +12,7 @@ public class BotGardener extends Globals {
 
 	public static int treesPlanted = 0;
 	public static BuildListItem[]  buildOrderEarly = new BuildListItem[] {
-			new BuildListItem(RobotType.SCOUT, rc.getInitialArchonLocations(them).length *2),
+			new BuildListItem(RobotType.SCOUT, rc.getInitialArchonLocations(them).length ),
 			new BuildListItem(RobotType.LUMBERJACK, 5),
 			new BuildListItem(RobotType.SOLDIER,8)};
 	public static BuildListItem[]  buildOrderMid = new BuildListItem[] {
@@ -143,11 +143,15 @@ public class BotGardener extends Globals {
 			return false;
 		}
 
-		if (rc.getTreeCount() < numGardeners * 2)
+		if (rc.getTreeCount() < numGardeners)
 		{
 			plantTree();
 		}
-
+		if (numSoldiers == 0) { //Need soldiers.
+			System.out.println("Spawn: Defensive soldier");
+			spawnBot(RobotType.SOLDIER);
+			return false;
+		}
 		if (numScouts < 1) {
 			System.out.println("Spawn: Go go scout");
 			spawnedAtleastOneScout = spawnBot(RobotType.SCOUT);
@@ -159,11 +163,7 @@ public class BotGardener extends Globals {
 		}
 
 		rc.setIndicatorDot(here, 000, 200, 00);
-		if (numSoldiers == 0) { //Need soldiers.
-			System.out.println("Spawn: Defensive soldier");
-			spawnBot(RobotType.SOLDIER);
-			return false;
-		}
+
 
 		if (numLumberjacks < 2) { //Gotta cut down these trees
 			spawnBot(RobotType.LUMBERJACK);
