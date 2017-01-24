@@ -1,6 +1,4 @@
-package Common;
-
-import java.util.ArrayList;
+package sprintbot;
 
 import battlecode.common.*;
 
@@ -260,7 +258,6 @@ public class Util extends Globals {
 	static boolean inBugMode = false;
 	static Direction lastDirection = null;
 	static final float BUG_ROTATE_INCREMENT = 5.0f;
-	static boolean bugRotateLeft = true;
 
 	public static boolean simpleBug(MapLocation target) throws GameActionException
 	{
@@ -295,61 +292,35 @@ public class Util extends Globals {
 		return false;
 	}
 
-	public static Direction bugRotate(Direction dir, boolean positive) {
-		if (bugRotateLeft && positive) {
-			return dir.rotateLeftDegrees(BUG_ROTATE_INCREMENT);
-		} else {
-			return dir.rotateRightDegrees(BUG_ROTATE_INCREMENT);
-		}
-	}
-
 	public static Direction bugGetNextDirection(Direction targetDirection, Direction lastDirection) {
-		boolean hasBumped = false;
 		Direction moveDir = lastDirection;
 		float rotated = 0f;
-		if (rc.canMove(moveDir)) { //Way is open so rewind
-			Direction testDir = bugRotate(moveDir, false);
+		if (rc.canMove(moveDir)) {
+			Direction testDir = moveDir.rotateLeftDegrees(BUG_ROTATE_INCREMENT);
 			while (rc.canMove(testDir)) {
-				rc.setIndicatorDot(here.add(testDir, 2), 0,100,0);
 				if (targetDirection.degreesBetween(testDir) <= BUG_ROTATE_INCREMENT &&
 						rc.canMove(targetDirection)) {
 					inBugMode = false;
 					return targetDirection;
 				}
-				testDir = bugRotate(testDir, false);
+				testDir = testDir.rotateLeftDegrees(BUG_ROTATE_INCREMENT);
 				rotated += BUG_ROTATE_INCREMENT;
 				if (rotated > 360) {
 					inBugMode = false;
 					return targetDirection;
 				}
 			}
-			return bugRotate(testDir, true); //Back up one step to last clear direction
-		} else { //Way blocked, rotate until find an opening.
+			return testDir.rotateRightDegrees(BUG_ROTATE_INCREMENT);
+		} else {
 			while (!rc.canMove(moveDir)) {
-				rc.setIndicatorDot(here.add(moveDir, 2), 100,0,0);
-				if (!hasBumped && isEdgeOfMap(moveDir)) {
-					//Bumped map edge, going other way
-					System.out.println("Bumped edge of map, rotating other way");
-					hasBumped = true;
-					bugRotateLeft = !bugRotateLeft;
-				}
-				moveDir = bugRotate(moveDir, true);
-				if (rotated > 720) {
+				moveDir = moveDir.rotateRightDegrees(BUG_ROTATE_INCREMENT);
+				if (rotated > 360) {
 					inBugMode = false;
 					return targetDirection;
 				}
 			}
 			return moveDir;
 		}
-	}
-
-	public static boolean isEdgeOfMap(Direction dir) {
-		try {
-			return !rc.onTheMap(here.add(dir, rc.getType().strideRadius + rc.getType().bodyRadius));
-		} catch (GameActionException e) {
-			System.out.println("Caught exception in isEdgeOfMap"+e);
-		}
-		return false;
 	}
 
 	public static Direction getClearDirection(Direction dir,  float resolution, float radius, boolean strict) throws GameActionException {
@@ -371,7 +342,7 @@ public class Util extends Globals {
 		while (cumulativeOffset < 360 && cumulativeOffset > -360) {
 			Direction testDir = dir.rotateLeftDegrees(cumulativeOffset);
 			MapLocation testLoc = here.add(testDir, distanceToCenter);
-			rc.setIndicatorDot(here.add(testDir, distanceToCenter), 255,255,255);
+			//rc.setIndicatorDot(here.add(testDir, distanceToCenter), 255,255,255);
 			if (!rc.isCircleOccupiedExceptByThisRobot(testLoc, radius) && rc.onTheMap(testLoc, radius))
 			{
 				if (!avoidStartingDirection || !MapLocation.doCirclesCollide(testLoc, radius,here.add(dir, distanceToCenter), radius ))

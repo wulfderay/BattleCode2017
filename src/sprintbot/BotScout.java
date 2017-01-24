@@ -1,8 +1,5 @@
 package sprintbot;
 
-import Common.Broadcast;
-import Common.Globals;
-import Common.Util;
 import battlecode.common.*;
 
 import java.util.HashMap;

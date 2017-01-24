@@ -1,6 +1,5 @@
 package sprintbot;
 
-import Common.Globals;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 

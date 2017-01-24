@@ -73,7 +73,8 @@ public class BotSoldier extends Globals {
 			}
 		}
 
-		if(enemies.length == 0) {
+		RobotInfo enemy = Util.pickPriorityTarget(enemies);
+		if(enemy == null) {
 			//Some (simple) pursuit code
 			if ( currentTarget == null  )
 			{
@@ -87,7 +88,7 @@ public class BotSoldier extends Globals {
 				}
 			}
 		} else {
-			MapLocation target = Util.pickPriorityTarget(enemies).location;
+			MapLocation target = enemy.location;
 			turnsSinceLastSawCurrentTarget = 0;
 			currentTarget = Util.pickPriorityTarget(enemies);
 			Util.moveToNearTarget(currentTarget.location);
