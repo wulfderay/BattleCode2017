@@ -12,6 +12,7 @@ public class BotArchon extends Globals {
 	public static int IamArchonNumber = getArchonNumber();
 	public static boolean iAmAlphaArchon = getArchonNumber() == 0;
 	public static int stuckGardeners = 0;
+	public static int currentDirection = 1;
 
 	public static RobotInfo[] nearbyBots;
 	public static int friendlyAttackUnitsNearby;
@@ -80,11 +81,13 @@ public class BotArchon extends Globals {
 			Broadcast.TallyRollCalls();
 			stuckGardeners = Broadcast.TallyStuckGardeners();
 			Util.MoveToAClearerLocation(3);
+			wander();
 			HireGardnerMaybe();
 		}
 		else
 		{
 			Util.MoveToAClearerLocation(3);
+			wander();
 			HireGardnerMaybe();
 		}
 		BroadCastIfEmergency();
@@ -100,6 +103,14 @@ public class BotArchon extends Globals {
 		}
 	}
 
+	private static void wander() throws GameActionException {
+
+
+		// else move on.
+		if (!Util.CircleStrafe(WhereIwasBorn, (int)(0.5+here.distanceTo(WhereIwasBorn)), currentDirection)) {
+			currentDirection *= -1;
+		}
+	}
 	/**
 	 * If I'm being attacked , broadcast for help. Scale up level of emergency depending on my health.
 	 * @throws GameActionException
@@ -146,15 +157,19 @@ public class BotArchon extends Globals {
 	}
 
 	private static void HireGardnerMaybe() throws GameActionException {
-		Direction dir = Util.getClearDirection(Direction.NORTH, 7, 1, false);
+		Direction dir = Util.getClearDirection(Direction.SOUTH, 1, 2, false);
 		if (dir == null) {
 			System.out.println("Spawning blocked");
 			return;
 		}
 
 		int totalGardeners = Broadcast.GetNumberOfRobots(RobotType.GARDENER);
+		int totalMilUnits = Broadcast.GetNumberOfRobots(RobotType.SOLDIER) +
+				Broadcast.GetNumberOfRobots(RobotType.SCOUT) +
+				Broadcast.GetNumberOfRobots(RobotType.LUMBERJACK) +
+				Broadcast.GetNumberOfRobots(RobotType.TANK);
 		if (rc.canHireGardener(dir)) {
-			if ((totalGardeners == 0 || stuckGardeners >= totalGardeners )&& enemyAttackUnitsNearby == 0) {
+			if ((totalGardeners == 0 || stuckGardeners >= totalGardeners )&& enemyAttackUnitsNearby == 0 && totalGardeners < 5) {
 				System.out.println("No gardeners around who can spawn so lets get some.");
 				rc.hireGardener(dir);
 				return;
@@ -166,24 +181,10 @@ public class BotArchon extends Globals {
 				return;
 			}
 
-			System.out.println("Bullets"+rc.getTeamBullets()+"Gardeners"+totalGardeners);
-
-			if (    (totalGardeners == 1 && rc.getTeamBullets() > 150) ||
-					(totalGardeners == 2 && rc.getTeamBullets() > 200) ||
-					(totalGardeners == 3 && rc.getTeamBullets() > 250) ||
-					(totalGardeners == 4 && rc.getTeamBullets() > 300) ||
-					(totalGardeners == 5 && rc.getTeamBullets() > 350)) {
-				System.out.println("Got enough bullets for more gardeners"+totalGardeners+" "+rc.getTeamBullets());
+			if (  totalMilUnits > totalGardeners * 4 ) {
+				System.out.println("GArdener ration wrong. Let's spawn some..");
 				rc.hireGardener(dir);
-				return;
 			}
-
-			if (rc.getTreeCount() < 30 && rc.getTeamBullets() > 400) {
-				System.out.println("Got bullets to spare");
-				rc.hireGardener(dir);
-				return;
-			}
-
 		}
 	}
 

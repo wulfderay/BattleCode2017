@@ -12,19 +12,20 @@ public class BotGardener extends Globals {
 
 	public static int treesPlanted = 0;
 	public static BuildListItem[]  buildOrderEarly = new BuildListItem[] {
-			new BuildListItem(RobotType.SCOUT, rc.getInitialArchonLocations(them).length ),
-			new BuildListItem(RobotType.LUMBERJACK, 5),
-			new BuildListItem(RobotType.TANK, 1),
-			new BuildListItem(RobotType.SOLDIER,8)};
+			new BuildListItem(RobotType.TANK, 1)};//,
+		//	new BuildListItem(RobotType.SCOUT, rc.getInitialArchonLocations(them).length ),
+			//new BuildListItem(RobotType.LUMBERJACK, 5),
+		//	new BuildListItem(RobotType.SOLDIER,8)};
 	public static BuildListItem[]  buildOrderMid = new BuildListItem[] {
-			new BuildListItem(RobotType.SCOUT, rc.getInitialArchonLocations(them).length *3),
-			new BuildListItem(RobotType.LUMBERJACK, 7),
-			new BuildListItem(RobotType.SOLDIER,10),
-			new BuildListItem(RobotType.TANK,5)};
+		//	new BuildListItem(RobotType.SCOUT, rc.getInitialArchonLocations(them).length *3),
+			//new BuildListItem(RobotType.LUMBERJACK, 7),
+		//	new BuildListItem(RobotType.SOLDIER,5),
+			new BuildListItem(RobotType.TANK,5)};//,
+		//	new BuildListItem(RobotType.SOLDIER,10),};
 	public static BuildListItem[]  buildOrderLate = new BuildListItem[] {
-			new BuildListItem(RobotType.TANK, 5),
-			new BuildListItem(RobotType.LUMBERJACK, 5),
-			new BuildListItem(RobotType.SOLDIER,20)};
+			new BuildListItem(RobotType.TANK, 5)};//,
+		//	new BuildListItem(RobotType.LUMBERJACK, 5),
+		//	new BuildListItem(RobotType.SOLDIER,20)};
 	public static int buildIndex = 0;
 	//public static Boolean builtGrove = false;
 	public static Direction spawnLocation = null;
@@ -82,7 +83,7 @@ public class BotGardener extends Globals {
 		senseSurroundings();
 
 		waterTrees();
-		if ( EnsureEarlyGameBotsAreSpawned()) {
+		if ( EnsureEarlyGameBotsAreSpawned() || !Util.isEarlyGame()) {
 			spawnBots();
 			//buildGrove();
 			plantTree();
@@ -132,7 +133,7 @@ public class BotGardener extends Globals {
 		int numScouts = Broadcast.GetNumberOfRobots(RobotType.SCOUT);
 		int numGardeners = Broadcast.GetNumberOfRobots(RobotType.GARDENER);
 
-		if (enemyAttackUnitsNearby > friendlyAttackUnitsNearby) { //Under attack. Spawn soldiers. NOTE: this may be a bad idea when we are getting overrun.
+		/*if (enemyAttackUnitsNearby > friendlyAttackUnitsNearby) { //Under attack. Spawn soldiers. NOTE: this may be a bad idea when we are getting overrun.
 			System.out.println("Spawn: Under attack, spawning soldier");
 			spawnBot(RobotType.SOLDIER);
 			return false;
@@ -147,6 +148,7 @@ public class BotGardener extends Globals {
 			spawnedAtleastOneScout = spawnBot(RobotType.SCOUT);
 			return false;
 		}
+		*/
 		if (rc.getTreeCount() < numGardeners || nearbyFriendlyTrees.length < 1)
 		{
 			plantTree();
@@ -155,29 +157,24 @@ public class BotGardener extends Globals {
 
 
 
-
+/*
 		if (nearbyNeutralTrees != null && nearbyNeutralTrees.length > 1 && numLumberjacks < 2 ) { //Gotta cut down these trees
 			spawnBot(RobotType.LUMBERJACK);
-			return false;
-		}
-		if (numScouts < 1) {
-			System.out.println("Spawn: Go go scout");
-			spawnedAtleastOneScout = spawnBot(RobotType.SCOUT);
 			return false;
 		}
 		rc.setIndicatorDot(here, 000, 200, 00);
 
 
-		if (numLumberjacks < 2) { //Gotta cut down these trees
+		if (numLumberjacks < 2 && nearbyNeutralTrees.length > 0) { //Gotta cut down these trees
 			spawnBot(RobotType.LUMBERJACK);
 			return false;
 		}
-
+*/
 		return true;
 	}
 
 	public static Direction refreshSpawnDirection() throws GameActionException {
-		return Util.getClearDirection(spawnLocation != null? spawnLocation: Direction.NORTH, 7, 1, false);
+		return Util.getClearDirection(spawnLocation != null? spawnLocation: Direction.NORTH, 1, 2, false);
 	}
 	// to be refactored.
 	public static boolean spawnBot(RobotType robotType) throws GameActionException {
@@ -332,7 +329,7 @@ public class BotGardener extends Globals {
 		if (spawnLocation == null)
 			spawnLocation = refreshSpawnDirection();
 		System.out.println("Trying to build a new tree. Trees so far:"+treesPlanted);
-		Direction plantDirection = Util.getClearDirection(spawnLocation != null? spawnLocation:Direction.NORTH, 15, 1f, false, true);
+		Direction plantDirection = Util.getClearDirection(spawnLocation != null? spawnLocation:Direction.NORTH, 10, 2f, false, true);
 		if (plantDirection != null)
 		{
 			if (rc.canPlantTree(plantDirection) ) {

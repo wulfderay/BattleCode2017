@@ -102,7 +102,7 @@ public class BotSoldier extends Globals {
 
 		RobotInfo enemy = Util.pickPriorityTarget(enemies);
 		if (enemy != null) {
-			Util.maintainDistanceWith(enemy, myType.sensorRadius, 2.1f,unitToDefend.getLocation());
+			Util.moveToNearTarget(enemy.location);
 			if (enemies.length <2)
 				Util.fireStormTrooperStyle(projectTrajectory(enemy.location, getRobotInfoFromList(enemiesLastTurn, enemy.getID()).getLocation())); // deter
 			else
