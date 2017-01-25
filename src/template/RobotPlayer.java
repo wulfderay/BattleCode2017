@@ -2,7 +2,7 @@ package template;
 
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
-import Common.*;
+
 public strictfp class RobotPlayer extends Globals{
 
     /**

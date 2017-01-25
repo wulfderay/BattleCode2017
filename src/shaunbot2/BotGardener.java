@@ -1,7 +1,5 @@
 package shaunbot2;
 
-import Common.Globals;
-import Common.Util;
 import battlecode.common.*;
 
 public class BotGardener extends Globals {

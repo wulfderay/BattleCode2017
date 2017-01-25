@@ -1,7 +1,7 @@
 package markbot;
 
 import battlecode.common.*;
-import Common.*;
+
 public class BotGardener extends Globals {
 
     static int scoutsBuilt = 0;

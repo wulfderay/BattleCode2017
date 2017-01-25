@@ -1,7 +1,6 @@
 package shaunbot;
 
 import battlecode.common.*;
-import Common.*;
 
 public class BotSoldier extends Globals {
 

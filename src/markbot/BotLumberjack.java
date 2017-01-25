@@ -1,7 +1,7 @@
 package markbot;
 
 import battlecode.common.*;
-import Common.*;
+
 public class BotLumberjack extends Globals {
 
     public static int currentDirection = 1;

@@ -1,6 +1,5 @@
 package markbot2;
 
-import Common.Globals;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 

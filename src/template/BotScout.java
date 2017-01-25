@@ -1,7 +1,7 @@
 package template;
 
 import battlecode.common.*;
-import Common.*;
+
 public class BotScout extends Globals {
 	public static void loop() throws GameActionException {
         System.out.println("I'm a scout!");

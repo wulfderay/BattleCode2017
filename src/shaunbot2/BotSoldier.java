@@ -1,10 +1,5 @@
 package shaunbot2;
 
-import com.sun.jdi.Location;
-
-import Common.Broadcast;
-import Common.Globals;
-import Common.Util;
 import battlecode.common.*;
 
 public class BotSoldier extends Globals {
