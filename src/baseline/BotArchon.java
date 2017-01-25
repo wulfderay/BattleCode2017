@@ -1,4 +1,4 @@
-package astarrynight;
+package baseline;
 
 import Common.*;
 import battlecode.common.*;
