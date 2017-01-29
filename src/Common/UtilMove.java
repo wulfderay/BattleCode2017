@@ -62,6 +62,31 @@ public class UtilMove extends Globals {
         return true;
     }
 
+    public static boolean moveAdjacentToTree(TreeInfo tree) {
+        float distanceGross = here.distanceTo(tree.location);
+        float distanceNet = distanceGross - myType.bodyRadius - tree.radius;
+        Direction dir = here.directionTo(tree.location);
+        System.out.println("Trying to move adjacent to tree at" + tree.location);
+        System.out.println("Distance" + distanceGross + " " + distanceNet);
+        if (distanceNet < 0.01) {
+            return true;
+        }
+        if (distanceNet >= myType.strideRadius) {
+            if (rc.canMove(dir)) {
+                doMove(dir);
+            } else {
+                BugMove.simpleBug(tree.location);
+            }
+        } else {
+            if (rc.canMove(dir, distanceNet)) {
+                doMove(dir, distanceNet);
+            } else {
+                BugMove.simpleBug(tree.location);
+            }
+        }
+        return false;
+    }
+
     // circle strafes around a certain location at a particular radius. Direction can be switched by passing -1 or 1 to current direction
     // returns false if circle strafe failed because we ran into a wall.
     // direction should be clockwise or counter-clockwise... hmm

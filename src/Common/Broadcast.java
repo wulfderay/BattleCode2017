@@ -26,7 +26,7 @@ public class Broadcast extends Globals {
 
 	public static final int ALPHA_ARCHON_ALERT_CHANNEL = 11;
 
-	public static void RollCall() throws GameActionException
+	public static void RollCall()
 	{
 		int accumulatorChannel = 599;
 		switch (myType)
@@ -50,19 +50,26 @@ public class Broadcast extends Globals {
 				accumulatorChannel = ROBOT_ACCUM_TANKS;
 				break;
 		}
-		rc.broadcast(accumulatorChannel,rc.readBroadcast(accumulatorChannel) +1);
-	}
-
-	public static void TallyRollCalls() throws GameActionException
-	{
-		for (int i = ROBOT_ACCUM_ARCHONS; i <= ROBOT_ACCUM_TANKS; i++)
-		{
-			rc.broadcast(i-10, rc.readBroadcast(i));
-			rc.broadcast(i, 0);
+		try {
+			rc.broadcast(accumulatorChannel, rc.readBroadcast(accumulatorChannel) + 1);
+		} catch (GameActionException e) {
+			UtilDebug.debug_exceptionHandler(e, "Broadcast exception");
 		}
 	}
 
-	public static int GetNumberOfRobots(RobotType type) throws GameActionException {
+	public static void TallyRollCalls()
+	{
+		try {
+			for (int i = ROBOT_ACCUM_ARCHONS; i <= ROBOT_ACCUM_TANKS; i++) {
+				rc.broadcast(i - 10, rc.readBroadcast(i));
+				rc.broadcast(i, 0);
+			}
+		} catch (GameActionException e) {
+			UtilDebug.debug_exceptionHandler(e, "Broadcast exception");
+		}
+	}
+
+	public static int GetNumberOfRobots(RobotType type) {
 		int tallyChannel = 599;
 		switch (type)
 		{
@@ -85,7 +92,12 @@ public class Broadcast extends Globals {
 				tallyChannel = ROBOT_TALLY_TANKS;
 				break;
 		}
-		return rc.readBroadcast(tallyChannel);
+		try {
+			return rc.readBroadcast(tallyChannel);
+		} catch (GameActionException e) {
+			UtilDebug.debug_exceptionHandler(e, "Broadcast exception");
+		}
+		return 0;
 	}
 
 
@@ -132,15 +144,24 @@ public class Broadcast extends Globals {
 	public static int GARDENER_STUCK_ACCUMULATOR_CHANNEL = 202;
 	public static int GARDENER_STUCK_TALLY_CHANNEL = 202;
 
-	public static void IamAStuckGardener() throws GameActionException {
-		rc.broadcast(GARDENER_STUCK_ACCUMULATOR_CHANNEL, rc.readBroadcast(GARDENER_STUCK_ACCUMULATOR_CHANNEL)+1);
+	public static void IamAStuckGardener() {
+		try {
+			rc.broadcast(GARDENER_STUCK_ACCUMULATOR_CHANNEL, rc.readBroadcast(GARDENER_STUCK_ACCUMULATOR_CHANNEL) + 1);
+		} catch (GameActionException e) {
+			UtilDebug.debug_exceptionHandler(e, "Broadcast exception");
+		}
 	}
 
-	public static int TallyStuckGardeners() throws GameActionException{
-		int tally = rc.readBroadcast(GARDENER_STUCK_ACCUMULATOR_CHANNEL);
-		rc.broadcast(GARDENER_STUCK_ACCUMULATOR_CHANNEL, 0);
-		rc.broadcast(GARDENER_STUCK_TALLY_CHANNEL, tally);
-		return tally;
+	public static int TallyStuckGardeners() {
+		try {
+			int tally = rc.readBroadcast(GARDENER_STUCK_ACCUMULATOR_CHANNEL);
+			rc.broadcast(GARDENER_STUCK_ACCUMULATOR_CHANNEL, 0);
+			rc.broadcast(GARDENER_STUCK_TALLY_CHANNEL, tally);
+			return tally;
+		} catch (GameActionException e) {
+			UtilDebug.debug_exceptionHandler(e, "Broadcast exception");
+		}
+		return 0;
 	}
 
 	public static final int TREEBUFFER_SIZE = 20; // gives us 10 trees to play with.
@@ -148,43 +169,56 @@ public class Broadcast extends Globals {
 	public static final int TREES_TO_CHOP_END = TREES_TO_CHOP_START + TREEBUFFER_SIZE;
 	public static final int TOTAL_TREES_TO_CHOP_CHANNEL = TREES_TO_CHOP_END + 1;
 
-	public static MapLocation[] GetTreesToChop() throws GameActionException {
-		int totalTrees = rc.readBroadcast(TOTAL_TREES_TO_CHOP_CHANNEL);
+	public static MapLocation[] GetTreesToChop() {
+		int totalTrees = 0;
+		try {
+			totalTrees = rc.readBroadcast(TOTAL_TREES_TO_CHOP_CHANNEL);
+		} catch (GameActionException e) {
+			UtilDebug.debug_exceptionHandler(e, "Broadcast exception");
+
+		}
 		if (totalTrees == 0 ) // we're already trying to chop the max trees. Please don't ask again.
 			return new MapLocation[0];
 		MapLocation [] treesToChop = new MapLocation[TREEBUFFER_SIZE /2];
 		int treesfound = 0;
 		for (int i = 0; i < TREEBUFFER_SIZE /2; i++  )
 		{
-			int x = rc.readBroadcast(TREES_TO_CHOP_START + (i*2));
-			int y = rc.readBroadcast(TREES_TO_CHOP_START + (i*2) +1);
-			if (x !=0 || y != 0 ) // yes that means we won't chop trees at 0,0 but it lowers the number of reads we need, and it maked the lumberjack simpler.
-			{
-				treesToChop[treesfound] = new MapLocation(x,y);
-				treesfound++;
+			try {
+				int x = rc.readBroadcast(TREES_TO_CHOP_START + (i * 2));
+				int y = rc.readBroadcast(TREES_TO_CHOP_START + (i * 2) + 1);
+				if (x != 0 || y != 0) // yes that means we won't chop trees at 0,0 but it lowers the number of reads we need, and it maked the lumberjack simpler.
+				{
+					treesToChop[treesfound] = new MapLocation(x, y);
+					treesfound++;
+				}
+			} catch (GameActionException e) {
+				UtilDebug.debug_exceptionHandler(e, "Broadcast exception");
 			}
 		}
 		return treesToChop;
 	}
 
 
-	public static boolean INeedATreeChopped(MapLocation where) throws GameActionException {
-		int totalTrees = rc.readBroadcast(TOTAL_TREES_TO_CHOP_CHANNEL);
-		if (totalTrees >= TREEBUFFER_SIZE/2) // we're already trying to chop the max trees. Please don't ask again.
-			return false;
-		for (int i = 0; i < TREEBUFFER_SIZE /2; i++  )
-		{
-			int x = rc.readBroadcast(TREES_TO_CHOP_START + (i*2));
-			int y = rc.readBroadcast(TREES_TO_CHOP_START + (i*2) +1);
-			if ( x ==(int)where.x && y == (int)where.y) // that tree is already to be chopped.
-				return true;
-			if (x ==0 && y == 0 ) // we found a place for our tree
-			{
-				rc.broadcast(TREES_TO_CHOP_START + (i*2), (int)where.x);
-				rc.broadcast(TREES_TO_CHOP_START + (i*2) +1, (int)where.y);
-				rc.broadcast(TOTAL_TREES_TO_CHOP_CHANNEL, totalTrees+1);
-				return true;
+	public static boolean INeedATreeChopped(MapLocation where) {
+		try {
+			int totalTrees = rc.readBroadcast(TOTAL_TREES_TO_CHOP_CHANNEL);
+			if (totalTrees >= TREEBUFFER_SIZE / 2) // we're already trying to chop the max trees. Please don't ask again.
+				return false;
+			for (int i = 0; i < TREEBUFFER_SIZE / 2; i++) {
+				int x = rc.readBroadcast(TREES_TO_CHOP_START + (i * 2));
+				int y = rc.readBroadcast(TREES_TO_CHOP_START + (i * 2) + 1);
+				if (x == (int) where.x && y == (int) where.y) // that tree is already to be chopped.
+					return true;
+				if (x == 0 && y == 0) // we found a place for our tree
+				{
+					rc.broadcast(TREES_TO_CHOP_START + (i * 2), (int) where.x);
+					rc.broadcast(TREES_TO_CHOP_START + (i * 2) + 1, (int) where.y);
+					rc.broadcast(TOTAL_TREES_TO_CHOP_CHANNEL, totalTrees + 1);
+					return true;
+				}
 			}
+		} catch (GameActionException e) {
+			UtilDebug.debug_exceptionHandler(e, "Broadcast exception");
 		}
 		return false;
 	}

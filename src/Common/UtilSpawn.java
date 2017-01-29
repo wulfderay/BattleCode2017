@@ -4,6 +4,8 @@ import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 
+import javax.xml.bind.annotation.XmlElementDecl;
+
 /**
  * Common spawning helper functions
  */
