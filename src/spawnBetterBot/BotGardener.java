@@ -20,6 +20,7 @@ public class BotGardener extends Globals {
 	public static int[] spawnLocStatus = new int[] {0,0,0,0,0,0};
 	public static Direction[] spawnDirs = new Direction[] {Direction.NORTH, Direction.NORTH.rotateRightDegrees(60), Direction.NORTH.rotateRightDegrees(120), Direction.SOUTH, Direction.SOUTH.rotateRightDegrees(60), Direction.SOUTH.rotateRightDegrees(120)};
 	public static MapLocation spawnLocHere;
+	public static boolean foundSpawnLocation = false;
 
 	public static RobotInfo[] nearbyBots;
 	public static TreeInfo[] nearbyFriendlyTrees;
@@ -76,7 +77,7 @@ public class BotGardener extends Globals {
 
 		Direction spawnDir = determineSpawnLocation();
 
-		if (moveToSpawnLocation()) {
+		if (foundSpawnLocation || moveToSpawnLocation()) {
 			spawnTrees(spawnDir);
 		}
 
@@ -85,8 +86,40 @@ public class BotGardener extends Globals {
 	public static boolean moveToSpawnLocation() {
 		if (nearbyFriendlyTrees.length > 0) {
 			TreeInfo closestTree = nearbyFriendlyTrees[0];
-			return UtilMove.moveAdjacentToTree(closestTree);
+			//return UtilMove.moveAdjacentToTree(closestTree);
+			float distanceGross = here.distanceTo(closestTree.location);
+			float distanceNet = distanceGross - 4;
+			Direction dir = here.directionTo(closestTree.location);
+			System.out.println("Trying to move distance 4 from tree" + closestTree.location);
+			System.out.println("Distance" + distanceGross + " " + distanceNet);
+			if (distanceNet < 0) {
+				distanceNet = Math.abs(distanceNet);
+				dir = dir.opposite();
+			}
+			if (distanceNet < 0.01) {
+				return true;
+			}
+			if (distanceNet >= myType.strideRadius) {
+				if (rc.canMove(dir)) {
+					UtilMove.doMove(dir);
+				} else {
+					BugMove.simpleBug(closestTree.location);
+				}
+			} else {
+				if (rc.canMove(dir, distanceNet)) {
+					 return UtilMove.doMove(dir, distanceNet);
+				} else {
+					BugMove.simpleBug(closestTree.location);
+				}
+			}
+			return false;
 		} else {
+			//Find map edge
+			for (int i = 6; --i >= 0;) {
+
+			}
+
+
 			return true;
 		}
 
@@ -106,6 +139,7 @@ public class BotGardener extends Globals {
 			if (rc.canPlantTree(spawnDir)) {
 				try {
 					rc.plantTree(spawnDir);
+					foundSpawnLocation = true;
 					return true;
 				} catch (GameActionException e) {
 					UtilDebug.debug_exceptionHandler(e, "Tree planting exception");
