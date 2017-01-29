@@ -85,6 +85,8 @@ public class BotGardener extends Globals {
 
 	public static boolean moveToSpawnLocation() {
 		if (nearbyFriendlyTrees.length > 0) {
+			//Move to distance 4 from nearest friendly tree... this gives enough space to spawn a tree between.
+			//TODO: Check for distance from nearest gardener. Should be distance 6 away to provide ideal spacing. (gardener.radius * 2 + tree.radius * 4)
 			TreeInfo closestTree = nearbyFriendlyTrees[0];
 			//return UtilMove.moveAdjacentToTree(closestTree);
 			float distanceGross = here.distanceTo(closestTree.location);
