@@ -32,7 +32,7 @@ public class UtilSpawn extends Globals {
             while (cumulativeOffset < 360 && cumulativeOffset > -360) {
                 Direction testDir = dir.rotateLeftDegrees(cumulativeOffset);
                 MapLocation testLoc = here.add(testDir, distanceToCenter);
-                rc.setIndicatorDot(here.add(testDir, distanceToCenter), 255, 255, 255);
+                //rc.setIndicatorDot(here.add(testDir, distanceToCenter), 255, 255, 255);
                 if (!rc.isCircleOccupiedExceptByThisRobot(testLoc, radius) && rc.onTheMap(testLoc, radius)) {
                     if (!avoidStartingDirection || !MapLocation.doCirclesCollide(testLoc, radius, here.add(dir, distanceToCenter), radius))
                         return testDir;

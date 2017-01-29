@@ -67,7 +67,7 @@ public class BugMove extends Globals {
             System.out.println("BugMove: Hugging edge");
             Direction testDir = bugRotate(moveDir, false);
             while (rc.canMove(testDir)) {
-                rc.setIndicatorDot(here.add(testDir, 2), 0,100,0);
+                //rc.setIndicatorDot(here.add(testDir, 2), 0,100,0);
                 if (targetDirection.degreesBetween(testDir) <= BUG_ROTATE_INCREMENT &&
                         rc.canMove(targetDirection)) {
                     inBugMode = false;
@@ -87,7 +87,7 @@ public class BugMove extends Globals {
         } else { //Way blocked, rotate until find an opening.
             System.out.println("BugMove: Deflecting from obstacle");
             while (!rc.canMove(moveDir)) {
-                rc.setIndicatorDot(here.add(moveDir, 2), 100,0,0);
+                //rc.setIndicatorDot(here.add(moveDir, 2), 100,0,0);
                 if (!hasBumped && isEdgeOfMap(moveDir)) {
                     //Bumped map edge, going other way
                     System.out.println("Bumped edge of map, rotating other way");
