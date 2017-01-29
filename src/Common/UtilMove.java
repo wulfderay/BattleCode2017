@@ -7,7 +7,9 @@ import battlecode.common.*;
  */
 public class UtilMove extends Globals {
 
-    public static boolean moveToFarTarget(MapLocation target) {
+    private static Direction exploreDirection = Direction.NORTH;
+
+	public static boolean moveToFarTarget(MapLocation target) {
         return BugMove.simpleBug(target);
     }
 
@@ -42,7 +44,11 @@ public class UtilMove extends Globals {
     }
 
     public static boolean moveToNearBot(RobotInfo target) {
-        if (rc.hasMoved())
+    	return moveStraightTowardsBot(target);
+    }
+    public static boolean moveStraightTowardsBot(RobotInfo target)
+    {
+    	if (rc.hasMoved())
             return false;
         float minDist = myType.bodyRadius + target.type.bodyRadius;
         float targetDist = here.distanceTo(target.location);
@@ -57,10 +63,46 @@ public class UtilMove extends Globals {
             }
             System.out.println("Failed to move adjacent...."+here.distanceTo(target.location)+" "+myType.bodyRadius+" "+target.type.bodyRadius);
         }
-        tryMove(here.directionTo(target.location),10,10);
+        return tryMove(here.directionTo(target.location),10,10);
         //moveFurthestDistancePossibleTowards(target);//simpleSlide(target);
-        return true;
     }
+    
+    public static boolean moveUnsafeTowardsBot(RobotInfo target)
+    {
+    	int checksPerSide = 90;
+    	float degreeOffset = 1f;
+    	Direction dir = here.directionTo(target.location);
+    	if (rc.hasMoved())
+            return false;
+        // First, try intended direction
+        if ( rc.canMove(dir) ) {
+            doMove(dir);
+            here = rc.getLocation();
+            return true;
+        }
+
+        // Now try a bunch of similar angles
+        int currentCheck = 1;
+
+        while(currentCheck<=checksPerSide) {
+            // Try the offset of the left side
+            if( rc.canMove(dir.rotateLeftDegrees(degreeOffset*currentCheck)) ) {
+                doMove(dir.rotateLeftDegrees(degreeOffset*currentCheck));
+                return true;
+            }
+            // Try the offset on the right side
+            if( rc.canMove(dir.rotateRightDegrees(degreeOffset*currentCheck)) ) {
+                doMove(dir.rotateRightDegrees(degreeOffset*currentCheck));
+                return true;
+            }
+            // No move performed, try slightly further
+            currentCheck++;
+        }
+
+        // A move never happened, so return false.
+        return false;
+    }
+    
 
     public static boolean moveAdjacentToTree(TreeInfo tree) {
         float distanceGross = here.distanceTo(tree.location);
@@ -169,7 +211,27 @@ public class UtilMove extends Globals {
         float dy = (dir1.getDeltaY(1) + dir2.getDeltaY(1)) / 2;
         return new Direction(dx, dy);
     }
-
+    
+    public static boolean Explore(MapLocation target)
+    {
+    	if (rc.hasMoved())
+            return false;
+        if (globalTargetExists) {
+            UtilMove.moveToFarTarget(target);
+        } else {
+            System.out.println("No global target so going to explore in a random direction"+exploreDirection);
+            if (!UtilMove.tryMove(exploreDirection)) {
+                exploreDirection = exploreDirection.rotateLeftDegrees(90);
+                return tryMove(exploreDirection);
+            }
+        }
+        return false;
+    }
+    public static boolean Explore()
+    {
+    	return Explore(globalTarget);
+    }
+    
     /**********************************************************************************************
      *   Basic movement functions                                                                 *
      **********************************************************************************************/

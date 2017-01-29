@@ -63,7 +63,8 @@ public class Util extends Globals {
 
 	public static float getVpCostThisRound()
 	{
-		return (float) (7.5 + (rc.getRoundNum()*12.5 / rc.getRoundLimit()));
+		return rc.getVictoryPointCost();
+		//return (float) (7.5 + (rc.getRoundNum()*12.5 / rc.getRoundLimit()));
 	}
 
 }
