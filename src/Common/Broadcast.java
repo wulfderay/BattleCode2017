@@ -3,6 +3,24 @@ package Common;
 import battlecode.common.*;
 
 public class Broadcast extends Globals {
+	public static final int ALPHA_ARCHON_ALERT_CHANNEL = 11;
+
+	public static final int BOSS_ARCHON_LOCATION_X_CHANNEL = 98;
+	public static final int BOSS_ARCHON_LOCATION_Y_CHANNEL = 99;
+
+	public static final int ENEMY_TARGET_X_CHANNEL = 100;
+	public static final int ENEMY_TARGET_Y_CHANNEL = 101;
+
+	public static final int ALPHA_ARCHON_LAST_CHECK_IN_CHANNEL = 200;
+	public static final int ALPHA_ARCHON_ID_CHANNEL = 201;
+
+	public static final int GARDENER_STUCK_ACCUMULATOR_CHANNEL = 202;
+	public static final int GARDENER_STUCK_TALLY_CHANNEL = 203;
+
+	public static final int TREEBUFFER_SIZE = 20; // gives us 10 trees to play with.
+	public static final int TREES_TO_CHOP_START = 500;
+	public static final int TREES_TO_CHOP_END = TREES_TO_CHOP_START + TREEBUFFER_SIZE;
+	public static final int TOTAL_TREES_TO_CHOP_CHANNEL = TREES_TO_CHOP_END + 1;
 
 	public static final int ROBOT_TALLY_ARCHONS = 600;
 	public static final int ROBOT_TALLY_GARDENERS = 601;
@@ -10,46 +28,47 @@ public class Broadcast extends Globals {
 	public static final int ROBOT_TALLY_SOLDIERS = 603;
 	public static final int ROBOT_TALLY_SCOUTS = 604;
 	public static final int ROBOT_TALLY_TANKS = 605;
-
 	public static final int ROBOT_ACCUM_ARCHONS = 610;
 	public static final int ROBOT_ACCUM_GARDENERS = 611;
 	public static final int ROBOT_ACCUM_LUMBERJACKS= 612;
 	public static final int ROBOT_ACCUM_SOLDIERS = 613;
 	public static final int ROBOT_ACCUM_SCOUTS = 614;
 	public static final int ROBOT_ACCUM_TANKS = 615;
-	public static final int ROBOT_ATTRITION_MILITARY = 616; // actually not sure how to do this... do we want total killed over time? how dow we deal wioth things killed before they execute code?
-	public static final int ROBOT_ATTRITION_ECON = 617;
-	public static final int ROBOT_ATTRITION_ALL = 618;
 
-	public static final int ENEMY_TARGET_X_CHANNEL = 100;
-	public static final int ENEMY_TARGET_Y_CHANNEL = 101;
+	public static final int SPAWNED_ARCHONS = 700; // this is basically useless..
+	public static final int SPAWNED_GARDENERS = 701;
+	public static final int SPAWNED_LUMBERJACKS= 702;
+	public static final int SPAWNED_SOLDIERS = 703;
+	public static final int SPAWNED_SCOUTS = 704;
+	public static final int SPAWNED_TANKS = 705;
 
-	public static final int ALPHA_ARCHON_ALERT_CHANNEL = 11;
+	public static final int BULLSHIT_ERROR_CHANNEL = 9990;
+
+	public static final int BroadcastBuffer_StartIndex_Channel = 2098;
+	public static final int BroadcastBuffer_EndIndex_Channel = 2099;
+	private static final int BroadcastBuffer_StartChannel = 1900; //Bottom of the ring
+	public static final int BroadcastBuffer_EndChannel = 1999; //Top of the ring //Max channel is 1000 (apparently if i set this to 1000 it breaks so woops)
+	public static int BroadcastBuffer_StartIndex = 0; //Current start index (for this robot only - must be initialized with PrepareToUse)
+	public static int BroadcastBuffer_EndIndex = 0; //Current end index (for this robot only - must be initialized with PrepareToUse)
+
+	public static void IHaveSpawnedA(RobotType bot) throws GameActionException
+	{
+		int accumulatorChannel = getBroadcastChannel(myType, SPAWNED_ARCHONS);
+		rc.broadcast(accumulatorChannel,rc.readBroadcast(accumulatorChannel) +1);
+	}
+
+	/*
+	Note, this won't be accurate until the spawned bot has had a chance to execute code. UNtil then it will seem as though our losses are greater than they are.
+	 */
+	public static float GetAttritionRateAllGame(RobotType bot) throws GameActionException {
+		int spawned = rc.readBroadcast(getBroadcastChannel(bot, SPAWNED_ARCHONS));
+		int alive = rc.readBroadcast(getBroadcastChannel(bot, ROBOT_ACCUM_ARCHONS));
+		return alive/spawned;
+	}
 
 	public static void RollCall() throws GameActionException
 	{
-		int accumulatorChannel = 599;
-		switch (myType)
-		{
-			case ARCHON:
-				accumulatorChannel = ROBOT_ACCUM_ARCHONS;
-				break;
-			case GARDENER:
-				accumulatorChannel = ROBOT_ACCUM_GARDENERS;
-				break;
-			case SCOUT:
-				accumulatorChannel = ROBOT_ACCUM_SCOUTS;
-				break;
-			case SOLDIER:
-				accumulatorChannel = ROBOT_ACCUM_SOLDIERS;
-				break;
-			case LUMBERJACK:
-				accumulatorChannel = ROBOT_ACCUM_LUMBERJACKS;
-				break;
-			case TANK:
-				accumulatorChannel = ROBOT_ACCUM_TANKS;
-				break;
-		}
+		int accumulatorChannel = getBroadcastChannel(myType, ROBOT_ACCUM_ARCHONS);
 		rc.broadcast(accumulatorChannel,rc.readBroadcast(accumulatorChannel) +1);
 	}
 
@@ -63,34 +82,32 @@ public class Broadcast extends Globals {
 	}
 
 	public static int GetNumberOfRobots(RobotType type) throws GameActionException {
-		int tallyChannel = 599;
-		switch (type)
-		{
-			case ARCHON:
-				tallyChannel = ROBOT_TALLY_ARCHONS;
-				break;
-			case GARDENER:
-				tallyChannel = ROBOT_TALLY_GARDENERS;
-				break;
-			case SCOUT:
-				tallyChannel = ROBOT_TALLY_SCOUTS;
-				break;
-			case SOLDIER:
-				tallyChannel = ROBOT_TALLY_SOLDIERS;
-				break;
-			case LUMBERJACK:
-				tallyChannel = ROBOT_TALLY_LUMBERJACKS;
-				break;
-			case TANK:
-				tallyChannel = ROBOT_TALLY_TANKS;
-				break;
-		}
-		return rc.readBroadcast(tallyChannel);
+		return rc.readBroadcast(getBroadcastChannel(type, ROBOT_TALLY_ARCHONS));
 	}
 
 
-	public static final int BOSS_ARCHON_LOCATION_X_CHANNEL = 98;
-	public static final int BOSS_ARCHON_LOCATION_Y_CHANNEL = 99;
+
+	private static int getBroadcastChannel(RobotType type, int initialChannel)
+	{
+		switch (type)
+		{
+			case ARCHON:
+				return initialChannel;
+			case GARDENER:
+				return initialChannel+1;
+			case LUMBERJACK:
+				return initialChannel+2;
+			case SOLDIER:
+				return initialChannel+3;
+			case SCOUT:
+				return initialChannel+4;
+			case TANK:
+				return initialChannel+5;
+		}
+		return BULLSHIT_ERROR_CHANNEL;
+	}
+
+
 
 	public static void BroadcastBossArchonLocation(MapLocation location) throws GameActionException
 	{
@@ -106,9 +123,6 @@ public class Broadcast extends Globals {
 			return null;
 		return new MapLocation( (float)x, (float)y);
 	}
-
-	public static final int ALPHA_ARCHON_LAST_CHECK_IN_CHANNEL = 200;
-	public static final int ALPHA_ARCHON_ID_CHANNEL = 201;
 
 	public static boolean AmIAlphaArchon() throws GameActionException {
 		if (myType != RobotType.ARCHON)
@@ -129,9 +143,6 @@ public class Broadcast extends Globals {
 		return false;
 	}
 
-	public static int GARDENER_STUCK_ACCUMULATOR_CHANNEL = 202;
-	public static int GARDENER_STUCK_TALLY_CHANNEL = 202;
-
 	public static void IamAStuckGardener() throws GameActionException {
 		rc.broadcast(GARDENER_STUCK_ACCUMULATOR_CHANNEL, rc.readBroadcast(GARDENER_STUCK_ACCUMULATOR_CHANNEL)+1);
 	}
@@ -142,11 +153,6 @@ public class Broadcast extends Globals {
 		rc.broadcast(GARDENER_STUCK_TALLY_CHANNEL, tally);
 		return tally;
 	}
-
-	public static final int TREEBUFFER_SIZE = 20; // gives us 10 trees to play with.
-	public static final int TREES_TO_CHOP_START = 500;
-	public static final int TREES_TO_CHOP_END = TREES_TO_CHOP_START + TREEBUFFER_SIZE;
-	public static final int TOTAL_TREES_TO_CHOP_CHANNEL = TREES_TO_CHOP_END + 1;
 
 	public static MapLocation[] GetTreesToChop() throws GameActionException {
 		int totalTrees = rc.readBroadcast(TOTAL_TREES_TO_CHOP_CHANNEL);
@@ -166,7 +172,6 @@ public class Broadcast extends Globals {
 		}
 		return treesToChop;
 	}
-
 
 	public static boolean INeedATreeChopped(MapLocation where) throws GameActionException {
 		int totalTrees = rc.readBroadcast(TOTAL_TREES_TO_CHOP_CHANNEL);
@@ -345,12 +350,7 @@ public class Broadcast extends Globals {
                 ___________\: :/____NDT____
                             \n/ 
      */
-	public static final int BroadcastBuffer_StartIndex_Channel = 98;
-	public static final int BroadcastBuffer_EndIndex_Channel = 99;
-	private static final int BroadcastBuffer_StartChannel = 900; //Bottom of the ring
-	public static final int BroadcastBuffer_EndChannel = 999; //Top of the ring //Max channel is 1000 (apparently if i set this to 1000 it breaks so woops)
-	public static int BroadcastBuffer_StartIndex = 0; //Current start index (for this robot only - must be initialized with PrepareToUse)
-	public static int BroadcastBuffer_EndIndex = 0; //Current end index (for this robot only - must be initialized with PrepareToUse)
+
 	
 	/*
 	Functionality of the buffer:
@@ -389,8 +389,6 @@ public class Broadcast extends Globals {
 		}
 		return true;
 	}
-
-
 
 	public static void BroadcastBuffer_Send( int data ) throws GameActionException
 	{
