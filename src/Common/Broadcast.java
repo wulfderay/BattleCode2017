@@ -53,7 +53,7 @@ public class Broadcast extends Globals {
 
 	public static void IHaveSpawnedA(RobotType bot) throws GameActionException
 	{
-		int accumulatorChannel = getBroadcastChannel(myType, SPAWNED_ARCHONS);
+		int accumulatorChannel = getBroadcastChannel(bot, SPAWNED_ARCHONS);
 		System.out.println("gonna ask about " + bot.toString()+ " "+accumulatorChannel);
 		rc.broadcast(accumulatorChannel,rc.readBroadcast(accumulatorChannel) +1);
 	}
@@ -68,7 +68,9 @@ public class Broadcast extends Globals {
 	}
 
 	public static int GetNumberOfSpawned(RobotType bot) throws GameActionException {
-		return rc.readBroadcast(getBroadcastChannel(bot, SPAWNED_ARCHONS));
+		int num = rc.readBroadcast(getBroadcastChannel(bot, SPAWNED_ARCHONS));
+		System.out.println("Getting number of spawned " +bot+ " "+getBroadcastChannel(bot, SPAWNED_ARCHONS)+" "+num);
+		return num;
 	}
 
 	public static void RollCall()
