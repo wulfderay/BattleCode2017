@@ -206,6 +206,15 @@ public class Broadcast extends Globals {
 		return treesToChop;
 	}
 
+	public static void ClearTreeList() throws GameActionException
+	{
+		for (int i = 0; i < TREEBUFFER_SIZE /2; i++  )
+		{
+			rc.broadcast(TREES_TO_CHOP_START + (i*2), 0);
+			rc.broadcast(TREES_TO_CHOP_START + (i*2) +1,0);
+		}
+		rc.broadcast(TOTAL_TREES_TO_CHOP_CHANNEL, 0);
+	}
 	public static boolean INeedATreeChopped(MapLocation where) {
 		try {
 			int totalTrees = rc.readBroadcast(TOTAL_TREES_TO_CHOP_CHANNEL);

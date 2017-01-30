@@ -77,12 +77,6 @@ public class BotLumberjack extends Globals {
         else
             UtilMove.moveToNearTarget(nearestTreeINeedToChop);
 
-        // If I am here, it means there are no trees I need to kill in my vicinity. If thats where I'm supposed to be, I'm done.
-        if (rc.canSenseLocation(nearestTreeINeedToChop) &&!rc.isLocationOccupiedByTree(nearestTreeINeedToChop))
-        {
-           Broadcast.IChoppedATree(nearestTreeINeedToChop);
-        }
-
 
     }
 

@@ -79,6 +79,7 @@ public class BotArchon extends Globals {
 			// Actions for alpha archons
 
 			Broadcast.TallyRollCalls();
+			Broadcast.ClearTreeList();
 			stuckGardeners = Broadcast.TallyStuckGardeners();
 			//UtilSpawn.MoveToAClearerLocation(3);
 
