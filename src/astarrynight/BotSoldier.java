@@ -11,7 +11,7 @@ public class BotSoldier extends Globals {
 
 	public static void loop() throws GameActionException {
 		System.out.println("I'm a Soldier!");
-
+		
 		// The code you want your robot to perform every round should be in this loop
 		while (true) {
 
@@ -43,28 +43,40 @@ public class BotSoldier extends Globals {
 	public static RobotInfo currentTarget = null;
 	public static int turnsSinceLastSawCurrentTarget = 0;
 	public static final int TURNS_TO_PURSUE_CURRENT_TARGET = 5;
-
-	public static void turn() throws GameActionException {
-
+	
+	public static void turn() throws GameActionException 
+	{
 		// Initial basic stuff
 		Util.BuyVPIfItWillMakeUsWin();
 		Broadcast.RollCall();
-
+		
 		// Enemy list:
 		enemiesLastTurn = enemies;
 		enemies = rc.senseNearbyRobots(-1, them);
-
+		
 		// Dodge if we need to
 		UtilMove.AvoidBullets();
-
-		if (Util.isEarlyGame()) {
+		
+		if ( Util.isEarlyGame() ) {
 			//Defend in the early game
 			PickAndDefendAnEconUnit();
+		} else {
+			// Fight fight fight!
+			PursueAndDestroyPriorityEnemy();
+			/*
+			// Fight fight fight!
+			RobotInfo priorityTarget = Util.pickPriorityTarget(enemies);
+			if ( priorityTarget != null )
+			{
+				
+			}
+			else
+			{
+				UtilMove.Explore();
+				//UtilMove.moveToFarTarget(globalTarget);
+			}
+			*/
 		}
-
-		// Fight fight fight!
-		PursueAndDestroyPriorityEnemy();
-
 	}
 
 	public static void PursueAndDestroyPriorityEnemy() throws GameActionException {
@@ -72,9 +84,8 @@ public class BotSoldier extends Globals {
 			//Some (simple) pursuit code
 			if ( currentTarget == null  )
 			{
-				UtilMove.moveToFarTarget(globalTarget);
+				UtilMove.Explore();
 			} else {
-
 				UtilMove.moveToNearTarget(currentTarget.location);
 				turnsSinceLastSawCurrentTarget++;
 				if ( turnsSinceLastSawCurrentTarget > TURNS_TO_PURSUE_CURRENT_TARGET)
@@ -84,36 +95,48 @@ public class BotSoldier extends Globals {
 			}
 		} else {
 			currentTarget = Util.pickPriorityTarget(enemies);
-			if (currentTarget == null)
-				return;
-
-			MapLocation target = currentTarget.location;
 			turnsSinceLastSawCurrentTarget = 0;
-
-			Util.pursueAndDestroy(currentTarget, projectTrajectory(currentTarget.location, getRobotInfoFromList(enemiesLastTurn, currentTarget.getID()).getLocation()));
-
-					//Kill trees:
-			Direction dir = here.directionTo(target);
-			MapLocation oneMoveLocation = here.add(dir, rc.getType().bodyRadius + rc.getType().strideRadius);
-			TreeInfo obstacleTree = rc.senseTreeAtLocation(oneMoveLocation);
-			if ( obstacleTree != null )
+			if (currentTarget == null) {
+				UtilMove.moveToFarTarget(globalTarget);
+				return;
+			}
+			switch ( currentTarget.getType() )
 			{
-				UtilAttack.maximumFirepowerAt(obstacleTree.location);
+			case LUMBERJACK:
+				float MIN = GameConstants.LUMBERJACK_STRIKE_RADIUS + RobotType.LUMBERJACK.strideRadius;
+				float MAX = MIN + rc.getType().bodyRadius*2f; //Fudge factor (mmm... fudge...)
+				UtilMove.maintainDistanceWith(currentTarget, MAX, MIN, currentTarget.location);
+				UtilAttack.fireStormTrooperStyle(currentTarget.location);
+				break;
+			case SCOUT:
+				UtilMove.moveToNearTarget(currentTarget.location);
+				UtilAttack.fireStormTrooperStyle(currentTarget.location);
+				break;
+			default:
+				UtilMove.moveToNearTarget(currentTarget.location);
+				UtilAttack.maximumFirepowerAtSafeTarget(currentTarget, enemies);					
 			}
 		}
 	}
+
 	public static void PickAndDefendAnEconUnit() throws GameActionException {
 		unitToDefend = getUnitToDefend();
 
 		UtilMove.defend(unitToDefend);
 
 		RobotInfo enemy = Util.pickPriorityTarget(enemies);
-		if (enemy != null) {
-			UtilMove.maintainDistanceWith(enemy, myType.sensorRadius, 2.1f,unitToDefend.getLocation());
-			if (enemies.length <2)
-				UtilAttack.fireStormTrooperStyle(projectTrajectory(enemy.location, getRobotInfoFromList(enemiesLastTurn, enemy.getID()).getLocation())); // deter
-			else
-				UtilAttack.maximumFirepowerAtSafeTarget(enemy); //ohshiohshitohshit
+		if (enemy != null ) {
+			if ( unitToDefend != null )
+			{
+				UtilMove.maintainDistanceWith(enemy, myType.sensorRadius, 2.1f,unitToDefend.getLocation());
+			}
+			if (enemies.length <2){
+				if ( enemiesLastTurn == null )
+					UtilAttack.fireStormTrooperStyle(enemy.location); // deter
+				else
+					UtilAttack.fireStormTrooperStyle(enemy.location); // deter
+			}else
+				UtilAttack.maximumFirepowerAtSafeTarget(enemy, enemies); //ohshiohshitohshit
 		}
 	}
 
@@ -127,14 +150,6 @@ public class BotSoldier extends Globals {
 				return robot;
 		}
 		return null;
-	}
-
-	public static MapLocation projectTrajectory(MapLocation enemyLocation, MapLocation oldEnemyLocation)
-	{
-		//I think the angle should be (sin(Vbullet(time))/vEnemyTime)
-		if ( oldEnemyLocation == null || enemyLocation.equals(oldEnemyLocation))
-			return enemyLocation;
-		return (enemyLocation.add(oldEnemyLocation.directionTo(enemyLocation),oldEnemyLocation.distanceTo(enemyLocation)*2)); // this needs actual math..
 	}
 
 	// warning, this can return null.

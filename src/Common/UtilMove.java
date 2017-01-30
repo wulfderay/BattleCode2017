@@ -211,7 +211,11 @@ public class UtilMove extends Globals {
         float dy = (dir1.getDeltaY(1) + dir2.getDeltaY(1)) / 2;
         return new Direction(dx, dy);
     }
-    
+
+    public static boolean Explore()
+    {
+    	return Explore(globalTarget);
+    }
     public static boolean Explore(MapLocation target)
     {
     	if (rc.hasMoved())
@@ -221,15 +225,11 @@ public class UtilMove extends Globals {
         } else {
             System.out.println("No global target so going to explore in a random direction"+exploreDirection);
             if (!UtilMove.tryMove(exploreDirection)) {
-                exploreDirection = exploreDirection.rotateLeftDegrees(90);
+                exploreDirection = exploreDirection.rotateLeftDegrees((float) (Math.random() * 360) );
                 return tryMove(exploreDirection);
             }
         }
         return false;
-    }
-    public static boolean Explore()
-    {
-    	return Explore(globalTarget);
     }
     
     /**********************************************************************************************

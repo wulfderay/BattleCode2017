@@ -95,7 +95,7 @@ public class BotLumberjack extends Globals {
 		enemies = rc.senseNearbyRobots(-1, them);
 		RobotInfo priorityTarget = Util.pickPriorityTarget(enemies);
 		
-		if ( enemies.length == 0 )
+		if ( enemies.length == 0 || priorityTarget == null)
 			return false;
 		
 		RobotInfo[] friends = rc.senseNearbyRobots(-1, them);

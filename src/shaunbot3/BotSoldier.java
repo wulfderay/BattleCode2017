@@ -100,8 +100,22 @@ public class BotSoldier extends Globals {
 				UtilMove.moveToFarTarget(globalTarget);
 				return;
 			}
-			boolean moved = UtilMove.moveToNearTarget(currentTarget.location);
-			boolean shot = UtilAttack.maximumFirepowerAtSafeTarget(currentTarget, enemies);
+			switch ( currentTarget.getType() )
+			{
+			case LUMBERJACK:
+				float MIN = GameConstants.LUMBERJACK_STRIKE_RADIUS + RobotType.LUMBERJACK.strideRadius;
+				float MAX = MIN + rc.getType().bodyRadius*2f; //Fudge factor (mmm... fudge...)
+				UtilMove.maintainDistanceWith(currentTarget, MAX, MIN, currentTarget.location);
+				UtilAttack.fireStormTrooperStyle(currentTarget.location);
+				break;
+			case SCOUT:
+				UtilMove.moveToNearTarget(currentTarget.location);
+				UtilAttack.fireStormTrooperStyle(currentTarget.location);
+				break;
+			default:
+				UtilMove.moveToNearTarget(currentTarget.location);
+				UtilAttack.maximumFirepowerAtSafeTarget(currentTarget, enemies);					
+			}
 		}
 	}
 
@@ -111,8 +125,11 @@ public class BotSoldier extends Globals {
 		UtilMove.defend(unitToDefend);
 
 		RobotInfo enemy = Util.pickPriorityTarget(enemies);
-		if (enemy != null) {
-			UtilMove.maintainDistanceWith(enemy, myType.sensorRadius, 2.1f,unitToDefend.getLocation());
+		if (enemy != null ) {
+			if ( unitToDefend != null )
+			{
+				UtilMove.maintainDistanceWith(enemy, myType.sensorRadius, 2.1f,unitToDefend.getLocation());
+			}
 			if (enemies.length <2){
 				if ( enemiesLastTurn == null )
 					UtilAttack.fireStormTrooperStyle(enemy.location); // deter

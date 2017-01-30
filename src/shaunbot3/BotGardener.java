@@ -8,19 +8,19 @@ public class BotGardener extends Globals {
 
 	public static int treesPlanted = 0;
 	public static BuildListItem[]  buildOrderEarly = new BuildListItem[] {
-			new BuildListItem(RobotType.SCOUT, rc.getInitialArchonLocations(them).length ),
-			new BuildListItem(RobotType.LUMBERJACK, 5),
-			new BuildListItem(RobotType.TANK, 1),
-			new BuildListItem(RobotType.SOLDIER,8)};
+			new BuildListItem(RobotType.SCOUT, rc.getInitialArchonLocations(them).length, 0.60f ),
+			new BuildListItem(RobotType.LUMBERJACK, 0, 0.60f),
+			new BuildListItem(RobotType.TANK, 9001, .2f),
+			new BuildListItem(RobotType.SOLDIER,0)};
 	public static BuildListItem[]  buildOrderMid = new BuildListItem[] {
-			new BuildListItem(RobotType.SCOUT, rc.getInitialArchonLocations(them).length *3),
-			new BuildListItem(RobotType.LUMBERJACK, 7),
-			new BuildListItem(RobotType.SOLDIER,10),
-			new BuildListItem(RobotType.TANK,5)};
+			new BuildListItem(RobotType.SCOUT, 0, 0.5f),
+			new BuildListItem(RobotType.LUMBERJACK, 0),
+			new BuildListItem(RobotType.SOLDIER,0),
+			new BuildListItem(RobotType.TANK,9001)};
 	public static BuildListItem[]  buildOrderLate = new BuildListItem[] {
-			new BuildListItem(RobotType.TANK, 5),
-			new BuildListItem(RobotType.LUMBERJACK, 5),
-			new BuildListItem(RobotType.SOLDIER,20)};
+			new BuildListItem(RobotType.TANK, 9001),
+			new BuildListItem(RobotType.LUMBERJACK, 0),
+			new BuildListItem(RobotType.SOLDIER,0)};
 	public static int buildIndex = 0;
 	//public static Boolean builtGrove = false;
 	public static Direction spawnLocation = null;
@@ -128,11 +128,11 @@ public class BotGardener extends Globals {
 	public static boolean EnsureEarlyGameBotsAreSpawned() throws GameActionException{
 		rc.setIndicatorDot(here, 200, 100, 00);
 
-		int numLumberjacks = Broadcast.GetNumberOfLive(RobotType.LUMBERJACK);
+		int numLumberjacks = Broadcast.GetNumberOfSpawned(RobotType.LUMBERJACK);
 		int numSoldiers = Broadcast.GetNumberOfLive(RobotType.SOLDIER);
-		int numScouts = Broadcast.GetNumberOfLive(RobotType.SCOUT);
+		int numScouts = Broadcast.GetNumberOfSpawned(RobotType.SCOUT);
 		int numGardeners = Broadcast.GetNumberOfLive(RobotType.GARDENER);
-
+		int numTanks = Broadcast.GetNumberOfLive(RobotType.TANK);
 		System.out.println("Spawn check L" + numLumberjacks + "s" + numScouts + "S" + numSoldiers + "G" + numGardeners);
 
 		if (enemyAttackUnitsNearby > friendlyAttackUnitsNearby) { //Under attack. Spawn soldiers. NOTE: this may be a bad idea when we are getting overrun.
@@ -145,20 +145,15 @@ public class BotGardener extends Globals {
 			spawnBot(RobotType.SOLDIER);
 			return false;
 		}
-		if (numScouts < 1) {
+		if (numTanks < 1) {
 			System.out.println("Spawn: Go go scout");
-			spawnedAtleastOneScout = spawnBot(RobotType.SCOUT);
+			spawnedAtleastOneScout = spawnBot(RobotType.TANK);
 			return false;
 		}
 		if (rc.getTreeCount() < numGardeners || nearbyFriendlyTrees.length < 1)
 		{
 			plantTree();
 		}
-
-
-
-
-
 		if (nearbyNeutralTrees != null && nearbyNeutralTrees.length > 1 && numLumberjacks < 2 ) { //Gotta cut down these trees
 			spawnBot(RobotType.LUMBERJACK);
 			return false;
@@ -194,15 +189,16 @@ public class BotGardener extends Globals {
 			System.out.println("I'm Fucking Stuck! WTF?!");
 			return false;
 		}
-
+		System.out.println("Spawn Location");
 		rc.setIndicatorDot(here.add(spawnLocation, 1), 50,50,50);
 
 		if (!rc.hasRobotBuildRequirements(robotType)) {
 			return false;
 		}
-
+		System.out.println("Build Requirements");
 		if (rc.canBuildRobot(robotType, spawnLocation)) {
 			rc.buildRobot(robotType, spawnLocation);
+			Broadcast.IHaveSpawnedA(robotType);
 			System.out.println("Spawned a new "+robotType);
 			return true;
 		} else {
@@ -213,12 +209,14 @@ public class BotGardener extends Globals {
 			while (cumilativeOffset < 360) {
 				if (rc.canBuildRobot(robotType, spawnLocation.rotateLeftDegrees(cumilativeOffset))) {
 					rc.buildRobot(robotType, spawnLocation);
+					Broadcast.IHaveSpawnedA(robotType);
 					System.out.println("Spawned a new "+robotType);
 					return true;
 				}
 				cumilativeOffset += resolution;
 			}
 		}
+		System.out.println("Could not find valid place to spawn bot!");
 		return false;
 	}
 
@@ -245,35 +243,17 @@ public class BotGardener extends Globals {
 	//TODO: take into account how many bots we already have/attrition level.
 
 	public static Boolean spawnBots() throws GameActionException {
-		rc.setIndicatorDot(here, 100, 00, 100);
-		spawnLocation = UtilSpawn.getClearDirection(Direction.NORTH, 15, 1, false);
-		rc.setIndicatorDot(here.add(spawnLocation, 1), 0, 50, 50);
-		if (spawnLocation == null)
-		{
-			rc.setIndicatorDot(here, 250, 50, 50);
-			System.out.println("I'm Fucking Stuck! WTF?!");
-			Broadcast.IamAStuckGardener();
-			return false;
-		}
-		rc.setIndicatorDot(here.add(spawnLocation, 1), 50,50,50);
 		RobotType nextBot = getNextBotToBuild();
-
 		if (nextBot == null) // we don't need to build
-			return null;
-		if (!rc.hasRobotBuildRequirements(nextBot)) {
 			return false;
-		}
-
-		if (rc.canBuildRobot(nextBot, spawnLocation)) {
-			rc.buildRobot(nextBot, spawnLocation);
-			System.out.println("Spawned a new "+nextBot);
+		if (spawnBot(nextBot)) {
 			buildIndex++;
 			return true;
 		}
-
 		return false;
 	}
 
+	// Here's where we need to add the genrealized attrition code.
 	public static RobotType getNextBotToBuild() throws GameActionException {
 		BuildListItem[] buildOrder = Util.isEarlyGame() && rc.getTreeCount() < 10? buildOrderEarly: buildOrderMid;
 		BuildListItem nextBot = null;
@@ -281,11 +261,11 @@ public class BotGardener extends Globals {
 		buildIndex = buildIndex % buildOrder.length;
 		while(offset < buildOrder.length)
 		{
-
-			if ( Broadcast.GetNumberOfLive(nextBot.type) <buildOrder[(buildIndex + offset) % buildOrder.length].max) // we don't need to spawn any more. go on to the next one.
+			BuildListItem botToBuild = buildOrder[(buildIndex + offset) % buildOrder.length];
+			if ( Broadcast.GetNumberOfLive(nextBot.type) <botToBuild.max &&
+					(botToBuild.maxAttrition == -1 ||Broadcast.GetAttritionRateAllGame(nextBot.type) < botToBuild.maxAttrition)) // we don't need to spawn any more. go on to the next one.
 			{
-
-				return buildOrder[(buildIndex + offset) % buildOrder.length].type;
+				return botToBuild.type;
 			}
 			offset++;
 		}
@@ -300,7 +280,7 @@ public class BotGardener extends Globals {
 		Direction plantDirection = UtilSpawn.getClearDirection(spawnLocation != null? spawnLocation:Direction.NORTH, 15, 1f, false, true);
 		if (plantDirection != null)
 		{
-			if (rc.canPlantTree(plantDirection) ) {
+			if (rc.canPlantTree(plantDirection) && treesPlanted <= 2 ) {
 				rc.plantTree(plantDirection);
 				treesPlanted++;
 				return true;
@@ -320,6 +300,12 @@ public class BotGardener extends Globals {
 	// we might put flags in it too, if we want to monitor some other eent than number of units.
 	public static class BuildListItem
 	{
+		public BuildListItem( RobotType type, int max, float maxAttrition)
+		{
+			this.type = type;
+			this.max = max;
+			this.maxAttrition = maxAttrition;
+		}
 		public BuildListItem( RobotType type, int max)
 		{
 			this.type = type;
@@ -327,5 +313,6 @@ public class BotGardener extends Globals {
 		}
 		public static RobotType type;
 		public static int max;
+		public static float maxAttrition = -1;
 	}
 }
