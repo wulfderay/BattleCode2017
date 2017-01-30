@@ -145,7 +145,7 @@ public class BotArchon extends Globals {
 			return;
 		}
 
-		int totalGardeners = Broadcast.GetNumberOfRobots(RobotType.GARDENER);
+		int totalGardeners = Broadcast.GetNumberOfLive(RobotType.GARDENER);
 		if (rc.canHireGardener(dir)) {
 			if ((totalGardeners == 0 || stuckGardeners >= totalGardeners )&& enemyAttackUnitsNearby == 0) {
 				System.out.println("No gardeners around who can spawn so lets get some.");

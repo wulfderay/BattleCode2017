@@ -68,7 +68,6 @@ public class Broadcast extends Globals {
 	}
 
 	public static int GetNumberOfSpawned(RobotType bot) throws GameActionException {
-		System.out.println("gonna ask about " + bot.toString()+ " "+accumulatorChannel);
 		return rc.readBroadcast(getBroadcastChannel(bot, SPAWNED_ARCHONS));
 	}
 
