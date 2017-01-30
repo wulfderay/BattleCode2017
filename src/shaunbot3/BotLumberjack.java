@@ -53,6 +53,7 @@ public class BotLumberjack extends Globals {
         Broadcast.RollCall();
 	    //UtilMove.AvoidBullets();
 	    //AttackofOpportunity();
+        //EvaluateLocations();
         if ( AttackBots() )
         	return;
         
@@ -73,14 +74,64 @@ public class BotLumberjack extends Globals {
             murderArchonsAndGardeners();
         }
 	}
+	
+	
+	public static MapLocation[] GenerateLocations( int numLocations, float distance) throws GameActionException
+	{
+		MapLocation[] mapLocations = new MapLocation[numLocations];
+		Direction direction = Direction.NORTH;
+		for(int ii = 0; ii < numLocations; ii++)
+		{
+			mapLocations[ii] = here.add(direction, distance);
+			direction = direction.rotateRightDegrees(45);
+			rc.setIndicatorDot(mapLocations[ii], 255, 255, 0);
+		}
+		return mapLocations;
+	}
+	
 
     private static boolean AttackBots() throws GameActionException {
     	enemiesLastTurn = enemies;
 		enemies = rc.senseNearbyRobots(-1, them);
 		RobotInfo priorityTarget = Util.pickPriorityTarget(enemies);
 		
-		if ( enemies.length == 0 || priorityTarget == null)
+		if ( enemies.length == 0 )
 			return false;
+		
+		RobotInfo[] friends = rc.senseNearbyRobots(-1, them);
+		RobotInfo closestFriend = friends[0];
+		
+		int numScans = 8;
+		MapLocation[] scanLocations = GenerateLocations(numScans, 2f);
+		float[] scanScores = new float[numScans];
+		float scanRadius = 2f;
+		RobotInfo[] scanEnemies;
+		RobotInfo[] scanFriendlies;
+		for ( int ii = 0; ii < numScans; ii++ )
+		{
+			MapLocation scanLocation = scanLocations[ii];
+			//Evaluate Location:
+			scanEnemies = rc.senseNearbyRobots(scanLocation, scanRadius, us);
+			scanFriendlies = rc.senseNearbyRobots(scanLocation, scanRadius, them);
+			scanScores[ii] = CalculateScore(scanLocation, scanEnemies, scanFriendlies);
+		}
+		int bestLocation = -1;
+		float bestScanValue = 0f;
+		for ( int ii = 0; ii < numScans; ii++ )
+		{
+			if ( bestScanValue > scanScores[ii] )
+			{
+				bestLocation = ii;
+				bestScanValue = scanScores[ii];
+			}
+		}
+		
+		if ( bestLocation != -1 )
+		{
+			rc.setIndicatorDot(scanLocations[bestLocation], 100, 0, 0);
+			UtilMove.tryMove(here.directionTo(scanLocations[bestLocation]));
+		}
+		
 		
 		float distToEnemy = here.distanceTo(priorityTarget.location) - priorityTarget.type.bodyRadius;
 		if ( distToEnemy < GameConstants.LUMBERJACK_STRIKE_RADIUS )
@@ -94,7 +145,7 @@ public class BotLumberjack extends Globals {
 			if ( rc.canMove(here.directionTo(priorityTarget.location), distToEnemy) )
 			{
 				System.out.println("Within strike + Move radius!  Move 'n Strike!");
-				rc.move(here.directionTo(priorityTarget.location), distToEnemy);
+				UtilMove.moveToNearTarget(priorityTarget.location);
 				rc.strike();
 				return true;
 			}
@@ -115,6 +166,22 @@ public class BotLumberjack extends Globals {
             return true;
         }*/
         return false;
+	}
+    
+    
+
+	private static float CalculateScore(MapLocation scanLocation, RobotInfo[] scanEnemies, RobotInfo[] scanFriendlies) {
+		float currentScore = 0f;
+		for (RobotInfo robot : scanEnemies)
+		{
+			currentScore += 1 * scanLocation.distanceTo(robot.location);
+		}
+		for (RobotInfo robot : scanFriendlies)
+		{
+			currentScore += -1.5 * scanLocation.distanceTo(robot.location);
+		}
+		rc.setIndicatorDot(scanLocation, 0, (int)currentScore * 10, 0);
+		return currentScore;
 	}
 
 	private static void ChopTreeDownForGardner(MapLocation nearestTreeINeedToChop) throws GameActionException {
