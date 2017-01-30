@@ -128,7 +128,7 @@ public class BotGardener extends Globals {
 	public static boolean EnsureEarlyGameBotsAreSpawned() throws GameActionException{
 		rc.setIndicatorDot(here, 200, 100, 00);
 
-		int numLumberjacks = Broadcast.GetNumberOfLive(RobotType.LUMBERJACK);
+		int numLumberjacks = Broadcast.GetNumberOfSpawned(RobotType.LUMBERJACK);
 		int numSoldiers = Broadcast.GetNumberOfLive(RobotType.SOLDIER);
 		int numScouts = Broadcast.GetNumberOfSpawned(RobotType.SCOUT);
 		int numGardeners = Broadcast.GetNumberOfLive(RobotType.GARDENER);
@@ -241,36 +241,17 @@ public class BotGardener extends Globals {
 	//TODO: take into account how many bots we already have/attrition level.
 
 	public static Boolean spawnBots() throws GameActionException {
-		rc.setIndicatorDot(here, 100, 00, 100);
-		spawnLocation = UtilSpawn.getClearDirection(Direction.NORTH, 15, 1, false);
-		rc.setIndicatorDot(here.add(spawnLocation, 1), 0, 50, 50);
-		if (spawnLocation == null)
-		{
-			rc.setIndicatorDot(here, 250, 50, 50);
-			System.out.println("I'm Fucking Stuck! WTF?!");
-			Broadcast.IamAStuckGardener();
-			return false;
-		}
-		rc.setIndicatorDot(here.add(spawnLocation, 1), 50,50,50);
 		RobotType nextBot = getNextBotToBuild();
-
 		if (nextBot == null) // we don't need to build
-			return null;
-		if (!rc.hasRobotBuildRequirements(nextBot)) {
 			return false;
-		}
-
-		if (rc.canBuildRobot(nextBot, spawnLocation)) {
-			rc.buildRobot(nextBot, spawnLocation);
-			Broadcast.IHaveSpawnedA(nextBot);
-			System.out.println("Spawned a new "+nextBot);
+		if (spawnBot(nextBot)) {
 			buildIndex++;
 			return true;
 		}
-
 		return false;
 	}
 
+	// Here's where we need to add the genrealized attrition code.
 	public static RobotType getNextBotToBuild() throws GameActionException {
 		BuildListItem[] buildOrder = Util.isEarlyGame() && rc.getTreeCount() < 10? buildOrderEarly: buildOrderMid;
 		BuildListItem nextBot = null;
@@ -278,11 +259,11 @@ public class BotGardener extends Globals {
 		buildIndex = buildIndex % buildOrder.length;
 		while(offset < buildOrder.length)
 		{
-
-			if ( Broadcast.GetNumberOfLive(nextBot.type) <buildOrder[(buildIndex + offset) % buildOrder.length].max) // we don't need to spawn any more. go on to the next one.
+			BuildListItem botToBuild = buildOrder[(buildIndex + offset) % buildOrder.length];
+			if ( Broadcast.GetNumberOfLive(nextBot.type) <botToBuild.max &&
+					(botToBuild.maxAttrition == -1 ||Broadcast.GetAttritionRateAllGame(nextBot.type) < botToBuild.maxAttrition)) // we don't need to spawn any more. go on to the next one.
 			{
-
-				return buildOrder[(buildIndex + offset) % buildOrder.length].type;
+				return botToBuild.type;
 			}
 			offset++;
 		}
