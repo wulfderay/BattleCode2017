@@ -10,6 +10,9 @@ public class BotArchon extends Globals {
 	public static int stuckGardeners = 0;
 
 	public static RobotInfo[] nearbyBots;
+	public static TreeInfo[] nearbyTrees;
+	public static RobotInfo closestGardener;
+
 	public static int friendlyAttackUnitsNearby;
 	public static int friendlyGardenersNearby;
 	public static int enemyAttackUnitsNearby;
@@ -77,7 +80,9 @@ public class BotArchon extends Globals {
 
 			Broadcast.TallyRollCalls();
 			stuckGardeners = Broadcast.TallyStuckGardeners();
-			UtilSpawn.MoveToAClearerLocation(3);
+			//UtilSpawn.MoveToAClearerLocation(3);
+
+			moveToSafeLocation();
 
 			HireGardnerMaybe();
 
@@ -86,30 +91,23 @@ public class BotArchon extends Globals {
 		else
 		{
 			// Actions for beta archons
-			UtilSpawn.MoveToAClearerLocation(3);
-			HireGardnerMaybe();
+			//UtilSpawn.MoveToAClearerLocation(3);
+			moveToSafeLocation();
+
+			//HireGardnerMaybe();
 		}
 
-		// Common actions
-		UtilSpawn.MoveToAClearerLocation(3);
-
-		for (TreeInfo tree : rc.senseNearbyTrees(myType.sensorRadius, Team.NEUTRAL))
-		{
-			if (Clock.getBytecodesLeft() >100)
-			{
-				Broadcast.INeedATreeChopped(tree.getLocation());
-			}
-			else
-				break;
-		}
 	}
 
 	public static void senseSurroundings() throws GameActionException {
 		nearbyBots = rc.senseNearbyRobots();
+		nearbyTrees = rc.senseNearbyTrees(-1,null);
 
 		friendlyAttackUnitsNearby = 0;
 		friendlyGardenersNearby = 0;
 		enemyAttackUnitsNearby = 0;
+
+		closestGardener = null;
 
 		for (RobotInfo bot : nearbyBots) {
 			if (bot.team == us) {
@@ -118,6 +116,8 @@ public class BotArchon extends Globals {
 				}
 				if (bot.type == RobotType.GARDENER) {
 					friendlyGardenersNearby++;
+					if (closestGardener == null)
+						closestGardener = bot;
 				}
 			} else {
 				if (bot.type.canAttack()) {
@@ -137,6 +137,46 @@ public class BotArchon extends Globals {
 			Broadcast.setAlphaArchonAlert();
 		}
 	}
+
+	private static void moveToSafeLocation() {
+		TreeInfo closestTree = null;
+		if (nearbyTrees.length > 0)
+			closestTree = nearbyTrees[0];
+		RobotInfo closestRobot = null;
+		if (nearbyBots.length > 0)
+			closestRobot = nearbyBots[0];
+
+		MapLocation closestEntity = null;
+		if (closestRobot != null) {
+			closestEntity = closestRobot.location;
+		}
+		if (closestTree != null) {
+			if (closestEntity == null) {
+				closestEntity = closestTree.location;
+			} else if (here.distanceTo(closestEntity) > here.distanceTo(closestTree.location)) {
+				closestEntity = closestTree.location;
+			}
+		}
+
+		if (closestGardener != null && Math.abs(here.directionTo(closestGardener.location).degreesBetween(here.directionTo(globalTarget))) < 100) {
+			//Gardener is between us and the enemy, therefor we are going to get stuck in the wall
+			UtilMove.moveToFarTarget(globalTarget);
+		}
+
+		if (closestEntity != null) {
+			if (here.distanceTo(closestEntity) < 4) {
+				UtilMove.tryMove(closestEntity.directionTo(here).rotateLeftDegrees((float)Math.random()*10 - 5));
+				return;
+			}
+			if (here.distanceTo(closestEntity) > 9) {
+				UtilMove.tryMove(here.directionTo(closestEntity).rotateLeftDegrees((float)Math.random()*10 - 5));
+				return;
+			}
+			UtilMove.tryMove(Util.randomDirection());
+		}
+
+	}
+
 
 	private static void HireGardnerMaybe() throws GameActionException {
 		Direction dir = UtilSpawn.getClearDirection(Direction.NORTH, 7, 1, false);

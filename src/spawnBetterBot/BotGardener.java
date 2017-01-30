@@ -203,15 +203,26 @@ public class BotGardener extends Globals {
 		{
 			RobotInfo[] bots = rc.senseNearbyRobots(loc, 0.99f, null);
 			if (bots.length == 0) {
-				rc.setIndicatorDot(loc, 255, 255, 255);
-				return LOCATION_EMPTY;
+				try {
+					if (rc.onTheMap(loc, 1)) {
+						rc.setIndicatorDot(loc, 255, 255, 255);
+						return LOCATION_EMPTY;
+					} else {
+						rc.setIndicatorDot(loc, 0, 0, 0);
+						return LOCATION_UNKNOWN;
+					}
+				} catch (GameActionException e) {
+					UtilDebug.debug_exceptionHandler(e, "Sensing spawn location exception");
+					rc.setIndicatorDot(loc, 255, 0, 0);
+					return LOCATION_UNKNOWN;
+				}
 			} else {
 				rc.setIndicatorDot(loc, 150, 150, 150);
 				return LOCATION_ROBOT;
 			}
 		} else {
 			if (trees[0].team == us) {
-				rc.setIndicatorDot(loc, 0, 0, 255);
+				rc.setIndicatorDot(loc, 0, 255, 0);
 			} else {
 				rc.setIndicatorDot(loc, 255, 0, 0);
 				Broadcast.INeedATreeChopped(loc);
