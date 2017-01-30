@@ -128,11 +128,10 @@ public class BotGardener extends Globals {
 	public static boolean EnsureEarlyGameBotsAreSpawned() throws GameActionException{
 		rc.setIndicatorDot(here, 200, 100, 00);
 
-		int numLumberjacks = Broadcast.GetNumberOfSpawned(RobotType.LUMBERJACK);
-		int numSoldiers = Broadcast.GetNumberOfSpawned(RobotType.SOLDIER);
+		int numLumberjacks = Broadcast.GetNumberOfLive(RobotType.LUMBERJACK);
+		int numSoldiers = Broadcast.GetNumberOfLive(RobotType.SOLDIER);
 		int numScouts = Broadcast.GetNumberOfSpawned(RobotType.SCOUT);
-		int numGardeners = Broadcast.GetNumberOfSpawned(RobotType.GARDENER);
-
+		int numGardeners = Broadcast.GetNumberOfLive(RobotType.GARDENER);
 		System.out.println("Spawn check L" + numLumberjacks + "s" + numScouts + "S" + numSoldiers + "G" + numGardeners);
 
 		if (enemyAttackUnitsNearby > friendlyAttackUnitsNearby) { //Under attack. Spawn soldiers. NOTE: this may be a bad idea when we are getting overrun.
