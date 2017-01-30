@@ -17,6 +17,18 @@ public class Util extends Globals {
 	public static boolean isEarlyGame() {
 		return rc.getRoundNum() < 400;
 	}
+	
+	public static RobotInfo getRobotInfoFromList(RobotInfo [] list, int id)
+	{
+		if (list == null || list.length == 0)
+			return null;
+		for (RobotInfo robot : list)
+		{
+			if (robot.getID() == id)
+				return robot;
+		}
+		return null;
+	}
 
 	public static boolean pursueAndDestroy(RobotInfo target, MapLocation projectedLocation) throws GameActionException {
 		boolean moved = UtilMove.moveToNearBot(target);
@@ -66,5 +78,6 @@ public class Util extends Globals {
 		return rc.getVictoryPointCost();
 		//return (float) (7.5 + (rc.getRoundNum()*12.5 / rc.getRoundLimit()));
 	}
+
 
 }

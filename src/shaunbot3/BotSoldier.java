@@ -61,6 +61,7 @@ public class BotSoldier extends Globals {
 			//Defend in the early game
 			PickAndDefendAnEconUnit();
 		} else {
+			// Fight fight fight!
 			PursueAndDestroyPriorityEnemy();
 			/*
 			// Fight fight fight!
@@ -73,7 +74,8 @@ public class BotSoldier extends Globals {
 			{
 				UtilMove.Explore();
 				//UtilMove.moveToFarTarget(globalTarget);
-			}*/
+			}
+			*/
 		}
 	}
 
@@ -93,11 +95,13 @@ public class BotSoldier extends Globals {
 			}
 		} else {
 			currentTarget = Util.pickPriorityTarget(enemies);
-			if (currentTarget == null)
-				return;
 			turnsSinceLastSawCurrentTarget = 0;
-
-			Util.pursueAndDestroy(currentTarget, projectTrajectory(currentTarget.location, getRobotInfoFromList(enemiesLastTurn, currentTarget.getID()).getLocation()));
+			if (currentTarget == null) {
+				UtilMove.moveToFarTarget(globalTarget);
+				return;
+			}
+			boolean moved = UtilMove.moveToNearTarget(currentTarget.location);
+			boolean shot = UtilAttack.maximumFirepowerAtSafeTarget(currentTarget, enemies);
 		}
 	}
 
@@ -111,9 +115,9 @@ public class BotSoldier extends Globals {
 			UtilMove.maintainDistanceWith(enemy, myType.sensorRadius, 2.1f,unitToDefend.getLocation());
 			if (enemies.length <2){
 				if ( enemiesLastTurn == null )
-					UtilAttack.fireStormTrooperStyle(projectTrajectory(enemy.location, enemy.getLocation())); // deter
+					UtilAttack.fireStormTrooperStyle(enemy.location); // deter
 				else
-					UtilAttack.fireStormTrooperStyle(projectTrajectory(enemy.location, getRobotInfoFromList(enemiesLastTurn, enemy.getID()).getLocation())); // deter
+					UtilAttack.fireStormTrooperStyle(enemy.location); // deter
 			}else
 				UtilAttack.maximumFirepowerAtSafeTarget(enemy, enemies); //ohshiohshitohshit
 		}
@@ -129,14 +133,6 @@ public class BotSoldier extends Globals {
 				return robot;
 		}
 		return null;
-	}
-
-	public static MapLocation projectTrajectory(MapLocation enemyLocation, MapLocation oldEnemyLocation)
-	{
-		//I think the angle should be (sin(Vbullet(time))/vEnemyTime)
-		if ( oldEnemyLocation == null || enemyLocation.equals(oldEnemyLocation))
-			return enemyLocation;
-		return (enemyLocation.add(oldEnemyLocation.directionTo(enemyLocation),oldEnemyLocation.distanceTo(enemyLocation)*2)); // this needs actual math..
 	}
 
 	// warning, this can return null.
