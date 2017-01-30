@@ -36,11 +36,11 @@ public class BugMove extends Globals {
             try {
                 MapLocation temp = here;
                 rc.setIndicatorDot(target, 255, 255, 0);
-                rc.setIndicatorLine(temp, target, 255, 255, 0);
+                rc.setIndicatorLine(temp, temp.add(temp.directionTo(target),4), 255, 255, 0);
                 rc.setIndicatorLine(temp, temp.add(lastDirection), 100, 100, 0);
-
                 rc.move(bugDirection);
                 here = rc.getLocation();
+                rc.setIndicatorLine(temp, here, 0, 255, 0);
                 lastDirection = bugDirection;
             } catch (GameActionException e) {
                 UtilDebug.debug_exceptionHandler(e, "Failed to bug move direction "+bugDirection);

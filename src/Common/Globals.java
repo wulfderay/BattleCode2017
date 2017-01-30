@@ -1,11 +1,6 @@
 package Common;
 
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotController;
-import battlecode.common.RobotInfo;
-import battlecode.common.RobotType;
-import battlecode.common.Team;
+import battlecode.common.*;
 
 public class Globals {
 
@@ -18,7 +13,14 @@ public class Globals {
 	public static int roundNum;
 	public static MapLocation globalTarget;
 	public static boolean globalTargetExists = true;
-	
+
+	public static Direction hexMoveA = Direction.NORTH;
+	public static Direction hexMoveB = Direction.NORTH.rotateRightDegrees(60);
+	public static Direction hexMoveC = Direction.NORTH.rotateRightDegrees(120);
+	public static Direction hexMoveD = Direction.NORTH.rotateRightDegrees(180);
+	public static Direction hexMoveE = Direction.NORTH.rotateRightDegrees(240);
+	public static Direction hexMoveF = Direction.NORTH.rotateRightDegrees(300);
+
 	public static void init(RobotController _RC) {
 		rc = _RC;
 		us = rc.getTeam();

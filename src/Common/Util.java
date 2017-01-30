@@ -49,13 +49,16 @@ public class Util extends Globals {
 		return ArchonAsLastResort;
 	}
 
-	public static void BuyVPIfItWillMakeUsWin() throws GameActionException {
-		if ( rc.getTeamBullets() > (1000 - rc.getTeamVictoryPoints())* getVpCostThisRound() || rc.getRoundLimit() -rc.getRoundNum() < 5)
-		{
-			rc.donate(rc.getTeamBullets());
+	public static void BuyVPIfItWillMakeUsWin() {
+		try {
+			if (rc.getTeamBullets() > (1000 - rc.getTeamVictoryPoints()) * getVpCostThisRound() || rc.getRoundLimit() - rc.getRoundNum() < 5) {
+				rc.donate(rc.getTeamBullets());
+			}
+			if (rc.getTeamBullets() > 1200)
+				rc.donate(10 * getVpCostThisRound());
+		} catch (GameActionException e) {
+			UtilDebug.debug_exceptionHandler(e, "Donation exception");
 		}
-		if (rc.getTeamBullets() > 1200)
-		rc.donate( 10 * getVpCostThisRound());
 	}
 
 	public static float getVpCostThisRound()
