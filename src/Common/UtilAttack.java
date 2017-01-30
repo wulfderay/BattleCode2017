@@ -87,7 +87,7 @@ public class UtilAttack extends Globals {
     {
         Direction direction = here.directionTo(target);
         float distance = here.add(direction, rc.getType().bodyRadius).distanceTo(target);
-        if ( distance < 1.75f ) //Determined on the back of an official IEEE napkin
+        if ( distance < 2.75f ) //Determined on the back of an official IEEE napkin
         {
             if (rc.canFirePentadShot()) {
                 System.out.println("FIRING PENTAD SHOT!");
@@ -96,10 +96,11 @@ public class UtilAttack extends Globals {
                 } catch (GameActionException e) {
                     UtilDebug.debug_exceptionHandler(e, "Exception while firing pentad shot");
                 }
-                rc.setIndicatorLine(here, target, 100, 0, 0);
+                rc.setIndicatorLine(here, target, 50, 0, 0);
                 return true;
             }
         }
+        /*
         if ( distance < 2.75f )
         {
             if (rc.canFireTriadShot()) {
@@ -109,11 +110,11 @@ public class UtilAttack extends Globals {
                 } catch (GameActionException e) {
                     UtilDebug.debug_exceptionHandler(e, "Exception while firing triad shot");
                 }
-                rc.setIndicatorLine(here, target, 170, 0, 0);
+                rc.setIndicatorLine(here, target, 100, 0, 0);
                 return true;
             }
         }
-
+        */
         if (rc.canFireSingleShot()) {
             System.out.println("Firing single shot!");
             try {

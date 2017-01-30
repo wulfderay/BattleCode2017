@@ -169,7 +169,8 @@ public class BotArchon extends Globals {
 					(totalGardeners == 2 && rc.getTeamBullets() > 200) ||
 					(totalGardeners == 3 && rc.getTeamBullets() > 250) ||
 					(totalGardeners == 4 && rc.getTeamBullets() > 300) ||
-					(totalGardeners == 5 && rc.getTeamBullets() > 350)) {
+					(totalGardeners == 5 && rc.getTeamBullets() > 350) ||
+					(totalGardeners >= 6 && rc.getTeamBullets() > 300) ) {
 				System.out.println("Got enough bullets for more gardeners"+totalGardeners+" "+rc.getTeamBullets());
 				rc.hireGardener(dir);
 				return;

@@ -100,8 +100,22 @@ public class BotSoldier extends Globals {
 				UtilMove.moveToFarTarget(globalTarget);
 				return;
 			}
-			boolean moved = UtilMove.moveToNearTarget(currentTarget.location);
-			boolean shot = UtilAttack.maximumFirepowerAtSafeTarget(currentTarget, enemies);
+			switch ( currentTarget.getType() )
+			{
+			case LUMBERJACK:
+				float MIN = GameConstants.LUMBERJACK_STRIKE_RADIUS + RobotType.LUMBERJACK.strideRadius;
+				float MAX = rc.getType().sensorRadius - 1f; //Fudge factor (mmm... fudge...)
+				UtilMove.maintainDistanceWith(currentTarget, MAX, MIN, currentTarget.location);
+				UtilAttack.maximumFirepowerAtSafeTarget(currentTarget, enemies);
+				break;
+			case SCOUT:
+				UtilMove.moveToNearTarget(currentTarget.location);
+				UtilAttack.fireStormTrooperStyle(currentTarget.location);
+				break;
+			default:
+				UtilMove.moveToNearTarget(currentTarget.location);
+				UtilAttack.maximumFirepowerAtSafeTarget(currentTarget, enemies);					
+			}
 		}
 	}
 
