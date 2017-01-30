@@ -128,10 +128,10 @@ public class BotGardener extends Globals {
 	public static boolean EnsureEarlyGameBotsAreSpawned() throws GameActionException{
 		rc.setIndicatorDot(here, 200, 100, 00);
 
-		int numLumberjacks = Broadcast.GetNumberOfRobots(RobotType.LUMBERJACK);
-		int numSoldiers = Broadcast.GetNumberOfRobots(RobotType.SOLDIER);
-		int numScouts = Broadcast.GetNumberOfRobots(RobotType.SCOUT);
-		int numGardeners = Broadcast.GetNumberOfRobots(RobotType.GARDENER);
+		int numLumberjacks = Broadcast.GetNumberOfLive(RobotType.LUMBERJACK);
+		int numSoldiers = Broadcast.GetNumberOfLive(RobotType.SOLDIER);
+		int numScouts = Broadcast.GetNumberOfLive(RobotType.SCOUT);
+		int numGardeners = Broadcast.GetNumberOfLive(RobotType.GARDENER);
 
 		System.out.println("Spawn check L" + numLumberjacks + "s" + numScouts + "S" + numSoldiers + "G" + numGardeners);
 
@@ -282,7 +282,7 @@ public class BotGardener extends Globals {
 		while(offset < buildOrder.length)
 		{
 
-			if ( Broadcast.GetNumberOfRobots(nextBot.type) <buildOrder[(buildIndex + offset) % buildOrder.length].max) // we don't need to spawn any more. go on to the next one.
+			if ( Broadcast.GetNumberOfLive(nextBot.type) <buildOrder[(buildIndex + offset) % buildOrder.length].max) // we don't need to spawn any more. go on to the next one.
 			{
 
 				return buildOrder[(buildIndex + offset) % buildOrder.length].type;

@@ -61,9 +61,13 @@ public class Broadcast extends Globals {
 	Note, this won't be accurate until the spawned bot has had a chance to execute code. UNtil then it will seem as though our losses are greater than they are.
 	 */
 	public static float GetAttritionRateAllGame(RobotType bot) throws GameActionException {
-		int spawned = rc.readBroadcast(getBroadcastChannel(bot, SPAWNED_ARCHONS));
-		int alive = rc.readBroadcast(getBroadcastChannel(bot, ROBOT_ACCUM_ARCHONS));
+		int spawned = GetNumberOfSpawned(bot);
+		int alive = GetNumberOfLive(bot);
 		return alive/spawned;
+	}
+
+	public static int GetNumberOfSpawned(RobotType bot) throws GameActionException {
+		return rc.readBroadcast(getBroadcastChannel(bot, SPAWNED_ARCHONS));
 	}
 
 	public static void RollCall() throws GameActionException
@@ -81,7 +85,7 @@ public class Broadcast extends Globals {
 		}
 	}
 
-	public static int GetNumberOfRobots(RobotType type) throws GameActionException {
+	public static int GetNumberOfLive(RobotType type) throws GameActionException {
 		return rc.readBroadcast(getBroadcastChannel(type, ROBOT_TALLY_ARCHONS));
 	}
 

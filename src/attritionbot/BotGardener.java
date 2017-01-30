@@ -8,12 +8,12 @@ public class BotGardener extends Globals {
 
 	public static int treesPlanted = 0;
 	public static BuildListItem[]  buildOrderEarly = new BuildListItem[] {
-			new BuildListItem(RobotType.SCOUT, rc.getInitialArchonLocations(them).length ),
-			new BuildListItem(RobotType.LUMBERJACK, 5),
-			new BuildListItem(RobotType.TANK, 1),
-			new BuildListItem(RobotType.SOLDIER,8)};
+			new BuildListItem(RobotType.SCOUT, rc.getInitialArchonLocations(them).length, 0.60f ),
+			new BuildListItem(RobotType.LUMBERJACK, 3, 0.60f),
+			new BuildListItem(RobotType.TANK, 1, .2f),
+			new BuildListItem(RobotType.SOLDIER,5)};
 	public static BuildListItem[]  buildOrderMid = new BuildListItem[] {
-			new BuildListItem(RobotType.SCOUT, rc.getInitialArchonLocations(them).length *3),
+			new BuildListItem(RobotType.SCOUT, rc.getInitialArchonLocations(them).length *3, 0.5f),
 			new BuildListItem(RobotType.LUMBERJACK, 7),
 			new BuildListItem(RobotType.SOLDIER,10),
 			new BuildListItem(RobotType.TANK,5)};
@@ -128,10 +128,10 @@ public class BotGardener extends Globals {
 	public static boolean EnsureEarlyGameBotsAreSpawned() throws GameActionException{
 		rc.setIndicatorDot(here, 200, 100, 00);
 
-		int numLumberjacks = Broadcast.GetNumberOfRobots(RobotType.LUMBERJACK);
-		int numSoldiers = Broadcast.GetNumberOfRobots(RobotType.SOLDIER);
-		int numScouts = Broadcast.GetNumberOfRobots(RobotType.SCOUT);
-		int numGardeners = Broadcast.GetNumberOfRobots(RobotType.GARDENER);
+		int numLumberjacks = Broadcast.GetNumberOfSpawned(RobotType.LUMBERJACK);
+		int numSoldiers = Broadcast.GetNumberOfSpawned(RobotType.SOLDIER);
+		int numScouts = Broadcast.GetNumberOfSpawned(RobotType.SCOUT);
+		int numGardeners = Broadcast.GetNumberOfSpawned(RobotType.GARDENER);
 
 		System.out.println("Spawn check L" + numLumberjacks + "s" + numScouts + "S" + numSoldiers + "G" + numGardeners);
 
@@ -154,11 +154,6 @@ public class BotGardener extends Globals {
 		{
 			plantTree();
 		}
-
-
-
-
-
 		if (nearbyNeutralTrees != null && nearbyNeutralTrees.length > 1 && numLumberjacks < 2 ) { //Gotta cut down these trees
 			spawnBot(RobotType.LUMBERJACK);
 			return false;
@@ -285,7 +280,7 @@ public class BotGardener extends Globals {
 		while(offset < buildOrder.length)
 		{
 
-			if ( Broadcast.GetNumberOfRobots(nextBot.type) <buildOrder[(buildIndex + offset) % buildOrder.length].max) // we don't need to spawn any more. go on to the next one.
+			if ( Broadcast.GetNumberOfLive(nextBot.type) <buildOrder[(buildIndex + offset) % buildOrder.length].max) // we don't need to spawn any more. go on to the next one.
 			{
 
 				return buildOrder[(buildIndex + offset) % buildOrder.length].type;
@@ -323,6 +318,12 @@ public class BotGardener extends Globals {
 	// we might put flags in it too, if we want to monitor some other eent than number of units.
 	public static class BuildListItem
 	{
+		public BuildListItem( RobotType type, int max, float maxAttrition)
+		{
+			this.type = type;
+			this.max = max;
+			this.maxAttrition = maxAttrition;
+		}
 		public BuildListItem( RobotType type, int max)
 		{
 			this.type = type;
@@ -330,5 +331,6 @@ public class BotGardener extends Globals {
 		}
 		public static RobotType type;
 		public static int max;
+		public static float maxAttrition = -1;
 	}
 }
