@@ -73,4 +73,7 @@ public class UtilSpawn extends Globals {
         UtilMove.tryMove(Util.randomDirection());
     }
 
+    public static Direction towardsEnemySpawn() {
+        return here.directionTo(rc.getInitialArchonLocations(them)[0]);
+    }
 }

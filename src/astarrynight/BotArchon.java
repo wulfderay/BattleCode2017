@@ -97,6 +97,14 @@ public class BotArchon extends Globals {
 
 			//HireGardnerMaybe();
 		}
+		for (TreeInfo tree : nearbyTrees)
+		{
+			if ( Clock.getBytecodesLeft() < 100)
+				return;
+			if ( tree.getTeam() != us)
+				Broadcast.INeedATreeChopped(tree.getLocation());
+		}
+
 
 	}
 
@@ -180,7 +188,7 @@ public class BotArchon extends Globals {
 
 
 	private static void HireGardnerMaybe() throws GameActionException {
-		Direction dir = UtilSpawn.getClearDirection(Direction.NORTH, 7, 1, false);
+		Direction dir = UtilSpawn.getClearDirection(UtilSpawn.towardsEnemySpawn().opposite(), 7, 2, false);
 		if (dir == null) {
 			System.out.println("Spawning blocked");
 			return;
@@ -202,6 +210,7 @@ public class BotArchon extends Globals {
 
 			System.out.println("Bullets"+rc.getTeamBullets()+"Gardeners"+totalGardeners);
 
+			// this has to be better. Take into account military units.
 			if (    (totalGardeners == 1 && rc.getTeamBullets() > 150) ||
 					(totalGardeners == 2 && rc.getTeamBullets() > 200) ||
 					(totalGardeners == 3 && rc.getTeamBullets() > 250) ||

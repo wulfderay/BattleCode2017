@@ -103,10 +103,10 @@ public class BotGardener extends Globals {
 
 	}
 
-
 	public static boolean moveToSpawnLocation() {
 		if (nearbyFriendlyTrees.length > 0) {
 			//Move to distance 4 from nearest friendly tree... this gives enough space to spawn a tree between.
+			//TODO: This needs to take into account off-map locations.
 			//TODO: Check for distance from nearest gardener. Should be distance 6 away to provide ideal spacing. (gardener.radius * 2 + tree.radius * 4)
 			TreeInfo closestTree = nearbyFriendlyTrees[0];
 			//return UtilMove.moveAdjacentToTree(closestTree);
@@ -220,7 +220,7 @@ public class BotGardener extends Globals {
 	static final int LOCATION_UNKNOWN = 3;
 
 	public static int canSpawn(MapLocation loc, Direction dir) {
-		TreeInfo[] trees = rc.senseNearbyTrees(loc, 1, null);
+		TreeInfo[] trees = rc.senseNearbyTrees(loc, 2, null); // 2 because of tanks
 		if (trees.length == 0)
 		{
 			RobotInfo[] bots = rc.senseNearbyRobots(loc, 0.99f, null);
@@ -247,7 +247,7 @@ public class BotGardener extends Globals {
 				rc.setIndicatorDot(loc, 0, 255, 0);
 			} else {
 				rc.setIndicatorDot(loc, 255, 0, 0);
-				Broadcast.INeedATreeChopped(loc);
+				Broadcast.INeedATreeChopped(trees[0].location);
 			}
 			return LOCATION_TREE;
 		}
@@ -296,7 +296,7 @@ public class BotGardener extends Globals {
 		}
 		if (rc.getTreeCount() < numGardeners || nearbyFriendlyTrees.length < 1)
 		{
-			plantTree();
+			spawnTrees(determineSpawnLocation());
 		}
 		if (nearbyNeutralTrees != null && nearbyNeutralTrees.length > 1 && numLumberjacks < 2 ) { //Gotta cut down these trees
 			spawnBot(RobotType.LUMBERJACK);
@@ -398,7 +398,7 @@ public class BotGardener extends Globals {
 
 	// Here's where we need to add the genrealized attrition code.
 	public static RobotType getNextBotToBuild() throws GameActionException {
-		BuildListItem[] buildOrder = Util.isEarlyGame() && rc.getTreeCount() < 10? buildOrderEarly: buildOrderMid;
+		BuildListItem[] buildOrder = Util.isEarlyGame() && rc.getTreeCount() < 10 ? buildOrderEarly: buildOrderMid;
 		BuildListItem nextBot = null;
 		int offset = 0;
 		buildIndex = buildIndex % buildOrder.length;
@@ -413,27 +413,6 @@ public class BotGardener extends Globals {
 			offset++;
 		}
 		return null;
-	}
-
-	public static Boolean plantTree() throws GameActionException {
-
-		if (spawnLocation == null)
-			spawnLocation = refreshSpawnDirection();
-		System.out.println("Trying to build a new tree. Trees so far:"+treesPlanted);
-		Direction plantDirection = UtilSpawn.getClearDirection(spawnLocation != null? spawnLocation:Direction.NORTH, 15, 1f, false, true);
-		if (plantDirection != null)
-		{
-			if (rc.canPlantTree(plantDirection) ) {
-				rc.plantTree(plantDirection);
-				treesPlanted++;
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public static Direction towardsEnemySpawn() {
-		return here.directionTo(rc.getInitialArchonLocations(them)[0]);
 	}
 
 	public static void initGardener() {

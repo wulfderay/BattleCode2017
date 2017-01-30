@@ -72,7 +72,7 @@ public class BotLumberjack extends Globals {
 
         // else move on.
 
-        if (nearestTreeINeedToChop.add(Direction.EAST,0.1f).distanceTo(here) > myType.sensorRadius *2)
+        if (nearestTreeINeedToChop.add(Direction.EAST,0.1f).distanceTo(here) > myType.sensorRadius)
             UtilMove.moveToFarTarget(nearestTreeINeedToChop);
         else
             UtilMove.moveToNearTarget(nearestTreeINeedToChop);
