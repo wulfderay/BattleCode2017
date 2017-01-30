@@ -104,9 +104,9 @@ public class BotSoldier extends Globals {
 			{
 			case LUMBERJACK:
 				float MIN = GameConstants.LUMBERJACK_STRIKE_RADIUS + RobotType.LUMBERJACK.strideRadius;
-				float MAX = rc.getType().sensorRadius - 1f; //Fudge factor (mmm... fudge...)
+				float MAX = MIN + rc.getType().bodyRadius*2f; //Fudge factor (mmm... fudge...)
 				UtilMove.maintainDistanceWith(currentTarget, MAX, MIN, currentTarget.location);
-				UtilAttack.maximumFirepowerAtSafeTarget(currentTarget, enemies);
+				UtilAttack.fireStormTrooperStyle(currentTarget.location);
 				break;
 			case SCOUT:
 				UtilMove.moveToNearTarget(currentTarget.location);
@@ -125,8 +125,11 @@ public class BotSoldier extends Globals {
 		UtilMove.defend(unitToDefend);
 
 		RobotInfo enemy = Util.pickPriorityTarget(enemies);
-		if (enemy != null) {
-			UtilMove.maintainDistanceWith(enemy, myType.sensorRadius, 2.1f,unitToDefend.getLocation());
+		if (enemy != null ) {
+			if ( unitToDefend != null )
+			{
+				UtilMove.maintainDistanceWith(enemy, myType.sensorRadius, 2.1f,unitToDefend.getLocation());
+			}
 			if (enemies.length <2){
 				if ( enemiesLastTurn == null )
 					UtilAttack.fireStormTrooperStyle(enemy.location); // deter
