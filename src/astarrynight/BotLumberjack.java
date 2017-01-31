@@ -177,7 +177,7 @@ public class BotLumberjack extends Globals {
         if (mostHated != null )
         {
             if ( here.distanceTo(mostHated.getLocation()) < myType.strideRadius *2)
-                UtilMove.tryMove(here.directionTo(mostHated.getLocation()), 10, 5);
+                UtilMove.moveToNearTarget(mostHated.location);
             // move towards them
             if (!UtilMove.moveToFarTarget(mostHated.getLocation())) {
             	//couldn't move that way...
