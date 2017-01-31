@@ -64,6 +64,8 @@ public class Broadcast extends Globals {
 	public static float GetAttritionRateAllGame(RobotType bot) throws GameActionException {
 		int spawned = GetNumberOfSpawned(bot);
 		int alive = GetNumberOfLive(bot);
+		if (spawned == 0)
+			return 1;
 		return alive/spawned;
 	}
 
