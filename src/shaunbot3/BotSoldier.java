@@ -55,104 +55,86 @@ public class BotSoldier extends Globals {
 		enemies = rc.senseNearbyRobots(-1, them);
 		
 		// Dodge if we need to
-		AvoidBullets();
+		UtilMove.CombatAvoidBullets();
 		
 		if ( Util.isEarlyGame() ) {
 			//Defend in the early game
+			System.out.println("Defending an econ unit!");
 			PickAndDefendAnEconUnit();
 		} else {
+			System.out.println("Krush Kill n Destroy!");
 			// Fight fight fight!
 			PursueAndDestroyPriorityEnemy();
 		}
 	}
 	
-	//Forked to give better stuff for soldiers
-    public static boolean AvoidBullets() {
-        if (rc.hasMoved())
-            return false;
-
-        BulletInfo[] bullets = rc.senseNearbyBullets();
-        BulletInfo bulletThatWillHitMe = null;
-        boolean willBeHitByBullet = false;
-        for (BulletInfo bullet : bullets)
-        {
-            if (UtilMove.willCollideWithLocation( bullet, here, myType.bodyRadius) )
-            {
-                willBeHitByBullet = true;
-                bulletThatWillHitMe = bullet;
-                break;
-            }
-        }
-        if ( !willBeHitByBullet )
-        	return false;
-        MapLocation[] testLocations = Util.GenerateLocations(8, myType.strideRadius);
-        MapLocation dodgeLocation = null;
-        for ( MapLocation location : testLocations )
-        {
-        	for (BulletInfo bullet : bullets)
-            {
-                if (UtilMove.willCollideWithLocation( bullet, location, myType.bodyRadius) )
-                {
-                	dodgeLocation = location;
-                    break;
-                }
-            }
-        }
-        if ( dodgeLocation != null )
-        {
-        	return UtilMove.tryMove(here.directionTo(dodgeLocation));
-        }
-        return UtilMove.tryMove(bulletThatWillHitMe.getDir().rotateLeftDegrees(90), 5, 3);
-    }
-    
-    
-    
-    
-    
-    
-	public static void PursueAndDestroyPriorityEnemy() throws GameActionException {
+	public static boolean PursueAndDestroyPriorityEnemy() throws GameActionException {
 		if(enemies.length == 0) {
 			//Some (simple) pursuit code
 			if ( currentTarget == null  )
 			{
-				UtilMove.Explore();
-			} else {
-				UtilMove.moveToNearTarget(currentTarget.location);
-				turnsSinceLastSawCurrentTarget++;
-				if ( turnsSinceLastSawCurrentTarget > TURNS_TO_PURSUE_CURRENT_TARGET)
+				if ( helpTargetExists && globalTargetExists )
 				{
-					currentTarget = null;
+					if ( here.distanceTo(globalTarget) < here.distanceTo(helpTarget) )
+						return UtilMove.moveToFarTarget(globalTarget);
+					else {
+						System.out.println("Help target detected closer to us!  Time to go help!");
+						return UtilMove.moveToFarTarget(helpTarget);
+					}
 				}
+				if (globalTargetExists)
+				{
+					return UtilMove.moveToFarTarget(globalTarget);
+				}
+				if (helpTargetExists)
+				{
+					System.out.println("Help target detected!  Time to go help!");
+					return UtilMove.moveToFarTarget(helpTarget);
+				}
+				return UtilMove.ExploreInExploreDirection();
 			}
-		} else {
-			currentTarget = Util.pickPriorityTarget(enemies);
-			turnsSinceLastSawCurrentTarget = 0;
-			if (currentTarget == null) {
-				UtilMove.moveToFarTarget(globalTarget);
-				return;
-			}
-			switch ( currentTarget.getType() )
+			//Target != null
+			turnsSinceLastSawCurrentTarget++;
+			if ( turnsSinceLastSawCurrentTarget > TURNS_TO_PURSUE_CURRENT_TARGET)
 			{
-			case LUMBERJACK:
-				float MIN = GameConstants.LUMBERJACK_STRIKE_RADIUS + RobotType.LUMBERJACK.strideRadius;
-				float MAX = MIN + rc.getType().bodyRadius*2f; //Fudge factor (mmm... fudge...)
-				UtilMove.maintainDistanceWith(currentTarget, MAX, MIN, currentTarget.location);
-				UtilAttack.fireStormTrooperStyle(currentTarget.location);
-				break;
-			case SCOUT:
-				UtilMove.moveToNearTarget(currentTarget.location);
-				UtilAttack.fireStormTrooperStyle(currentTarget.location);
-				break;
-			default:
-				UtilMove.moveToNearTarget(currentTarget.location);
-				UtilAttack.maximumFirepowerAtSafeTarget(currentTarget, enemies);					
+				currentTarget = null;
 			}
+			return UtilMove.moveToNearTarget(currentTarget.location);
 		}
+		//Enemies.length > 0:
+		currentTarget = Util.pickPriorityTarget(enemies);
+		turnsSinceLastSawCurrentTarget = 0;
+		if (currentTarget == null) {
+			return UtilMove.moveToFarTarget(globalTarget);
+		}
+		switch ( currentTarget.getType() )
+		{
+		case LUMBERJACK:
+			float MIN = GameConstants.LUMBERJACK_STRIKE_RADIUS + RobotType.LUMBERJACK.strideRadius;
+			float MAX = MIN + rc.getType().bodyRadius*2f; //Fudge factor (mmm... fudge...)
+			UtilMove.maintainDistanceWith(currentTarget, MAX, MIN, currentTarget.location);
+			UtilAttack.fireStormTrooperStyle(currentTarget.location);
+			break;
+		case SCOUT:
+			UtilMove.moveToNearTarget(currentTarget.location);
+			UtilAttack.fireStormTrooperStyle(currentTarget.location);
+			break;
+		default:
+			UtilMove.moveToNearTarget(currentTarget.location);
+			UtilAttack.maximumFirepowerAtSafeTarget(currentTarget, enemies);					
+		}
+		return true; // ehh, close enough
 	}
 
-	public static void PickAndDefendAnEconUnit() throws GameActionException {
+	public static boolean PickAndDefendAnEconUnit() throws GameActionException {
+		if ( enemies.length == 0 && helpTargetExists)
+		{
+			System.out.println("Help target detected!  Time to go help!");
+			return UtilMove.moveToFarTarget(helpTarget);
+		}
+		
 		unitToDefend = getUnitToDefend();
-
+		
 		UtilMove.defend(unitToDefend);
 
 		RobotInfo enemy = Util.pickPriorityTarget(enemies);
@@ -166,9 +148,12 @@ public class BotSoldier extends Globals {
 					UtilAttack.fireStormTrooperStyle(enemy.location); // deter
 				else
 					UtilAttack.fireStormTrooperStyle(enemy.location); // deter
-			}else
+			}else{
+				UtilMove.moveToNearTarget(enemy.location); //RUN AT THE ENEMY!
 				UtilAttack.maximumFirepowerAtSafeTarget(enemy, enemies); //ohshiohshitohshit
+			}
 		}
+		return true; //-ish?!?
 	}
 
 	public static RobotInfo getRobotInfoFromList(RobotInfo [] list, int id)

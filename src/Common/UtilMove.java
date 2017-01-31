@@ -191,21 +191,62 @@ public class UtilMove extends Globals {
         }
         return false;
     }
+    
+	//Forked to give better stuff for soldiers
+    public static boolean CombatAvoidBullets() {
+        if (rc.hasMoved())
+            return false;
+        
+        BulletInfo[] bullets = rc.senseNearbyBullets();
+        BulletInfo bulletThatWillHitMe = null;
+        boolean willBeHitByBullet = false;
+        for (BulletInfo bullet : bullets)
+        {
+            if (UtilMove.willCollideWithLocation( bullet, here, myType.bodyRadius) )
+            {
+                willBeHitByBullet = true;
+                bulletThatWillHitMe = bullet;
+                break;
+            }
+        }
+        if ( !willBeHitByBullet )
+        	return false;
+        MapLocation[] testLocations = Util.GenerateLocations(8, myType.strideRadius);
+        MapLocation dodgeLocation = null;
+        for ( MapLocation location : testLocations )
+        {
+        	for (BulletInfo bullet : bullets)
+            {
+                if (UtilMove.willCollideWithLocation( bullet, location, myType.bodyRadius) )
+                {
+                	dodgeLocation = location;
+                    break;
+                }
+            }
+        }
+        if ( dodgeLocation != null )
+        {
+        	return UtilMove.tryMove(here.directionTo(dodgeLocation));
+        }
+        //I'm going to get hit no matter what I do, so let's just keep going where I'm going!
+        return false;
+        //return UtilMove.tryMove(bulletThatWillHitMe.getDir().rotateLeftDegrees(90), 5, 3);
+    }
 
-    public static Direction maintainDistanceWith(RobotInfo friend, float MAX, float MIN, MapLocation centerOfCircle) {
+    public static boolean maintainDistanceWith(RobotInfo friend, float MAX, float MIN, MapLocation centerOfCircle) {
         Direction directionToCenter = here.directionTo(centerOfCircle);
         Direction directionAwayFromCenter = centerOfCircle.directionTo(here);
         Direction friendDirection = here.directionTo(friend.location);
         float friendDistance = here.distanceTo(friend.location);
         if ( friendDistance > MAX )
         {
-            return halfwayDirection(friendDirection, directionToCenter);
+            return UtilMove.tryMove( halfwayDirection(friendDirection, directionToCenter) );
         }
         if ( friendDistance < MIN )
         {
-            return halfwayDirection(friendDirection.opposite(), directionAwayFromCenter);
+        	return UtilMove.tryMove( halfwayDirection(friendDirection.opposite(), directionAwayFromCenter) );
         }
-        return null;
+        return false;
     }
 
     private static Direction halfwayDirection(Direction dir1, Direction dir2) {
@@ -226,12 +267,17 @@ public class UtilMove extends Globals {
             UtilMove.moveToFarTarget(target);
         } else {
             System.out.println("No global target so going to explore in a random direction"+exploreDirection);
-            if (!UtilMove.tryMove(exploreDirection)) {
-                exploreDirection = exploreDirection.rotateLeftDegrees((float) (Math.random() * 360) );
-                return tryMove(exploreDirection);
-            }
+            ExploreInExploreDirection();
         }
         return false;
+    }
+    public static boolean ExploreInExploreDirection()
+    {
+    	if (!UtilMove.tryMove(exploreDirection)) {
+            exploreDirection = exploreDirection.rotateLeftDegrees((float) (Math.random() * 360) );
+            return tryMove(exploreDirection);
+        }
+    	return false;
     }
     
     /**********************************************************************************************

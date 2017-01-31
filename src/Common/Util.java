@@ -85,11 +85,11 @@ public class Util extends Globals {
 	{
 		MapLocation[] mapLocations = new MapLocation[numLocations];
 		Direction direction = Direction.NORTH;
+		float degreesToRotate = numLocations / 360;
 		for(int ii = 0; ii < numLocations; ii++)
 		{
 			mapLocations[ii] = here.add(direction, distance);
-			direction = direction.rotateRightDegrees(45);
-			rc.setIndicatorDot(mapLocations[ii], 255, 255, 0);
+			direction = direction.rotateRightDegrees(degreesToRotate);
 		}
 		return mapLocations;
 	}

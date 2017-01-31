@@ -13,6 +13,9 @@ public class Globals {
 	public static int roundNum;
 	public static MapLocation globalTarget;
 	public static boolean globalTargetExists = true;
+	
+	public static MapLocation helpTarget;
+	public static boolean helpTargetExists = true;
 
 	public static Direction hexMoveA = Direction.NORTH;
 	public static Direction hexMoveB = Direction.NORTH.rotateRightDegrees(60);
@@ -70,6 +73,31 @@ public class Globals {
 			}
 		}
 		rc.setIndicatorDot(globalTarget, 0, 0, 255);
+		scanForHelpTurnUpdate();
 	}
-	
+
+	public static void scanForHelpTurnUpdate() throws GameActionException {
+		System.out.println( "Globals.scanForHelpTurnUpdate()");
+		here = rc.getLocation();
+		roundNum = rc.getRoundNum();
+		helpTarget = Broadcast.ReadHelpEnemyLocation();
+		if ( helpTarget == null )
+		{
+			helpTargetExists = false;
+		} else {
+			helpTargetExists = true;
+			System.out.println("Help target exists!  Woo" + helpTarget);
+			if ( rc.canSenseAllOfCircle(helpTarget, myType.sensorRadius*0.7f)) //Leave a buffer so we're not hunting down a tree
+			{
+				System.out.println("Sensing helpTarget...");
+				if ( rc.senseNearbyRobots(-1, them).length == 0 )
+				{
+					System.out.println("Nothing there!");
+					Broadcast.ClearHelpEnemyLocation();
+				}
+			}
+			rc.setIndicatorLine(helpTarget.add(Direction.NORTH), helpTarget.add(Direction.SOUTH), 255, 0, 0);
+			rc.setIndicatorLine(helpTarget.add(Direction.EAST), helpTarget.add(Direction.WEST), 255, 0, 0);
+		}
+	}
 }

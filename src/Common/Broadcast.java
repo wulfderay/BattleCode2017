@@ -12,8 +12,8 @@ public class Broadcast extends Globals {
 	public static final int ENEMY_TARGET_Y_CHANNEL = 101;
 
 	public static final int NEED_HELP_X_CHANNEL = 102;
-	public static final int NEED_HELP_Y_CHANNEL = 102;
-
+	public static final int NEED_HELP_Y_CHANNEL = 103;
+	
 	public static final int ALPHA_ARCHON_LAST_CHECK_IN_CHANNEL = 200;
 	public static final int ALPHA_ARCHON_ID_CHANNEL = 201;
 
@@ -53,7 +53,9 @@ public class Broadcast extends Globals {
 	public static final int BroadcastBuffer_EndChannel = 1999; //Top of the ring //Max channel is 1000 (apparently if i set this to 1000 it breaks so woops)
 	public static int BroadcastBuffer_StartIndex = 0; //Current start index (for this robot only - must be initialized with PrepareToUse)
 	public static int BroadcastBuffer_EndIndex = 0; //Current end index (for this robot only - must be initialized with PrepareToUse)
-
+	
+	
+	
 	public static void IHaveSpawnedA(RobotType bot) throws GameActionException
 	{
 		int accumulatorChannel = getBroadcastChannel(bot, SPAWNED_ARCHONS);
@@ -300,7 +302,38 @@ public class Broadcast extends Globals {
 		rc.broadcast(ENEMY_TARGET_X_CHANNEL, 0);
 		rc.broadcast(ENEMY_TARGET_Y_CHANNEL, 0);
 	}
-
+	
+	
+	//Help assistance requests!
+	//Help the enemy!  With BULLETS!!!
+	public static MapLocation ReadHelpEnemyLocation() throws GameActionException
+	{
+		int x = rc.readBroadcast(NEED_HELP_X_CHANNEL);
+		int y = rc.readBroadcast(NEED_HELP_Y_CHANNEL);
+		if ( x == 0 && y == 0 )
+			return null;
+		return new MapLocation( (float)x, (float)y);
+	}
+	
+	public static void HelpHelpINeedAnAdult(RobotInfo[] nearbyEnemies) throws GameActionException {
+		if ( nearbyEnemies.length == 0 )
+			return; //No, you don't need an adult.  Go home bot, you're drunk
+		System.out.println("Help! The doll's trying to kill me and the toaster's been laughing at me!");
+		Broadcast.WriteHelpEnemyLocation(nearbyEnemies[0].location);
+	}
+	public static void WriteHelpEnemyLocation(MapLocation location) throws GameActionException
+	{
+		rc.broadcast(NEED_HELP_X_CHANNEL, (int) location.x);
+		rc.broadcast(NEED_HELP_Y_CHANNEL, (int) location.y);
+	}
+	public static void ClearHelpEnemyLocation() throws GameActionException
+	{
+		rc.broadcast(NEED_HELP_X_CHANNEL, 0);
+		rc.broadcast(NEED_HELP_Y_CHANNEL, 0);
+	}
+	
+	
+	
 	public static void setAlphaArchonAlert()
 	{
 		try {
