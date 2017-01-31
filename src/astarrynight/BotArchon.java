@@ -95,8 +95,8 @@ public class BotArchon extends Globals {
 
 			BroadCastIfEmergency();
 
-			if (enemies.length > 0)
-				Broadcast.HelpHelpINeedAnAdult(enemies);
+			Broadcast.ClearHelpEnemyLocation();
+			Broadcast.HelpHelpINeedAnAdult(rc.senseNearbyRobots(-1, them));
 		}
 		else
 		{

@@ -48,9 +48,10 @@ public class BotLumberjack extends Globals {
 
         Broadcast.RollCall();
 
-	    UtilMove.AvoidBullets();
-
-	    AttackofOpportunity();
+	    //UtilMove.AvoidBullets();
+	    //AttackofOpportunity();
+        if ( AttackBots() )
+        	return;
 
         MapLocation nearestTreeINeedToChop = GetNearestTreeToChop();
 	    if (nearestTreeINeedToChop != null &&!( (int)nearestTreeINeedToChop.x == 0 && (int)nearestTreeINeedToChop.y == 0))
@@ -63,6 +64,101 @@ public class BotLumberjack extends Globals {
             murderArchonsAndGardeners();
 	}
 
+	public static RobotInfo[] enemies;
+    private static boolean AttackBots() throws GameActionException {
+		enemies = rc.senseNearbyRobots(-1, them);
+		RobotInfo priorityTarget = Util.pickPriorityTarget(enemies);
+		
+		if ( enemies.length == 0 || priorityTarget == null)
+			return false;
+		
+		RobotInfo[] friends = rc.senseNearbyRobots(-1, them);
+		RobotInfo closestFriend = friends[0];
+		
+		int numScans = 8;
+		MapLocation[] scanLocations = Util.GenerateLocations(numScans, 2f);
+		float[] scanScores = new float[numScans];
+		float scanRadius = 2f;
+		RobotInfo[] scanEnemies;
+		RobotInfo[] scanFriendlies;
+		for ( int ii = 0; ii < numScans; ii++ )
+		{
+			MapLocation scanLocation = scanLocations[ii];
+			//Evaluate Location:
+			scanEnemies = rc.senseNearbyRobots(scanLocation, scanRadius, us);
+			scanFriendlies = rc.senseNearbyRobots(scanLocation, scanRadius, them);
+			scanScores[ii] = CalculateScore(scanLocation, scanEnemies, scanFriendlies);
+		}
+		int bestLocation = -1;
+		float bestScanValue = 0f;
+		for ( int ii = 0; ii < numScans; ii++ )
+		{
+			if ( bestScanValue > scanScores[ii] )
+			{
+				bestLocation = ii;
+				bestScanValue = scanScores[ii];
+			}
+		}
+		
+		if ( bestLocation != -1 )
+		{
+			rc.setIndicatorDot(scanLocations[bestLocation], 100, 0, 0);
+			UtilMove.tryMove(here.directionTo(scanLocations[bestLocation]));
+		}
+		
+		
+		float distToEnemy = here.distanceTo(priorityTarget.location) - priorityTarget.type.bodyRadius;
+		if ( distToEnemy < GameConstants.LUMBERJACK_STRIKE_RADIUS )
+		{
+			System.out.println("Within strike radius!  Strike!");
+			rc.strike();
+			return true;
+		}
+		if ( distToEnemy < GameConstants.LUMBERJACK_STRIKE_RADIUS + rc.getType().strideRadius )
+		{
+			if ( rc.canMove(here.directionTo(priorityTarget.location), distToEnemy) )
+			{
+				System.out.println("Within strike + Move radius!  Move 'n Strike!");
+				UtilMove.moveToNearTarget(priorityTarget.location);
+				rc.strike();
+				return true;
+			}
+		}
+		if ( distToEnemy < GameConstants.LUMBERJACK_STRIKE_RADIUS + rc.getType().strideRadius * 2 ) //Fudge factor
+		{
+			System.out.println("Near move!  Move!");
+			UtilMove.moveToNearBot(priorityTarget);
+			return false;
+		}
+		/*
+    	// if I'm near an enemy but not an ally, strike.
+        RobotInfo[] robots = rc.senseNearbyRobots(GameConstants.LUMBERJACK_STRIKE_RADIUS, them);
+        
+        if(robots.length > 0 && !rc.hasAttacked()) { // this needs to better gauge the cost/benefit of striking.
+            // Use strike() to hit all nearby robots!
+            rc.strike();
+            return true;
+        }*/
+        return false;
+	}
+    
+    
+
+	private static float CalculateScore(MapLocation scanLocation, RobotInfo[] scanEnemies, RobotInfo[] scanFriendlies) {
+		float currentScore = 0f;
+		for (RobotInfo robot : scanEnemies)
+		{
+			currentScore += 1 * scanLocation.distanceTo(robot.location);
+		}
+		for (RobotInfo robot : scanFriendlies)
+		{
+			currentScore += -1.5 * scanLocation.distanceTo(robot.location);
+		}
+		rc.setIndicatorDot(scanLocation, 0, (int)currentScore * 10, 0);
+		return currentScore;
+	}
+	
+	
     private static void ChopTreeDownForGardner(MapLocation nearestTreeINeedToChop) throws GameActionException {
 	    rc.setIndicatorDot(nearestTreeINeedToChop, 0,100,0);
         if (ThereIsATreeINeedToMurder()) // come back next turn and finish killing it

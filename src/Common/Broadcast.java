@@ -318,8 +318,13 @@ public class Broadcast extends Globals {
 	public static void HelpHelpINeedAnAdult(RobotInfo[] nearbyEnemies) throws GameActionException {
 		if ( nearbyEnemies.length == 0 )
 			return; //No, you don't need an adult.  Go home bot, you're drunk
-		System.out.println("Help! The doll's trying to kill me and the toaster's been laughing at me!");
-		Broadcast.WriteHelpEnemyLocation(nearbyEnemies[0].location);
+		for( RobotInfo enemy : nearbyEnemies ) {
+			if ( enemy.type.canAttack() )
+			{
+				System.out.println("Help! The doll's trying to kill me and the toaster's been laughing at me!");
+				Broadcast.WriteHelpEnemyLocation(nearbyEnemies[0].location);				
+			}
+		}
 	}
 	public static void WriteHelpEnemyLocation(MapLocation location) throws GameActionException
 	{
