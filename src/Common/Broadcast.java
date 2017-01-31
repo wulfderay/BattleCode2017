@@ -11,6 +11,9 @@ public class Broadcast extends Globals {
 	public static final int ENEMY_TARGET_X_CHANNEL = 100;
 	public static final int ENEMY_TARGET_Y_CHANNEL = 101;
 
+	public static final int NEED_HELP_X_CHANNEL = 102;
+	public static final int NEED_HELP_Y_CHANNEL = 102;
+
 	public static final int ALPHA_ARCHON_LAST_CHECK_IN_CHANNEL = 200;
 	public static final int ALPHA_ARCHON_ID_CHANNEL = 201;
 

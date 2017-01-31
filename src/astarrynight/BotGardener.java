@@ -271,6 +271,16 @@ public class BotGardener extends Globals {
 		return bestLocation;
 	}
 
+	public static Direction getAnEmptyDir() {
+		for (int i = 6; --i >= 0;) {
+			if (spawnLocStatus[i] == LOCATION_EMPTY) {
+				return spawnDirs[i];
+			}
+		}
+		return null;
+	}
+
+
 	public static boolean EnsureEarlyGameBotsAreSpawned() throws GameActionException{
 		rc.setIndicatorDot(here, 200, 100, 00);
 
@@ -321,7 +331,8 @@ public class BotGardener extends Globals {
 	}
 
 	public static Direction refreshSpawnDirection() throws GameActionException {
-		return UtilSpawn.getClearDirection(spawnLocation != null? spawnLocation: Direction.NORTH, 7, 1, false);
+		//return UtilSpawn.getClearDirection(spawnLocation != null? spawnLocation: Direction.NORTH, 7, 1, false);
+		return getAnEmptyDir();
 	}
 
 	// to be refactored.
@@ -349,7 +360,7 @@ public class BotGardener extends Globals {
 			return true;
 		} else {
 			//This is a shitty hack but sometimes Util.getClearDirection returns an invalid spawn location so going to try brute forcing it.
-			float resolution = 3;
+			float resolution = 1;
 			float cumilativeOffset = resolution;
 
 			while (cumilativeOffset < 360) {
