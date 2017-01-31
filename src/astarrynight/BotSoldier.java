@@ -67,7 +67,7 @@ public class BotSoldier extends Globals {
 			PursueAndDestroyPriorityEnemy();
 		}
 	}
-
+	
 	public static boolean PursueAndDestroyPriorityEnemy() throws GameActionException {
 		if(enemies.length == 0) {
 			//Some (simple) pursuit code
@@ -77,10 +77,7 @@ public class BotSoldier extends Globals {
 				{
 					if ( here.distanceTo(globalTarget) < here.distanceTo(helpTarget) )
 						return UtilMove.moveToFarTarget(globalTarget);
-					else {
-						System.out.println("Help target detected closer to us!  Time to go help!");
-						return UtilMove.moveToFarTarget(helpTarget);
-					}
+					return UtilMove.moveToFarTarget(helpTarget);
 				}
 				if (globalTargetExists)
 				{
@@ -99,7 +96,9 @@ public class BotSoldier extends Globals {
 			{
 				currentTarget = null;
 			}
-			return UtilMove.moveToNearTarget(currentTarget.location);
+			if ( currentTarget != null )
+				return UtilMove.moveToNearTarget(currentTarget.location);
+			return UtilMove.ExploreInExploreDirection();
 		}
 		//Enemies.length > 0:
 		currentTarget = Util.pickPriorityTarget(enemies);
@@ -121,7 +120,7 @@ public class BotSoldier extends Globals {
 			break;
 		default:
 			UtilMove.moveToNearTarget(currentTarget.location);
-			UtilAttack.maximumFirepowerAtSafeTarget(currentTarget, enemies);
+			UtilAttack.maximumFirepowerAtSafeTarget(currentTarget, enemies);					
 		}
 		return true; // ehh, close enough
 	}
@@ -132,9 +131,9 @@ public class BotSoldier extends Globals {
 			System.out.println("Help target detected!  Time to go help!");
 			return UtilMove.moveToFarTarget(helpTarget);
 		}
-
+		
 		unitToDefend = getUnitToDefend();
-
+		
 		UtilMove.defend(unitToDefend);
 
 		RobotInfo enemy = Util.pickPriorityTarget(enemies);
