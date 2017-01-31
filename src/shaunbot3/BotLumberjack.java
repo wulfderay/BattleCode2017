@@ -12,14 +12,9 @@ public class BotLumberjack extends Globals {
     public static int clearingRadius = 5; // totally arbitrary
     public static int lastTreeSeenTTL = LAST_TREE_SEEN_TTL_MAX;
 
-
-	public static RobotInfo[] enemiesLastTurn;
-	public static RobotInfo[] enemies;
-	
-    
   //  public static TreeInfo mostHatedTree = null;
 	public static void loop() throws GameActionException {
-        System.out.println("I'm a Lumberjack and I'm ok. I chop all night and I strike all day!");
+        System.out.println("I'm a Lumberjack and I'm ok. I chop all night and strike all day!");
 
         while (true) {
 
@@ -50,159 +45,37 @@ public class BotLumberjack extends Globals {
 	
 	public static void turn() throws GameActionException {
         Util.BuyVPIfItWillMakeUsWin();
+
         Broadcast.RollCall();
-	    //UtilMove.AvoidBullets();
-	    //AttackofOpportunity();
-        //EvaluateLocations();
-        if ( AttackBots() )
-        	return;
-        
+
+	    UtilMove.AvoidBullets();
+
+	    AttackofOpportunity();
+
         MapLocation nearestTreeINeedToChop = GetNearestTreeToChop();
 	    if (nearestTreeINeedToChop != null &&!( (int)nearestTreeINeedToChop.x == 0 && (int)nearestTreeINeedToChop.y == 0))
         {
-	    	System.out.println("Choppin' tree for gardener");
             ChopTreeDownForGardner(nearestTreeINeedToChop);
         }
         else if (Util.isEarlyGame() && lastTreeSeenTTL > 0)
-        {
-        	System.out.println("Clearning forest");
             clearForest();
-        }
         else
-        {
-        	System.out.println("Murdering archons and gardeners");
             murderArchonsAndGardeners();
-        }
-	}
-	
-	
-	public static MapLocation[] GenerateLocations( int numLocations, float distance) throws GameActionException
-	{
-		MapLocation[] mapLocations = new MapLocation[numLocations];
-		Direction direction = Direction.NORTH;
-		for(int ii = 0; ii < numLocations; ii++)
-		{
-			mapLocations[ii] = here.add(direction, distance);
-			direction = direction.rotateRightDegrees(45);
-			rc.setIndicatorDot(mapLocations[ii], 255, 255, 0);
-		}
-		return mapLocations;
-	}
-	
-
-    private static boolean AttackBots() throws GameActionException {
-    	enemiesLastTurn = enemies;
-		enemies = rc.senseNearbyRobots(-1, them);
-		RobotInfo priorityTarget = Util.pickPriorityTarget(enemies);
-		
-		if ( enemies.length == 0 || priorityTarget == null)
-			return false;
-		
-		RobotInfo[] friends = rc.senseNearbyRobots(-1, them);
-		RobotInfo closestFriend = friends[0];
-		
-		int numScans = 8;
-		MapLocation[] scanLocations = GenerateLocations(numScans, 2f);
-		float[] scanScores = new float[numScans];
-		float scanRadius = 2f;
-		RobotInfo[] scanEnemies;
-		RobotInfo[] scanFriendlies;
-		for ( int ii = 0; ii < numScans; ii++ )
-		{
-			MapLocation scanLocation = scanLocations[ii];
-			//Evaluate Location:
-			scanEnemies = rc.senseNearbyRobots(scanLocation, scanRadius, us);
-			scanFriendlies = rc.senseNearbyRobots(scanLocation, scanRadius, them);
-			scanScores[ii] = CalculateScore(scanLocation, scanEnemies, scanFriendlies);
-		}
-		int bestLocation = -1;
-		float bestScanValue = 0f;
-		for ( int ii = 0; ii < numScans; ii++ )
-		{
-			if ( bestScanValue > scanScores[ii] )
-			{
-				bestLocation = ii;
-				bestScanValue = scanScores[ii];
-			}
-		}
-		
-		if ( bestLocation != -1 )
-		{
-			rc.setIndicatorDot(scanLocations[bestLocation], 100, 0, 0);
-			UtilMove.tryMove(here.directionTo(scanLocations[bestLocation]));
-		}
-		
-		
-		float distToEnemy = here.distanceTo(priorityTarget.location) - priorityTarget.type.bodyRadius;
-		if ( distToEnemy < GameConstants.LUMBERJACK_STRIKE_RADIUS )
-		{
-			System.out.println("Within strike radius!  Strike!");
-			rc.strike();
-			return true;
-		}
-		if ( distToEnemy < GameConstants.LUMBERJACK_STRIKE_RADIUS + rc.getType().strideRadius )
-		{
-			if ( rc.canMove(here.directionTo(priorityTarget.location), distToEnemy) )
-			{
-				System.out.println("Within strike + Move radius!  Move 'n Strike!");
-				UtilMove.moveToNearTarget(priorityTarget.location);
-				rc.strike();
-				return true;
-			}
-		}
-		if ( distToEnemy < GameConstants.LUMBERJACK_STRIKE_RADIUS + rc.getType().strideRadius * 2 ) //Fudge factor
-		{
-			System.out.println("Near move!  Move!");
-			UtilMove.moveToNearBot(priorityTarget);
-			return false;
-		}
-		/*
-    	// if I'm near an enemy but not an ally, strike.
-        RobotInfo[] robots = rc.senseNearbyRobots(GameConstants.LUMBERJACK_STRIKE_RADIUS, them);
-        
-        if(robots.length > 0 && !rc.hasAttacked()) { // this needs to better gauge the cost/benefit of striking.
-            // Use strike() to hit all nearby robots!
-            rc.strike();
-            return true;
-        }*/
-        return false;
-	}
-    
-    
-
-	private static float CalculateScore(MapLocation scanLocation, RobotInfo[] scanEnemies, RobotInfo[] scanFriendlies) {
-		float currentScore = 0f;
-		for (RobotInfo robot : scanEnemies)
-		{
-			currentScore += 1 * scanLocation.distanceTo(robot.location);
-		}
-		for (RobotInfo robot : scanFriendlies)
-		{
-			currentScore += -1.5 * scanLocation.distanceTo(robot.location);
-		}
-		rc.setIndicatorDot(scanLocation, 0, (int)currentScore * 10, 0);
-		return currentScore;
 	}
 
-	private static void ChopTreeDownForGardner(MapLocation nearestTreeINeedToChop) throws GameActionException {
+    private static void ChopTreeDownForGardner(MapLocation nearestTreeINeedToChop) throws GameActionException {
 	    rc.setIndicatorDot(nearestTreeINeedToChop, 0,100,0);
         if (ThereIsATreeINeedToMurder()) // come back next turn and finish killing it
         {
             return; // i.e., don't move
         }
-        
+
         // else move on.
 
-        if (nearestTreeINeedToChop.add(Direction.EAST,0.1f).distanceTo(here) > myType.sensorRadius *2)
+        if (nearestTreeINeedToChop.add(Direction.EAST,0.1f).distanceTo(here) > myType.sensorRadius)
             UtilMove.moveToFarTarget(nearestTreeINeedToChop);
         else
             UtilMove.moveToNearTarget(nearestTreeINeedToChop);
-
-        // If I am here, it means there are no trees I need to kill in my vicinity. If thats where I'm supposed to be, I'm done.
-        if (rc.canSenseLocation(nearestTreeINeedToChop) &&!rc.isLocationOccupiedByTree(nearestTreeINeedToChop))
-        {
-           Broadcast.IChoppedATree(nearestTreeINeedToChop);
-        }
 
 
     }

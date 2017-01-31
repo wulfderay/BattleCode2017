@@ -14,8 +14,7 @@ public class UtilMove extends Globals {
     }
 
     public static boolean moveToNearTarget(MapLocation target) {
-        tryMove(here.directionTo(target),10,10);
-        return true;
+        return tryMove(here.directionTo(target),10,10);
     }
 
     // Tries to stay nearby but move around randomly
@@ -179,7 +178,7 @@ public class UtilMove extends Globals {
         if (rc.hasMoved())
             return false;
 
-        BulletInfo[] bullets = rc.senseNearbyBullets(5);
+        BulletInfo[] bullets = rc.senseNearbyBullets();
         for (BulletInfo bullet : bullets)
         {
             if (willCollideWithMe(bullet))

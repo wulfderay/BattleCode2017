@@ -164,13 +164,15 @@ public class BotGardener extends Globals {
 
 	}
 
+	public static int minBulletsToBuildTree = 50;
+
 	public static boolean spawnTrees(Direction spawnDir) {
 		// Spawn trees
 		if (rc.getBuildCooldownTurns() > 0) {
 			rc.setIndicatorDot(here, 0,0,0);
 			return false;
 		}
-		if (rc.getTeamBullets() < 50) {
+		if (rc.getTeamBullets() < minBulletsToBuildTree) {
 			rc.setIndicatorDot(here, 20,20,20);
 			return false;
 		}
@@ -178,6 +180,7 @@ public class BotGardener extends Globals {
 			if (rc.canPlantTree(spawnDir)) {
 				try {
 					rc.plantTree(spawnDir);
+					minBulletsToBuildTree = minBulletsToBuildTree + 20;
 					System.out.println("Found a good spawn location. Staying here!");
 					foundSpawnLocation = true;
 					return true;

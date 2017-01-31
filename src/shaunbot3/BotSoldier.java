@@ -55,7 +55,7 @@ public class BotSoldier extends Globals {
 		enemies = rc.senseNearbyRobots(-1, them);
 		
 		// Dodge if we need to
-		UtilMove.AvoidBullets();
+		AvoidBullets();
 		
 		if ( Util.isEarlyGame() ) {
 			//Defend in the early game
@@ -63,22 +63,53 @@ public class BotSoldier extends Globals {
 		} else {
 			// Fight fight fight!
 			PursueAndDestroyPriorityEnemy();
-			/*
-			// Fight fight fight!
-			RobotInfo priorityTarget = Util.pickPriorityTarget(enemies);
-			if ( priorityTarget != null )
-			{
-				
-			}
-			else
-			{
-				UtilMove.Explore();
-				//UtilMove.moveToFarTarget(globalTarget);
-			}
-			*/
 		}
 	}
+	
+	//Forked to give better stuff for soldiers
+    public static boolean AvoidBullets() {
+        if (rc.hasMoved())
+            return false;
 
+        BulletInfo[] bullets = rc.senseNearbyBullets();
+        BulletInfo bulletThatWillHitMe = null;
+        boolean willBeHitByBullet = false;
+        for (BulletInfo bullet : bullets)
+        {
+            if (UtilMove.willCollideWithLocation( bullet, here, myType.bodyRadius) )
+            {
+                willBeHitByBullet = true;
+                bulletThatWillHitMe = bullet;
+                break;
+            }
+        }
+        if ( !willBeHitByBullet )
+        	return false;
+        MapLocation[] testLocations = Util.GenerateLocations(8, myType.strideRadius);
+        MapLocation dodgeLocation = null;
+        for ( MapLocation location : testLocations )
+        {
+        	for (BulletInfo bullet : bullets)
+            {
+                if (UtilMove.willCollideWithLocation( bullet, location, myType.bodyRadius) )
+                {
+                	dodgeLocation = location;
+                    break;
+                }
+            }
+        }
+        if ( dodgeLocation != null )
+        {
+        	return UtilMove.tryMove(here.directionTo(dodgeLocation));
+        }
+        return UtilMove.tryMove(bulletThatWillHitMe.getDir().rotateLeftDegrees(90), 5, 3);
+    }
+    
+    
+    
+    
+    
+    
 	public static void PursueAndDestroyPriorityEnemy() throws GameActionException {
 		if(enemies.length == 0) {
 			//Some (simple) pursuit code
