@@ -13,6 +13,8 @@ public class BotArchon extends Globals {
 	public static TreeInfo[] nearbyTrees;
 	public static RobotInfo closestGardener;
 
+	public static RobotInfo[] enemies;
+
 	public static int friendlyAttackUnitsNearby;
 	public static int friendlyGardenersNearby;
 	public static int enemyAttackUnitsNearby;
@@ -92,6 +94,9 @@ public class BotArchon extends Globals {
 			HireGardnerMaybe();
 
 			BroadCastIfEmergency();
+
+			if (enemies.length > 0)
+				Broadcast.HelpHelpINeedAnAdult(enemies);
 		}
 		else
 		{
@@ -111,6 +116,7 @@ public class BotArchon extends Globals {
 
 	public static void senseSurroundings() throws GameActionException {
 		nearbyBots = rc.senseNearbyRobots();
+		enemies = rc.senseNearbyRobots(-1, them);
 		nearbyTrees = rc.senseNearbyTrees(-1,null);
 
 		friendlyAttackUnitsNearby = 0;

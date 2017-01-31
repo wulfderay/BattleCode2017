@@ -113,12 +113,15 @@ public class BotGardener extends Globals {
 		if (nearbyFriendlyTrees.length > 0 )
 			closestEntity = nearbyFriendlyTrees[0];
 
-		if (nearbyNeutralTrees != null && nearbyNeutralTrees.length > 0 && (closestEntity == null ||here.distanceTo(nearbyNeutralTrees[0].getLocation()) - nearbyNeutralTrees[0].getRadius() < here.distanceTo(closestEntity.getLocation()) - closestEntity.getRadius()))
-			closestEntity = nearbyNeutralTrees[0];
+		//if (nearbyNeutralTrees != null && nearbyNeutralTrees.length > 0 && (closestEntity == null ||here.distanceTo(nearbyNeutralTrees[0].getLocation()) - nearbyNeutralTrees[0].getRadius() < here.distanceTo(closestEntity.getLocation()) - closestEntity.getRadius()))
+		//	closestEntity = nearbyNeutralTrees[0];
 		if (nearbyFriendlyGardener != null && (closestEntity == null || here.distanceTo(nearbyFriendlyGardener.getLocation()) - 6 < here.distanceTo(closestEntity.getLocation()) - closestEntity.getRadius()))
 			closestEntity = nearbyFriendlyGardener;
 		return closestEntity;
 	}
+
+	private static int meaninglessCounter = 0;
+	private static int buggingForAwhile = 0;
 
 	public static boolean moveToSpawnLocation() {
 		if (nearbyFriendlyTrees.length > 0) {
@@ -139,16 +142,30 @@ public class BotGardener extends Globals {
 				return true;
 			}
 			if (distanceNet >= myType.strideRadius) {
-				if (rc.canMove(dir)) {
-					UtilMove.doMove(dir);
-				} else {
-					BugMove.simpleBug(closestEntity.getLocation());
+				if (buggingForAwhile <= 0) {
+					if (rc.canMove(dir)) {
+						UtilMove.doMove(dir);
+					} else {
+						buggingForAwhile = 10;
+					}
+				}
+				if (buggingForAwhile > 0)
+				{
+					UtilMove.moveToFarTarget(here.add(dir, 10));
+					--buggingForAwhile;
 				}
 			} else {
-				if (rc.canMove(dir, distanceNet)) {
-					return UtilMove.doMove(dir, distanceNet);
-				} else {
-					BugMove.simpleBug(closestEntity.getLocation());
+				if (buggingForAwhile <= 0) {
+					if (rc.canMove(dir, distanceNet)) {
+						return UtilMove.doMove(dir, distanceNet);
+					} else {
+						buggingForAwhile = 10;
+					}
+				}
+				if (buggingForAwhile > 0)
+				{
+					UtilMove.moveToFarTarget(here.add(dir, 10));
+					--buggingForAwhile;
 				}
 			}
 			return false;
@@ -176,7 +193,7 @@ public class BotGardener extends Globals {
 			rc.setIndicatorDot(here, 20,20,20);
 			return false;
 		}
-		if (numSafeSpawnLocations > 2 && spawnDir != null) {
+		if (numSafeSpawnLocations > 1 && spawnDir != null) {
 			if (rc.canPlantTree(spawnDir)) {
 				try {
 					rc.plantTree(spawnDir);
@@ -284,9 +301,9 @@ public class BotGardener extends Globals {
 				numSafeSpawnLocations++;
 				bestLocation = spawnDirs[i];
 			}
-			/*if (spawnLocStatus[i] == LOCATION_ROBOT) {
+			if (spawnLocStatus[i] == LOCATION_ROBOT) {
 				numSafeSpawnLocations++;
-			}*/
+			}
 		}
 		return bestLocation;
 	}
