@@ -10,6 +10,9 @@ public class BotArchon extends Globals {
 	public static int stuckGardeners = 0;
 
 	public static RobotInfo[] nearbyBots;
+	public static TreeInfo[] nearbyTrees;
+	public static RobotInfo closestGardener;
+
 	public static int friendlyAttackUnitsNearby;
 	public static int friendlyGardenersNearby;
 	public static int enemyAttackUnitsNearby;
@@ -75,9 +78,14 @@ public class BotArchon extends Globals {
 		if (iAmAlphaArchon || Broadcast.getAlphaArchonAlert()) {
 			// Actions for alpha archons
 
+			rc.setIndicatorDot(here, 0, 255, 0);
+
 			Broadcast.TallyRollCalls();
+			Broadcast.ClearTreeList();
 			stuckGardeners = Broadcast.TallyStuckGardeners();
-			UtilSpawn.MoveToAClearerLocation(3);
+			//UtilSpawn.MoveToAClearerLocation(3);
+
+			moveToSafeLocation();
 
 			HireGardnerMaybe();
 
@@ -86,30 +94,31 @@ public class BotArchon extends Globals {
 		else
 		{
 			// Actions for beta archons
-			UtilSpawn.MoveToAClearerLocation(3);
-			HireGardnerMaybe();
+			//UtilSpawn.MoveToAClearerLocation(3);
+			moveToSafeLocation();
+
+			//HireGardnerMaybe();
 		}
-
-		// Common actions
-		UtilSpawn.MoveToAClearerLocation(3);
-
-		for (TreeInfo tree : rc.senseNearbyTrees(myType.sensorRadius, Team.NEUTRAL))
+		for (TreeInfo tree : nearbyTrees)
 		{
-			if (Clock.getBytecodesLeft() >100)
-			{
+			if ( Clock.getBytecodesLeft() < 100)
+				return;
+			if ( tree.getTeam() != us)
 				Broadcast.INeedATreeChopped(tree.getLocation());
-			}
-			else
-				break;
 		}
+
+
 	}
 
 	public static void senseSurroundings() throws GameActionException {
 		nearbyBots = rc.senseNearbyRobots();
+		nearbyTrees = rc.senseNearbyTrees(-1,null);
 
 		friendlyAttackUnitsNearby = 0;
 		friendlyGardenersNearby = 0;
 		enemyAttackUnitsNearby = 0;
+
+		closestGardener = null;
 
 		for (RobotInfo bot : nearbyBots) {
 			if (bot.team == us) {
@@ -118,6 +127,8 @@ public class BotArchon extends Globals {
 				}
 				if (bot.type == RobotType.GARDENER) {
 					friendlyGardenersNearby++;
+					if (closestGardener == null)
+						closestGardener = bot;
 				}
 			} else {
 				if (bot.type.canAttack()) {
@@ -138,10 +149,57 @@ public class BotArchon extends Globals {
 		}
 	}
 
+	private static void moveToSafeLocation() {
+		TreeInfo closestTree = null;
+		if (nearbyTrees.length > 0)
+			closestTree = nearbyTrees[0];
+		RobotInfo closestRobot = null;
+		if (nearbyBots.length > 0)
+			closestRobot = nearbyBots[0];
+
+		MapLocation closestEntity = null;
+		if (closestRobot != null) {
+			closestEntity = closestRobot.location;
+		}
+		if (closestTree != null) {
+			if (closestEntity == null) {
+				closestEntity = closestTree.location;
+			} else if (here.distanceTo(closestEntity) > here.distanceTo(closestTree.location)) {
+				closestEntity = closestTree.location;
+			}
+		}
+
+		if (closestGardener != null && Math.abs(here.directionTo(closestGardener.location).degreesBetween(here.directionTo(globalTarget))) < 100) {
+			//Gardener is between us and the enemy, therefor we are going to get stuck in the wall
+			UtilMove.moveToFarTarget(globalTarget);
+		}
+
+		if (closestEntity != null) {
+			if (here.distanceTo(closestEntity) < 4) {
+				UtilMove.tryMove(closestEntity.directionTo(here).rotateLeftDegrees((float)Math.random()*10 - 5));
+				return;
+			}
+			if (here.distanceTo(closestEntity) > 9) {
+				UtilMove.tryMove(here.directionTo(closestEntity).rotateLeftDegrees((float)Math.random()*10 - 5));
+				return;
+			}
+			UtilMove.tryMove(Util.randomDirection());
+		}
+
+	}
+
+	private static int turnsWithoutBeingAbleToSpawn = 0;
+
+
 	private static void HireGardnerMaybe() throws GameActionException {
-		Direction dir = UtilSpawn.getClearDirection(Direction.NORTH, 7, 1, false);
+		Direction dir = UtilSpawn.getClearDirection(UtilSpawn.towardsEnemySpawn().opposite(), 7, 1, false);
 		if (dir == null) {
 			System.out.println("Spawning blocked");
+			turnsWithoutBeingAbleToSpawn++;
+			if (turnsWithoutBeingAbleToSpawn > 10) {
+				System.out.println("Giving up trying to spawn. Call down the other archons!");
+				Broadcast.setAlphaArchonAlert();
+			}
 			return;
 		}
 
@@ -161,17 +219,18 @@ public class BotArchon extends Globals {
 
 			System.out.println("Bullets"+rc.getTeamBullets()+"Gardeners"+totalGardeners);
 
-			if (    (totalGardeners == 1 && rc.getTeamBullets() > 150) ||
-					(totalGardeners == 2 && rc.getTeamBullets() > 200) ||
-					(totalGardeners == 3 && rc.getTeamBullets() > 250) ||
-					(totalGardeners == 4 && rc.getTeamBullets() > 300) ||
-					(totalGardeners == 5 && rc.getTeamBullets() > 350)) {
+			// this has to be better. Take into account military units.
+			if (    (totalGardeners == 1 && rc.getTeamBullets() > 160) ||
+					(totalGardeners == 2 && rc.getTeamBullets() > 160) ||
+					(totalGardeners == 3 && rc.getTeamBullets() > 200) ||
+					(totalGardeners == 4 && rc.getTeamBullets() > 250) ||
+					(totalGardeners == 5 && rc.getTeamBullets() > 300)) {
 				System.out.println("Got enough bullets for more gardeners"+totalGardeners+" "+rc.getTeamBullets());
 				rc.hireGardener(dir);
 				return;
 			}
 
-			if (rc.getTreeCount() < 30 && rc.getTeamBullets() > 400) {
+			if (rc.getTreeCount() < 50 && rc.getTeamBullets() > 400) {
 				System.out.println("Got bullets to spare");
 				rc.hireGardener(dir);
 				return;

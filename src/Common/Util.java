@@ -79,5 +79,19 @@ public class Util extends Globals {
 		//return (float) (7.5 + (rc.getRoundNum()*12.5 / rc.getRoundLimit()));
 	}
 
+	
+
+	public static MapLocation[] GenerateLocations( int numLocations, float distance)
+	{
+		MapLocation[] mapLocations = new MapLocation[numLocations];
+		Direction direction = Direction.NORTH;
+		for(int ii = 0; ii < numLocations; ii++)
+		{
+			mapLocations[ii] = here.add(direction, distance);
+			direction = direction.rotateRightDegrees(45);
+			rc.setIndicatorDot(mapLocations[ii], 255, 255, 0);
+		}
+		return mapLocations;
+	}
 
 }

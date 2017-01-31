@@ -179,7 +179,7 @@ public class UtilMove extends Globals {
         if (rc.hasMoved())
             return false;
 
-        BulletInfo[] bullets = rc.senseNearbyBullets(5);
+        BulletInfo[] bullets = rc.senseNearbyBullets();
         for (BulletInfo bullet : bullets)
         {
             if (willCollideWithMe(bullet))
