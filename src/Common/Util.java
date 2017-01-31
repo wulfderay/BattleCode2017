@@ -15,7 +15,7 @@ public class Util extends Globals {
 	}
 
 	public static boolean isEarlyGame() {
-		return rc.getRoundNum() < 400;
+		return rc.getRoundNum() < 400 && rc.getTeamBullets() < 500;
 	}
 	
 	public static RobotInfo getRobotInfoFromList(RobotInfo [] list, int id)
