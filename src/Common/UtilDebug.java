@@ -18,7 +18,14 @@ public class UtilDebug extends Globals {
 
     public static void debug_exceptionHandler(Exception e, String message) {
         System.out.println("*********EXCEPTION*******");
-        alert();
+        MapLocation a = here.add(Direction.NORTH).add(Direction.EAST);
+        MapLocation b = here.add(Direction.NORTH).add(Direction.WEST);
+        MapLocation c = here.add(Direction.SOUTH).add(Direction.WEST);
+        MapLocation d = here.add(Direction.SOUTH).add(Direction.EAST);
+        rc.setIndicatorLine(a,b,255,100,100);
+        rc.setIndicatorLine(b,c,255,100,100);
+        rc.setIndicatorLine(c,d,255,100,100);
+        rc.setIndicatorLine(d,a,255,100,100);
         System.out.println(message);
         e.printStackTrace();
     }
