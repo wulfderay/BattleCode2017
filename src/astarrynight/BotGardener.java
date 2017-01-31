@@ -3,6 +3,9 @@ package astarrynight;
 import Common.*;
 import battlecode.common.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class BotGardener extends Globals {
 
 
@@ -36,6 +39,7 @@ public class BotGardener extends Globals {
 	public static boolean foundSpawnLocation = false;
 
 	public static RobotInfo[] nearbyBots;
+	public static RobotInfo nearbyFriendlyGardener;
 	public static TreeInfo[] nearbyFriendlyTrees;
 	public static TreeInfo[] nearbyNeutralTrees;
 	public static int enemyAttackUnitsNearby = 0;
@@ -102,18 +106,30 @@ public class BotGardener extends Globals {
 
 
 	}
+	public static BodyInfo getNearestEntityToAvoid()
+	{
+		BodyInfo closestEntity = null;
+
+		if (nearbyFriendlyTrees.length > 0 )
+			closestEntity = nearbyFriendlyTrees[0];
+
+		if (nearbyNeutralTrees != null && nearbyNeutralTrees.length > 0 && (closestEntity == null ||here.distanceTo(nearbyNeutralTrees[0].getLocation()) - nearbyNeutralTrees[0].getRadius() < here.distanceTo(closestEntity.getLocation()) - closestEntity.getRadius()))
+			closestEntity = nearbyNeutralTrees[0];
+		if (nearbyFriendlyGardener != null && (closestEntity == null || here.distanceTo(nearbyFriendlyGardener.getLocation()) - 6 < here.distanceTo(closestEntity.getLocation()) - closestEntity.getRadius()))
+			closestEntity = nearbyFriendlyGardener;
+		return closestEntity;
+	}
 
 	public static boolean moveToSpawnLocation() {
 		if (nearbyFriendlyTrees.length > 0) {
-			//Move to distance 4 from nearest friendly tree... this gives enough space to spawn a tree between.
+			//Move to distance 4 from nearest friendly tree... this gives enough space to spawn a tree between
 			//TODO: This needs to take into account off-map locations.
-			//TODO: Check for distance from nearest gardener. Should be distance 6 away to provide ideal spacing. (gardener.radius * 2 + tree.radius * 4)
-			TreeInfo closestTree = nearbyFriendlyTrees[0];
-			//return UtilMove.moveAdjacentToTree(closestTree);
-			float distanceGross = here.distanceTo(closestTree.location);
-			float distanceNet = distanceGross - 4;
-			Direction dir = here.directionTo(closestTree.location);
-			System.out.println("Trying to move distance 4 from tree" + closestTree.location);
+			BodyInfo closestEntity = getNearestEntityToAvoid();
+			float distanceGross = here.distanceTo(closestEntity.getLocation());
+			float difference = closestEntity instanceof RobotInfo? 6: (closestEntity.getRadius() +GameConstants.BULLET_TREE_RADIUS + myType.bodyRadius+ 1);
+			float distanceNet =  distanceGross - difference;
+			Direction dir = here.directionTo(closestEntity.getLocation());
+			System.out.println("Trying to move distance 4 from tree" + closestEntity.getLocation());
 			System.out.println("Distance" + distanceGross + " " + distanceNet);
 			if (distanceNet < 0) {
 				distanceNet = Math.abs(distanceNet);
@@ -126,13 +142,13 @@ public class BotGardener extends Globals {
 				if (rc.canMove(dir)) {
 					UtilMove.doMove(dir);
 				} else {
-					BugMove.simpleBug(closestTree.location);
+					BugMove.simpleBug(closestEntity.getLocation());
 				}
 			} else {
 				if (rc.canMove(dir, distanceNet)) {
 					return UtilMove.doMove(dir, distanceNet);
 				} else {
-					BugMove.simpleBug(closestTree.location);
+					BugMove.simpleBug(closestEntity.getLocation());
 				}
 			}
 			return false;
@@ -158,7 +174,7 @@ public class BotGardener extends Globals {
 			rc.setIndicatorDot(here, 20,20,20);
 			return false;
 		}
-		if (numSafeSpawnLocations > 1 && spawnDir != null) {
+		if (numSafeSpawnLocations > 2 && spawnDir != null) {
 			if (rc.canPlantTree(spawnDir)) {
 				try {
 					rc.plantTree(spawnDir);
@@ -179,7 +195,6 @@ public class BotGardener extends Globals {
 	public static void senseSurroundings() {
 		nearbyBots = rc.senseNearbyRobots();
 		nearbyFriendlyTrees = rc.senseNearbyTrees(-1, us);
-
 		nearbyNeutralTrees = rc.senseNearbyTrees(-1, Team.NEUTRAL);
 
 		for (RobotInfo bot : nearbyBots) {
@@ -192,6 +207,8 @@ public class BotGardener extends Globals {
 						friendlyLumberJacksNearby++;
 					}
 				}
+				if (bot.type == RobotType.GARDENER && nearbyFriendlyGardener == null)
+					nearbyFriendlyGardener = bot;
 			} else {
 				if (bot.type.canAttack()) {
 					enemyAttackUnitsNearby++;
@@ -264,9 +281,9 @@ public class BotGardener extends Globals {
 				numSafeSpawnLocations++;
 				bestLocation = spawnDirs[i];
 			}
-			if (spawnLocStatus[i] == LOCATION_ROBOT) {
+			/*if (spawnLocStatus[i] == LOCATION_ROBOT) {
 				numSafeSpawnLocations++;
-			}
+			}*/
 		}
 		return bestLocation;
 	}
