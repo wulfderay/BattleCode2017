@@ -199,7 +199,7 @@ public class BotArchon extends Globals {
 
 
 	private static void HireGardnerMaybe() throws GameActionException {
-		Direction dir = UtilSpawn.getClearDirection(UtilSpawn.towardsEnemySpawn().opposite(), 7, 2, false);
+		Direction dir = UtilSpawn.getClearDirection(UtilSpawn.towardsEnemySpawn().opposite(), 7, 1, false);
 		if (dir == null) {
 			System.out.println("Spawning blocked");
 			turnsWithoutBeingAbleToSpawn++;
