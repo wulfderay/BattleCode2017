@@ -200,6 +200,7 @@ public class UtilMove extends Globals {
         BulletInfo[] bullets = rc.senseNearbyBullets();
         BulletInfo bulletThatWillHitMe = null;
         boolean willBeHitByBullet = false;
+        System.out.println("SOMANYBULLETS!:"+bullets.length);
         for (BulletInfo bullet : bullets)
         {
             if (UtilMove.willCollideWithLocation( bullet, here, myType.bodyRadius) )

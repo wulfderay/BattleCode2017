@@ -77,10 +77,7 @@ public class BotSoldier extends Globals {
 				{
 					if ( here.distanceTo(globalTarget) < here.distanceTo(helpTarget) )
 						return UtilMove.moveToFarTarget(globalTarget);
-					else {
-						System.out.println("Help target detected closer to us!  Time to go help!");
-						return UtilMove.moveToFarTarget(helpTarget);
-					}
+					return UtilMove.moveToFarTarget(helpTarget);
 				}
 				if (globalTargetExists)
 				{
@@ -99,7 +96,9 @@ public class BotSoldier extends Globals {
 			{
 				currentTarget = null;
 			}
-			return UtilMove.moveToNearTarget(currentTarget.location);
+			if ( currentTarget != null )
+				return UtilMove.moveToNearTarget(currentTarget.location);
+			return UtilMove.ExploreInExploreDirection();
 		}
 		//Enemies.length > 0:
 		currentTarget = Util.pickPriorityTarget(enemies);
