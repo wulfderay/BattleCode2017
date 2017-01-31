@@ -14,8 +14,7 @@ public class UtilMove extends Globals {
     }
 
     public static boolean moveToNearTarget(MapLocation target) {
-        tryMove(here.directionTo(target),10,10);
-        return true;
+        return tryMove(here.directionTo(target),10,10);
     }
 
     // Tries to stay nearby but move around randomly

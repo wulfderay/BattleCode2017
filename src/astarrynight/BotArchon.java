@@ -103,7 +103,7 @@ public class BotArchon extends Globals {
 		{
 			if ( Clock.getBytecodesLeft() < 100)
 				return;
-			if ( tree.getTeam() != us)
+			if ( tree.getTeam() != us && tree.location.distanceTo(here) < 4)
 				Broadcast.INeedATreeChopped(tree.getLocation());
 		}
 
