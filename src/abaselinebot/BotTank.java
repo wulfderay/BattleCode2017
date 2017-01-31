@@ -114,33 +114,11 @@ public class BotTank extends Globals {
         RobotInfo[] enemies = rc.senseNearbyRobots(-1, them);
         if(enemies.length > 0) {
             //Find closest enemy:
-            return getClosestRobot(enemies);
+            return enemies[0];
         }
         // Otherwise, head towards enemy archon location:
         return new RobotInfo(-1, them, myType, globalTarget, 1, 1, 1);
-
     }
-
-    public static RobotInfo getClosestRobot(RobotInfo[] robots)
-    {
-        if ( robots.length == 0 )
-            return null;
-        RobotInfo closestRobot = null;
-        float closestRobotDistance = 1200; //Maps are max 100, so that should be safe maybe?
-        float robotDistance;
-        for(RobotInfo robot : robots)
-        {
-            robotDistance = robot.location.distanceTo(here);
-            if ( robotDistance < closestRobotDistance )
-            {
-                closestRobot = robot;
-                closestRobotDistance = robotDistance;
-            }
-        }
-        return closestRobot;
-    }
-    
-    
     
     //HACK FIRING CODE:
 
@@ -162,9 +140,9 @@ public class BotTank extends Globals {
         for( RobotInfo target : enemies )
         {
             if ( safeToFireAtTarget(target)) {
-                System.out.println("Picking alternate safe target!");
                 return maximumFirepowerAt(target.location);
             }
+            System.out.println("Picking alternate safe target!");
         }
         System.out.println("Can't find a safe target to shoot at!");
         return false;

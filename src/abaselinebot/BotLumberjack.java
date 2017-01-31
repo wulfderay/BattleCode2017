@@ -63,20 +63,38 @@ public class BotLumberjack extends Globals {
             murderArchonsAndGardeners();
 	}
 
-    private static void ChopTreeDownForGardner(MapLocation nearestTreeINeedToChop) throws GameActionException {
+	private static int bugMoveForAWhile = 0;
+
+    private static void ChopTreeDownForGardner(MapLocation nearestTreeINeedToChop) {
 	    rc.setIndicatorDot(nearestTreeINeedToChop, 0,100,0);
+	    System.out.println("Need to chop tree at" + nearestTreeINeedToChop);
+
         if (ThereIsATreeINeedToMurder()) // come back next turn and finish killing it
         {
+            rc.setIndicatorDot(here, 0,0,0);
             return; // i.e., don't move
         }
 
         // else move on.
 
-        if (nearestTreeINeedToChop.add(Direction.EAST,0.1f).distanceTo(here) > myType.sensorRadius)
-            UtilMove.moveToFarTarget(nearestTreeINeedToChop);
-        else
-            UtilMove.moveToNearTarget(nearestTreeINeedToChop);
+        //if (nearestTreeINeedToChop.add(Direction.EAST,0.1f).distanceTo(here) > myType.sensorRadius)
+        //    UtilMove.moveToFarTarget(nearestTreeINeedToChop);
+        //else
 
+        if (bugMoveForAWhile <= 0) {
+            if (!UtilMove.moveToNearTarget(nearestTreeINeedToChop)) {
+                System.out.println("Need to bug move for a while");
+                bugMoveForAWhile = 20;
+            } else {
+                rc.setIndicatorDot(here, 0, 255, 0);
+            }
+        }
+
+        if (bugMoveForAWhile > 0) {
+            UtilMove.moveToFarTarget(nearestTreeINeedToChop);
+            --bugMoveForAWhile;
+            rc.setIndicatorDot(here, 0, 0, 255);
+        }
 
     }
 
@@ -159,7 +177,7 @@ public class BotLumberjack extends Globals {
         if (mostHated != null )
         {
             if ( here.distanceTo(mostHated.getLocation()) < myType.strideRadius *2)
-                UtilMove.tryMove(here.directionTo(mostHated.getLocation()), 10, 5);
+                UtilMove.moveToNearTarget(mostHated.location);
             // move towards them
             if (!UtilMove.moveToFarTarget(mostHated.getLocation())) {
             	//couldn't move that way...
@@ -179,16 +197,27 @@ public class BotLumberjack extends Globals {
      * @return True if we found a tree to fell
      * @throws GameActionException
      */
-    public static boolean ThereIsATreeINeedToMurder() throws GameActionException {
+    public static boolean ThereIsATreeINeedToMurder() {
         boolean foundATreeToHate = false;
         for (TreeInfo tree: rc.senseNearbyTrees(-1) ) {
             if (tree != null && rc.canInteractWithTree(tree.getID())) {
-                if (tree.getContainedBullets() > 0 && rc.canShake())
-                    rc.shake(tree.getID());
+                if (tree.getContainedBullets() > 0 && rc.canShake()) {
+                    try {
+                        rc.shake(tree.getID());
+                    } catch (GameActionException e) {
+                        UtilDebug.debug_exceptionHandler(e, "Shake exception");
+                    }
+                }
+
                 if (tree.getTeam() != us && rc.canChop(tree.getID())) {
                     System.out.println("Gonna chop a tree!");
                     foundATreeToHate = true;
-                    rc.chop(tree.getID());
+                    try {
+                        rc.chop(tree.getID());
+                        rc.setIndicatorLine(here, tree.location, 0, 200,0);
+                    } catch (GameActionException e) {
+                        UtilDebug.debug_exceptionHandler(e, "Chop exception");
+                    }
                 }
             }
         }

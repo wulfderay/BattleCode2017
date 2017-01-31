@@ -17,6 +17,8 @@ public class BotArchon extends Globals {
 	public static int friendlyGardenersNearby;
 	public static int enemyAttackUnitsNearby;
 
+	public static MapLocation whereIwasBorn;
+
 	private static int getArchonNumber()  {
 		MapLocation [] arconlocs = rc.getInitialArchonLocations(us);
 		for (int i = 0; i < arconlocs.length; i++ )
@@ -36,7 +38,7 @@ public class BotArchon extends Globals {
 
 		//Update target location!
 		Broadcast.WriteEnemyLocation(rc.getInitialArchonLocations(them)[0]);
-
+		whereIwasBorn = here;
 		// The code you want your robot to perform every round should be in this loop
 		while (true) {
 
@@ -79,12 +81,12 @@ public class BotArchon extends Globals {
 			// Actions for alpha archons
 
 			rc.setIndicatorDot(here, 0, 255, 0);
+			if (iAmAlphaArchon) {
+				Broadcast.TallyRollCalls();
+				Broadcast.ClearTreeList();
 
-			Broadcast.TallyRollCalls();
-			Broadcast.ClearTreeList();
-			stuckGardeners = Broadcast.TallyStuckGardeners();
-			//UtilSpawn.MoveToAClearerLocation(3);
-
+				stuckGardeners = Broadcast.TallyStuckGardeners();
+			}
 			moveToSafeLocation();
 
 			HireGardnerMaybe();
@@ -93,17 +95,14 @@ public class BotArchon extends Globals {
 		}
 		else
 		{
-			// Actions for beta archons
-			//UtilSpawn.MoveToAClearerLocation(3);
-			moveToSafeLocation();
 
-			//HireGardnerMaybe();
+			moveToSafeLocation();
 		}
 		for (TreeInfo tree : nearbyTrees)
 		{
 			if ( Clock.getBytecodesLeft() < 100)
 				return;
-			if ( tree.getTeam() != us)
+			if ( tree.getTeam() != us && tree.location.distanceTo(here) < 4)
 				Broadcast.INeedATreeChopped(tree.getLocation());
 		}
 
@@ -150,6 +149,7 @@ public class BotArchon extends Globals {
 	}
 
 	private static void moveToSafeLocation() {
+
 		TreeInfo closestTree = null;
 		if (nearbyTrees.length > 0)
 			closestTree = nearbyTrees[0];
@@ -185,8 +185,9 @@ public class BotArchon extends Globals {
 			}
 			UtilMove.tryMove(Util.randomDirection());
 		}
-
 	}
+
+
 
 	private static int turnsWithoutBeingAbleToSpawn = 0;
 
@@ -221,10 +222,10 @@ public class BotArchon extends Globals {
 
 			// this has to be better. Take into account military units.
 			if (    (totalGardeners == 1 && rc.getTeamBullets() > 160) ||
-					(totalGardeners == 2 && rc.getTeamBullets() > 160) ||
-					(totalGardeners == 3 && rc.getTeamBullets() > 200) ||
-					(totalGardeners == 4 && rc.getTeamBullets() > 250) ||
-					(totalGardeners == 5 && rc.getTeamBullets() > 300)) {
+					(totalGardeners == 2 && rc.getTeamBullets() > 200) ||
+					(totalGardeners == 3 && rc.getTeamBullets() > 250) ||
+					(totalGardeners == 4 && rc.getTeamBullets() > 300) ||
+					(totalGardeners == 5 && rc.getTeamBullets() > 400)) {
 				System.out.println("Got enough bullets for more gardeners"+totalGardeners+" "+rc.getTeamBullets());
 				rc.hireGardener(dir);
 				return;
