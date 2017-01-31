@@ -5,6 +5,8 @@ import battlecode.common.*;
 
 public class BotTank extends Globals {
 
+	public static RobotInfo[] enemies;
+	
 	public static void loop() throws GameActionException {
         System.out.println("I'm a tank!");
 
@@ -35,23 +37,91 @@ public class BotTank extends Globals {
 
         }			
 	}
-
+	
+	public static RobotInfo currentTarget = null;
+	public static int turnsSinceLastSawCurrentTarget = 0;
+	public static final int TURNS_TO_PURSUE_CURRENT_TARGET = 5;
+	
     public static void turn() throws GameActionException {
         Util.BuyVPIfItWillMakeUsWin();
         Broadcast.RollCall();
 
 	    //Scan
-        //Head towards enemy archon
+		enemies = rc.senseNearbyRobots(-1, them);
+		PursueAndDestroyPriorityEnemy();
+        /*
+		//Head towards enemy archon
         RobotInfo target = getPriorityTarget();
+        UtilMove.CombatAvoidBullets();
         moveTowards(target);
         
-        //Alright, we'll just fire one bullet... i guess...
         RobotInfo[] enemies = rc.senseNearbyRobots(-1, them);
         RobotInfo priorityTarget = Util.pickPriorityTarget(enemies);
         if(enemies.length > 0) {
         	maximumFirepowerAtSafeTarget(priorityTarget, enemies);
         }
+        */
     }
+    
+
+	public static boolean PursueAndDestroyPriorityEnemy() throws GameActionException {
+		if(enemies.length == 0) {
+			//Some (simple) pursuit code
+			if ( currentTarget == null  )
+			{
+				if ( helpTargetExists && globalTargetExists )
+				{
+					if ( here.distanceTo(globalTarget) < here.distanceTo(helpTarget) )
+						return BulldozeMoveTowardsFarTarget(globalTarget);
+					return BulldozeMoveTowardsFarTarget(helpTarget);
+				}
+				if (globalTargetExists)
+				{
+					return BulldozeMoveTowardsFarTarget(globalTarget);
+				}
+				if (helpTargetExists)
+				{
+					System.out.println("Help target detected!  Time to go help!");
+					return BulldozeMoveTowardsFarTarget(helpTarget);
+				}
+				return BulldozeMoveTowardsFarTarget(globalTarget);
+			}
+			//Target != null
+			turnsSinceLastSawCurrentTarget++;
+			if ( turnsSinceLastSawCurrentTarget > TURNS_TO_PURSUE_CURRENT_TARGET)
+			{
+				currentTarget = null;
+			}
+			if ( currentTarget != null )
+				return BulldozeMoveTowardsNearTarget(currentTarget.location);
+			return BulldozeMoveTowardsFarTarget(globalTarget);
+		}
+		//Enemies.length > 0:
+		currentTarget = Util.pickPriorityTarget(enemies);
+		turnsSinceLastSawCurrentTarget = 0;
+		if (currentTarget == null) {
+			return BulldozeMoveTowardsFarTarget(globalTarget);
+		}
+		switch ( currentTarget.getType() )
+		{
+		/*
+		//YOU CAN'T OUTRUN A LUMBERJACK
+		case LUMBERJACK:
+			float MIN = GameConstants.LUMBERJACK_STRIKE_RADIUS + RobotType.LUMBERJACK.strideRadius;
+			float MAX = MIN + rc.getType().bodyRadius*2f; //Fudge factor (mmm... fudge...)
+			UtilMove.maintainDistanceWith(currentTarget, MAX, MIN, currentTarget.location);
+			maximumFirepowerAtSafeTarget(currentTarget, enemies);
+			break;
+			*/
+		default:
+			BulldozeMoveTowardsNearTarget(currentTarget.location);
+			maximumFirepowerAtSafeTarget(currentTarget, enemies);
+		}
+		return true; // ehh, close enough
+	}
+    
+    
+    
 
     private static boolean moveTowards(RobotInfo target) throws GameActionException {
         MapLocation location = target.getLocation();
@@ -62,7 +132,7 @@ public class BotTank extends Globals {
             rc.move(dir);
             return true;
         }
-
+        
         // Sense what I'm up against:
         //If it's a tree, MOVE TO IT!  WOO BULLDOZE
         MapLocation oneMoveLocation = here.add(dir, rc.getType().bodyRadius + rc.getType().strideRadius);
@@ -73,6 +143,33 @@ public class BotTank extends Globals {
         }
         UtilMove.moveToFarTarget(target.location);
         return false;
+    }
+    
+    public static boolean BulldozeMoveTowardsNearTarget(MapLocation location) throws GameActionException
+    {
+    	Direction dir = here.directionTo(location);
+    	// Sense what I'm up against:
+        //If it's a tree, MOVE TO IT!  WOO BULLDOZE
+        MapLocation oneMoveLocation = here.add(dir, rc.getType().bodyRadius + rc.getType().strideRadius);
+        TreeInfo obstacleTree = rc.senseTreeAtLocation(oneMoveLocation);
+        if ( obstacleTree != null )
+        {
+        	return BulldozeMove(dir);
+        }
+		return UtilMove.moveToNearTarget(location);
+    }
+    public static boolean BulldozeMoveTowardsFarTarget(MapLocation location) throws GameActionException
+    {
+    	Direction dir = here.directionTo(location);
+    	// Sense what I'm up against:
+        //If it's a tree, MOVE TO IT!  WOO BULLDOZE
+        MapLocation oneMoveLocation = here.add(dir, rc.getType().bodyRadius + rc.getType().strideRadius);
+        TreeInfo obstacleTree = rc.senseTreeAtLocation(oneMoveLocation);
+        if ( obstacleTree != null )
+        {
+        	return BulldozeMove(dir);
+        }
+		return UtilMove.moveToFarTarget(location);
     }
     
     public static boolean BulldozeMove(Direction dir)
@@ -100,12 +197,11 @@ public class BotTank extends Globals {
             }
         	
 			rc.move(dir);
-			
+			return true;
 		} catch (GameActionException e) {
 			UtilDebug.debug_exceptionHandler(e, "Exception while bulldoze moving");
 		}
-        return true;
-    	
+        return false;
     }
 
     public static RobotInfo getPriorityTarget()
@@ -183,18 +279,15 @@ public class BotTank extends Globals {
     {
         Direction direction = here.directionTo(target);
         float distance = here.add(direction, rc.getType().bodyRadius).distanceTo(target);
-        if ( distance < 4.75f ) //Determined on the back of an official IEEE napkin
-        {
-            if (rc.canFirePentadShot()) {
-                System.out.println("FIRING PENTAD SHOT!");
-                try {
-                    rc.firePentadShot(here.directionTo(target));
-                } catch (GameActionException e) {
-                    UtilDebug.debug_exceptionHandler(e, "Exception while firing pentad shot");
-                }
-                rc.setIndicatorLine(here, target, 50, 0, 0);
-                return true;
+        if (rc.canFirePentadShot()) {
+            System.out.println("FIRING PENTAD SHOT!");
+            try {
+                rc.firePentadShot(here.directionTo(target));
+            } catch (GameActionException e) {
+                UtilDebug.debug_exceptionHandler(e, "Exception while firing pentad shot");
             }
+            rc.setIndicatorLine(here, target, 50, 0, 0);
+            return true;
         }
         if (rc.canFireSingleShot()) {
             System.out.println("Firing single shot!");
