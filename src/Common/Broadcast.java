@@ -70,7 +70,7 @@ public class Broadcast extends Globals {
 		int spawned = GetNumberOfSpawned(bot);
 		int alive = GetNumberOfLive(bot);
 		if (spawned == 0)
-			return 1;
+			return -1;
 		return alive/spawned;
 	}
 

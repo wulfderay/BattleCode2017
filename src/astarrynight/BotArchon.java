@@ -227,17 +227,17 @@ public class BotArchon extends Globals {
 			System.out.println("Bullets"+rc.getTeamBullets()+"Gardeners"+totalGardeners);
 
 			// this has to be better. Take into account military units.
-			if (    (totalGardeners == 1 && rc.getTeamBullets() > 160) ||
-					(totalGardeners == 2 && rc.getTeamBullets() > 200) ||
-					(totalGardeners == 3 && rc.getTeamBullets() > 250) ||
-					(totalGardeners == 4 && rc.getTeamBullets() > 300) ||
-					(totalGardeners == 5 && rc.getTeamBullets() > 400)) {
+			if (    (totalGardeners == 1 && rc.getTeamBullets() > 210) ||
+					(totalGardeners == 2 && rc.getTeamBullets() > 260) ||
+					(totalGardeners == 3 && rc.getTeamBullets() > 310) ||
+					(totalGardeners == 4 && rc.getTeamBullets() > 360) ||
+					(totalGardeners == 5 && rc.getTeamBullets() > 410)) {
 				System.out.println("Got enough bullets for more gardeners"+totalGardeners+" "+rc.getTeamBullets());
 				rc.hireGardener(dir);
 				return;
 			}
 
-			if (rc.getTreeCount() < 50 && rc.getTeamBullets() > 400) {
+			if (rc.getTreeCount() < 50 && rc.getTeamBullets() > 450) {
 				System.out.println("Got bullets to spare");
 				rc.hireGardener(dir);
 				return;

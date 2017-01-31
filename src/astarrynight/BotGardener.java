@@ -2,6 +2,7 @@ package astarrynight;
 
 import Common.*;
 import battlecode.common.*;
+import scala.sys.process.ProcessImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -97,6 +98,7 @@ public class BotGardener extends Globals {
 
 		// Spawn stuff
 		if ( EnsureEarlyGameBotsAreSpawned() ) {
+			System.out.println("Got all the early game shit. Lets spawn more!");
 			spawnBots();
 		}
 
@@ -302,7 +304,7 @@ public class BotGardener extends Globals {
 				bestLocation = spawnDirs[i];
 			}
 			if (spawnLocStatus[i] == LOCATION_ROBOT) {
-				numSafeSpawnLocations++;
+//				numSafeSpawnLocations++;
 			}
 		}
 		return bestLocation;
@@ -353,11 +355,13 @@ public class BotGardener extends Globals {
 		}
 
 		if (nearbyNeutralTrees != null && nearbyNeutralTrees.length > 1 && numLumberjacks < 1 ) { //Gotta cut down these trees
+			System.out.println("Need more lumberjacks!");
 			spawnBot(RobotType.LUMBERJACK);
 			return false;
 		}
 
 		if (nearbyNeutralTrees != null && nearbyNeutralTrees.length > 5 && numLumberjacks < 2 ) { //Gotta cut down these trees
+			System.out.println("Need EVEN MORE lumberjacks!");
 			spawnBot(RobotType.LUMBERJACK);
 			return false;
 		}
@@ -376,6 +380,10 @@ public class BotGardener extends Globals {
 	public static boolean spawnBot(RobotType robotType) throws GameActionException {
 		// update spawnlocation if needed.
 		spawnLocation = refreshSpawnDirection();
+
+		if (spawnLocation == null) {
+			spawnLocation = UtilSpawn.getClearDirection(spawnLocation != null? spawnLocation: Direction.NORTH, 1, 1, false);
+		}
 
 		if (spawnLocation == null)
 		{
@@ -449,19 +457,26 @@ public class BotGardener extends Globals {
 	// Here's where we need to add the genrealized attrition code.
 	public static RobotType getNextBotToBuild() throws GameActionException {
 		BuildListItem[] buildOrder = Util.isEarlyGame() && rc.getTreeCount() < 10 ? buildOrderEarly: buildOrderMid;
-		BuildListItem nextBot = null;
 		int offset = 0;
 		buildIndex = buildIndex % buildOrder.length;
 		while(offset < buildOrder.length)
 		{
 			BuildListItem botToBuild = buildOrder[(buildIndex + offset) % buildOrder.length];
-			if ( Broadcast.GetNumberOfLive(nextBot.type) <botToBuild.max &&
-					(botToBuild.maxAttrition == -1 ||Broadcast.GetAttritionRateAllGame(nextBot.type) < botToBuild.maxAttrition)) // we don't need to spawn any more. go on to the next one.
+			System.out.println("Index " + ((buildIndex + offset) % buildOrder.length));
+			System.out.println("Type "+botToBuild.type + " Current "+Broadcast.GetNumberOfLive(botToBuild.type)+" Max "+botToBuild.max+" Attrition "+Broadcast.GetAttritionRateAllGame(botToBuild.type)+" MaxAtt "+botToBuild.maxAttrition);
+			if ( Broadcast.GetNumberOfLive(botToBuild.type) < botToBuild.max)
 			{
-				return botToBuild.type;
+				if ((botToBuild.maxAttrition == -1 ||Broadcast.GetAttritionRateAllGame(botToBuild.type) < botToBuild.maxAttrition)) { // we don't need to spawn any more. go on to the next one.)
+					System.out.println("Need to build a" + botToBuild.type);
+					return botToBuild.type;
+				} else {
+					System.out.println("Too many died!!! :(");
+				}
+
 			}
 			offset++;
 		}
+		System.out.println("Nothing to build :(");
 		return null;
 	}
 
